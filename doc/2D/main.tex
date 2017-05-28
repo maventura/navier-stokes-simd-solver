@@ -1,0 +1,139 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=1.5cm,right=1.5cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Modelo Navier Stokes 2D}
+\author{}
+
+\begin{document}
+\maketitle
+\section{Definiciones}
+Diferencias centradas de primer orden.
+\\
+\\
+$\frac{dU}{dx} = \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} $
+\\
+\\
+$\frac{dU}{dy} = \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} $
+\\
+\\
+$\frac{dU}{dt} = \frac{U^{n+1}_{i,j} - U^{n-1}_{i,j}}{2dt} $
+\\
+\\
+Diferencias centradas de segundo orden.
+\\
+\\
+$\frac{d^{2}U}{dx^{2}} = \frac{ U^{n}_{i+1,j} - 2*U^{n}_{i,j} + U^{n}_{i-1,j}}{dx^2}$
+\\
+\\
+$\frac{d^{2}U}{dy^{2}} = \frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dx^2}$
+\\
+\\
+$\frac{d^{2}U}{dt^{2}} = \frac{ U^{n+1}_{i,j} - 2*U^{n}_{i,j} + U^{n-1}_{i,j}}{dt^2}$
+\\
+\\
+
+Diferencias adelantadas de primer orden. (menos estables)
+\\
+\\
+$\frac{dU}{dx} = \frac{U^{n}_{i+1,j} - U^{n}_{i,j}}{dx} $
+\\
+\\
+$\frac{dU}{dy} = \frac{U^{n}_{i,j+1} - U^{n}_{i,j}}{dy} $
+\\
+\\
+$\frac{dU}{dt} = \frac{U^{n+1}_{i,j} - U^{n}_{i,j}}{dx} $
+\\
+\\
+
+Diferencias atrasadas de primer orden. (menos estables)
+\\
+\\
+$\frac{dU}{dx} = \frac{U^{n}_{i,j} - U^{n}_{i-1,j}}{dx} $
+\\
+\\
+$\frac{dU}{dy} = \frac{U^{n}_{i,j} - U^{n}_{i,j-1}}{dy} $
+\\
+\\
+$\frac{dU}{dt} = \frac{U^{n}_{i,j} - U^{n-1}_{i,j}}{dx} $
+\\
+\\
+
+\newpage
+\section{Esquema de Navier Stokes 2D}
+\subsection{Primera ecuación}
+$\frac{U^{n+1}_{i,j} - U^{n-1}_{i,j}}{2dt} + U^{n}_{i,j}*(\alpha * (\frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx})) + V*(\alpha * (\frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}))$
+\\
+\\
+$= \frac{-1}{\rho}(\alpha * (\frac{P^{n}_{i+1,j} - P^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{P^{n+1}_{i+1,j} - P^{n+1}_{i-1,j}}{2dx})) + \nu (\alpha (\frac{ U^{n}_{i+1,j} - 2*U^{n}_{i,j} + U^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i+1,j} - 2*U^{n+1}_{i,j} + U^{n+1}_{i-1,j}}{dx^2})$
+\\
+$+ \alpha (\frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i,j+1} - 2*U^{n+1}_{i,j} + U^{n+1}_{i,j-1}}{dy^2}))$
+
+\subsection{Segunda ecuación}
+$\frac{V^{n+1}_{i,j} - V^{n-1}_{i,j}}{2dt} + U^{n}_{i,j}*(\alpha * (\frac{V^{n}_{i+1,j} - V^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{V^{n+1}_{i+1,j} - V^{n+1}_{i-1,j}}{2dx})) + V*(\alpha * (\frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))$
+\\
+\\
+$ =\frac{-1}{\rho} (\alpha * (\frac{P^{n}_{i,j+1} - P^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{P^{n+1}_{i,j+1} - P^{n+1}_{i,j-1}}{2dy})) + \nu (\alpha (\frac{ V^{n}_{i+1,j} - 2*V^{n}_{i,j} + V^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{V^{n+1}_{i+1,j} - 2*V^{n+1}_{i,j} + V^{n+1}_{i-1,j}}{dx^2})$
+\\
+$ + \alpha (\frac{ V^{n}_{i,j+1} - 2*V^{n}_{i,j} + V^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1} - 2*V^{n+1}_{i,j} + V^{n+1}_{i,j-1}}{dy^2})$
+$)$
+
+
+\subsection{Tercera ecuación}
+ $(\alpha \frac{P^{n}_{i+1,j} -2*P^{n}_{i,j} + P^{n}_{i-1,j}}{dx^{2}}$
+ $+(1-\alpha) \frac{P^{n+1}_{i+1,j} -2*P^{n+1}_{i,j} + P^{n+1}_{i-1,j}}{dx^{2}})$
+ $+(\alpha \frac{P^{n}_{i,j+1} -2*P^{n}_{i,j} + P^{n}_{i,j-1}}{dy^{2}}$ 
+ $+(1-\alpha) \frac{P^{n+1}_{i,j+1} -2*P^{n+1}_{i,j} + P^{n+1}_{i,j-1}}{dy^{2}})$
+ $= -\rho [ ((\alpha * \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} + (1-\alpha) * \frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx}))^{2} + 2 * (\alpha * \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} + (1- \alpha) * \frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}) * (\alpha * \frac{V^{n}_{i+1,j}-V^{n}_{i-1,j}}{2dx} + (1-\alpha) (\frac{V^{n+1}_{i+1,j}-V^{n+1}_{i-1,j}}{2dx})) + ((\alpha * \frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy} + (1-\alpha) * \frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))^{2}]$
+
+
+
+\section{Despejes para punto fijo}
+\subsection{Primera ecuación (U)}
+$U^{n+1}_{i,j} $
+\\
+\\
+$= U^{n-1}_{i,j} + 2dt[- U^{n}_{i,j}*(\alpha * (\frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx})) - V^{n}_{i,j}*(\alpha * (\frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}))$
+\\
+$ - \frac{1}{\rho}(\alpha * (\frac{P^{n}_{i+1,j} - P^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{P^{n+1}_{i+1,j} - P^{n+1}_{i-1,j}}{2dx})) + \nu (\alpha (\frac{ U^{n}_{i+1,j} - 2*U^{n}_{i,j} + U^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i+1,j} - 2*U^{n+1}_{i,j} + U^{n+1}_{i-1,j}}{dx^2})$
+\\
+$+ \alpha (\frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i,j+1} - 2*U^{n+1}_{i,j} + U^{n+1}_{i,j-1}}{dy^2}))]$
+
+
+\subsection{Segunda ecuación (V)}
+$V^{n+1}_{i,j} $
+\\
+\\
+$ = V^{n-1}_{i,j} + 
+2dt[-U^{n}_{i,j}*(\alpha * (\frac{V^{n}_{i+1,j} - V^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{V^{n+1}_{i+1,j} - V^{n+1}_{i-1,j}}{2dx})) 
+-V^{n}_{i,j}*(\alpha * (\frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy})) - \frac{1}{\rho} (\alpha * (\frac{P^{n}_{i,j+1} - P^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{P^{n+1}_{i,j+1} - P^{n+1}_{i,j-1}}{2dy})) + \nu (\alpha (\frac{ V^{n}_{i+1,j} - 2*V^{n}_{i,j} + V^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{V^{n+1}_{i+1,j} - 2*V^{n+1}_{i,j} + V^{n+1}_{i-1,j}}{dx^2})$
+\\
+$ + \alpha (\frac{ V^{n}_{i,j+1} - 2*V^{n}_{i,j} + V^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1} - 2*V^{n+1}_{i,j} + V^{n+1}_{i,j-1}}{dy^2}))]$
+
+
+
+
+\subsection{Tercera ecuación (P)}
+ 
+ $ P^{n+1}_{i,j} $
+\\
+$= \frac{P^{n+1}_{i-1,j}}{2} + \frac{P^{n+1}_{i+1,j}}{2} $
+ $ + \frac{dx^{2}}{2\alpha-2} * \{-\alpha \frac{P^{n}_{i+1,j} -2*P^{n}_{i,j} + P^{n}_{i-1,j}}{dx^{2}}$
+ $ -\alpha \frac{P^{n}_{i,j+1} -2*P^{n}_{i,j} + P^{n}_{i,j-1}}{dy^{2}}$ 
+ $-(1-\alpha) \frac{P^{n+1}_{i,j+1} -2*P^{n+1}_{i,j} + P^{n+1}_{i,j-1}}{dy^{2}}$
+ $ -\rho [ ((\alpha * \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} + (1-\alpha) * \frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx}))^{2} + 2 * (\alpha * \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} + (1- \alpha) * \frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}) * (\alpha * \frac{V^{n}_{i+1,j}-V^{n}_{i-1,j}}{2dx} + (1-\alpha) (\frac{V^{n+1}_{i+1,j}-V^{n+1}_{i-1,j}}{2dx})) + ((\alpha * \frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy} + (1-\alpha) * \frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))^{2}] \} $
+ 
+ 
+\end{document}
