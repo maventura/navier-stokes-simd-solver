@@ -81,27 +81,8 @@ $= \frac{-1}{\rho}(\alpha * (\frac{P^{n}_{i+1,j} - P^{n}_{i-1,j}}{2dx}) + (1-\al
 \\
 $+ \alpha (\frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i,j+1} - 2*U^{n+1}_{i,j} + U^{n+1}_{i,j-1}}{dy^2}))$
 
-\subsection{Segunda ecuación}
-$\frac{V^{n+1}_{i,j} - V^{n-1}_{i,j}}{2dt} + U^{n}_{i,j}*(\alpha * (\frac{V^{n}_{i+1,j} - V^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{V^{n+1}_{i+1,j} - V^{n+1}_{i-1,j}}{2dx})) + V*(\alpha * (\frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))$
-\\
-\\
-$ =\frac{-1}{\rho} (\alpha * (\frac{P^{n}_{i,j+1} - P^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{P^{n+1}_{i,j+1} - P^{n+1}_{i,j-1}}{2dy})) + \nu (\alpha (\frac{ V^{n}_{i+1,j} - 2*V^{n}_{i,j} + V^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{V^{n+1}_{i+1,j} - 2*V^{n+1}_{i,j} + V^{n+1}_{i-1,j}}{dx^2})$
-\\
-$ + \alpha (\frac{ V^{n}_{i,j+1} - 2*V^{n}_{i,j} + V^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1} - 2*V^{n+1}_{i,j} + V^{n+1}_{i,j-1}}{dy^2})$
-$)$
 
-
-\subsection{Tercera ecuación}
- $(\alpha \frac{P^{n}_{i+1,j} -2*P^{n}_{i,j} + P^{n}_{i-1,j}}{dx^{2}}$
- $+(1-\alpha) \frac{P^{n+1}_{i+1,j} -2*P^{n+1}_{i,j} + P^{n+1}_{i-1,j}}{dx^{2}})$
- $+(\alpha \frac{P^{n}_{i,j+1} -2*P^{n}_{i,j} + P^{n}_{i,j-1}}{dy^{2}}$ 
- $+(1-\alpha) \frac{P^{n+1}_{i,j+1} -2*P^{n+1}_{i,j} + P^{n+1}_{i,j-1}}{dy^{2}})$
- $= -\rho [ ((\alpha * \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} + (1-\alpha) * \frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx}))^{2} + 2 * (\alpha * \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} + (1- \alpha) * \frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}) * (\alpha * \frac{V^{n}_{i+1,j}-V^{n}_{i-1,j}}{2dx} + (1-\alpha) (\frac{V^{n+1}_{i+1,j}-V^{n+1}_{i-1,j}}{2dx})) + ((\alpha * \frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy} + (1-\alpha) * \frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))^{2}]$
-
-
-
-\section{Despejes para punto fijo}
-\subsection{Primera ecuación (U)}
+\subsection{Primera ecuación (U). Despejes para punto fijo}
 $U^{n+1}_{i,j} $
 \\
 \\
@@ -112,7 +93,20 @@ $ - \frac{1}{\rho}(\alpha * (\frac{P^{n}_{i+1,j} - P^{n}_{i-1,j}}{2dx}) + (1-\al
 $+ \alpha (\frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i,j+1} - 2*U^{n+1}_{i,j} + U^{n+1}_{i,j-1}}{dy^2}))]$
 
 
-\subsection{Segunda ecuación (V)}
+\subsection{Segunda ecuación}
+$\frac{V^{n+1}_{i,j} - V^{n-1}_{i,j}}{2dt} + U^{n}_{i,j}*(\alpha * (\frac{V^{n}_{i+1,j} - V^{n}_{i-1,j}}{2dx}) + (1-\alpha) * (\frac{V^{n+1}_{i+1,j} - V^{n+1}_{i-1,j}}{2dx})) + V*(\alpha * (\frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))$
+\\
+\\
+$ =\frac{-1}{\rho} (\alpha * (\frac{P^{n}_{i,j+1} - P^{n}_{i,j-1}}{2dy}) + (1-\alpha) * (\frac{P^{n+1}_{i,j+1} - P^{n+1}_{i,j-1}}{2dy})) + \nu (\alpha (\frac{ V^{n}_{i+1,j} - 2*V^{n}_{i,j} + V^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{V^{n+1}_{i+1,j} - 2*V^{n+1}_{i,j} + V^{n+1}_{i-1,j}}{dx^2})$
+\\
+$ + \alpha (\frac{ V^{n}_{i,j+1} - 2*V^{n}_{i,j} + V^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1} - 2*V^{n+1}_{i,j} + V^{n+1}_{i,j-1}}{dy^2})$
+$)$
+
+
+
+
+
+\subsection{Segunda ecuación (V). Despejes para punto fijo}
 $V^{n+1}_{i,j} $
 \\
 \\
@@ -124,8 +118,15 @@ $ + \alpha (\frac{ V^{n}_{i,j+1} - 2*V^{n}_{i,j} + V^{n}_{i,j-1}}{dy^2}) + (1-\a
 
 
 
+\subsection{Tercera ecuación}
+ $(\alpha \frac{P^{n}_{i+1,j} -2*P^{n}_{i,j} + P^{n}_{i-1,j}}{dx^{2}}$
+ $+(1-\alpha) \frac{P^{n+1}_{i+1,j} -2*P^{n+1}_{i,j} + P^{n+1}_{i-1,j}}{dx^{2}})$
+ $+(\alpha \frac{P^{n}_{i,j+1} -2*P^{n}_{i,j} + P^{n}_{i,j-1}}{dy^{2}}$ 
+ $+(1-\alpha) \frac{P^{n+1}_{i,j+1} -2*P^{n+1}_{i,j} + P^{n+1}_{i,j-1}}{dy^{2}})$
+ $= -\rho [ ((\alpha * \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} + (1-\alpha) * \frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx}))^{2} + 2 * (\alpha * \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} + (1- \alpha) * \frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}) * (\alpha * \frac{V^{n}_{i+1,j}-V^{n}_{i-1,j}}{2dx} + (1-\alpha) (\frac{V^{n+1}_{i+1,j}-V^{n+1}_{i-1,j}}{2dx})) + ((\alpha * \frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy} + (1-\alpha) * \frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))^{2}]$
 
-\subsection{Tercera ecuación (P)}
+
+\subsection{Tercera ecuación (P). Despejes para punto fijo}
  
  $ P^{n+1}_{i,j} $
 \\
