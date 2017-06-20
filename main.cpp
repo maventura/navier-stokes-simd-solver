@@ -42,19 +42,31 @@ int main() {
 
     long double al = 0.5;
 
-//     mat2 U0(nX, vector<long double>(nY));
-//     mat2 V0(nX, vector<long double>(nY));
 
-//     mat2 P0(nX, vector<long double>(nY));
-//     mat2 U1(nX, vector<long double>(nY));
-//     mat2 V1(nX, vector<long double>(nY));
-//     mat2 P1(nX, vector<long double>(nY));
-//     mat2 U2(nX, vector<long double>(nY));
-//     mat2 V2(nX, vector<long double>(nY));
-//     mat2 P2(nX, vector<long double>(nY));
-//     mat2 U3(nX, vector<long double>(nY));
-//     mat2 V3(nX, vector<long double>(nY));
-//     mat2 P3(nX, vector<long double>(nY));
+
+
+
+mat3 U0(nX, mat2(nY, mat1(nZ)));
+mat3 V0(nX, mat2(nY, mat1(nZ)));
+mat3 W0(nX, mat2(nY, mat1(nZ)));
+mat3 P0(nX, mat2(nY, mat1(nZ)));
+
+mat3 U1(nX, mat2(nY, mat1(nZ)));
+mat3 V1(nX, mat2(nY, mat1(nZ)));
+mat3 W1(nX, mat2(nY, mat1(nZ)));
+mat3 P1(nX, mat2(nY, mat1(nZ)));
+
+mat3 U2(nX, mat2(nY, mat1(nZ)));
+mat3 V2(nX, mat2(nY, mat1(nZ)));
+mat3 W2(nX, mat2(nY, mat1(nZ)));
+mat3 P2(nX, mat2(nY, mat1(nZ)));
+
+
+mat3 U3(nX, mat2(nY, mat1(nZ)));
+mat3 V3(nX, mat2(nY, mat1(nZ)));
+mat3 W3(nX, mat2(nY, mat1(nZ)));
+mat3 P3(nX, mat2(nY, mat1(nZ)));
+
 
 //     for (int i = 0; i < nX; ++i) {
 //         fill(U0[i].begin(), U0[i].end(), 0);
@@ -140,8 +152,10 @@ int main() {
 //         P0 = P1;
 //         P1 = P2;
 //     }
-//     //return de algo
- }
+
+cerr << "DBG: process returned without errors" << endl;
+
+}
 
 
 
