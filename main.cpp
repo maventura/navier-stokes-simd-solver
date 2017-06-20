@@ -14,17 +14,15 @@ using mat1 = vector<long double>;
 void printMat(mat3 m) {
     for (int i = 0; i < m.size(); ++i) {
         for (int j = 0; j < m[0].size(); ++j) {
-            for (int k = 0; k < m[0][0].size(); ++k)
-            {    
+            for (int k = 0; k < m[0][0].size(); ++k) {
                 cout << m[i][j][k] << " " ;
             }
-        cout << endl;
+            cout << endl;
         }
     }
 }
 
 int main() {
-
     long double xMax = 2.0;
     long double yMax = 2.0;
     long double zMax = 2.0;
@@ -39,67 +37,59 @@ int main() {
     int nY = round(yMax / dy) + 1;
     int nZ = round(yMax / dy) + 1;
     int nT = round(tMax / dt) + 1;
-
     long double al = 0.5;
+    mat3 U0(nX, mat2(nY, mat1(nZ)));
+    mat3 V0(nX, mat2(nY, mat1(nZ)));
+    mat3 W0(nX, mat2(nY, mat1(nZ)));
+    mat3 P0(nX, mat2(nY, mat1(nZ)));
+    mat3 U1(nX, mat2(nY, mat1(nZ)));
+    mat3 V1(nX, mat2(nY, mat1(nZ)));
+    mat3 W1(nX, mat2(nY, mat1(nZ)));
+    mat3 P1(nX, mat2(nY, mat1(nZ)));
+    mat3 U2(nX, mat2(nY, mat1(nZ)));
+    mat3 V2(nX, mat2(nY, mat1(nZ)));
+    mat3 W2(nX, mat2(nY, mat1(nZ)));
+    mat3 P2(nX, mat2(nY, mat1(nZ)));
+    mat3 U3(nX, mat2(nY, mat1(nZ)));
+    mat3 V3(nX, mat2(nY, mat1(nZ)));
+    mat3 W3(nX, mat2(nY, mat1(nZ)));
+    mat3 P3(nX, mat2(nY, mat1(nZ)));
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            fill(U0[i][j].begin(), U0[i][j].end(), 0);
+            fill(V0[i][j].begin(), V0[i][j].end(), 0);
+            fill(P0[i][j].begin(), P0[i][j].end(), 0);
+            fill(U1[i][j].begin(), U1[i][j].end(), 0);
+            fill(V1[i][j].begin(), V1[i][j].end(), 0);
+            fill(P1[i][j].begin(), P1[i][j].end(), 0);
+            fill(U2[i][j].begin(), U2[i][j].end(), 0);
+            fill(V2[i][j].begin(), V2[i][j].end(), 0);
+            fill(P2[i][j].begin(), P2[i][j].end(), 0);
+            fill(U3[i][j].begin(), U3[i][j].end(), 0);
+            fill(V3[i][j].begin(), V3[i][j].end(), 0);
+            fill(P3[i][j].begin(), P3[i][j].end(), 0);
+        }
+    }
 
 
-
-
-
-mat3 U0(nX, mat2(nY, mat1(nZ)));
-mat3 V0(nX, mat2(nY, mat1(nZ)));
-mat3 W0(nX, mat2(nY, mat1(nZ)));
-mat3 P0(nX, mat2(nY, mat1(nZ)));
-
-mat3 U1(nX, mat2(nY, mat1(nZ)));
-mat3 V1(nX, mat2(nY, mat1(nZ)));
-mat3 W1(nX, mat2(nY, mat1(nZ)));
-mat3 P1(nX, mat2(nY, mat1(nZ)));
-
-mat3 U2(nX, mat2(nY, mat1(nZ)));
-mat3 V2(nX, mat2(nY, mat1(nZ)));
-mat3 W2(nX, mat2(nY, mat1(nZ)));
-mat3 P2(nX, mat2(nY, mat1(nZ)));
-
-
-mat3 U3(nX, mat2(nY, mat1(nZ)));
-mat3 V3(nX, mat2(nY, mat1(nZ)));
-mat3 W3(nX, mat2(nY, mat1(nZ)));
-mat3 P3(nX, mat2(nY, mat1(nZ)));
-
-
-//     for (int i = 0; i < nX; ++i) {
-//         fill(U0[i].begin(), U0[i].end(), 0);
-//         fill(V0[i].begin(), V0[i].end(), 0);
-//         fill(P0[i].begin(), P0[i].end(), 0);
-//         fill(U1[i].begin(), U1[i].end(), 0);
-//         fill(V1[i].begin(), V1[i].end(), 0);
-//         fill(P1[i].begin(), P1[i].end(), 0);
-//         fill(U2[i].begin(), U2[i].end(), 0);
-//         fill(V2[i].begin(), V2[i].end(), 0);
-//         fill(P2[i].begin(), P2[i].end(), 0);
-//         fill(U3[i].begin(), U3[i].end(), 0);
-//         fill(V3[i].begin(), V3[i].end(), 0);
-//         fill(P3[i].begin(), P3[i].end(), 0);
-//     }
-//     for (int i = 0; i < nX; ++i) {
-//         U0[i][nY - 1] = 1.0;
-//         U1[i][nY - 1] = 1.0;
-//         U2[i][nY - 1] = 1.0;
-//         U3[i][nY - 1] = 1.0;
-
-//     }
-
+    for (int i = 0; i < nX; ++i) {
+        for (int k = 0; k < nZ; ++k)
+        {
+            U0[i][nY - 1][k] = 1.0;
+            U1[i][nY - 1][k] = 1.0;
+            U2[i][nY - 1][k] = 1.0;
+            U3[i][nY - 1][k] = 1.0;
+            
+        }
+    }
 //     for (long double t = 0.0; t < tMax; t = t + dt) {
 //         printMat(U0);
 //         printMat(V0);
-
 //         for (int i = 1; i < nX - 1; ++i) {
 //             for (int j = 1; j < nY - 1; ++j) {
 //                 for (int k = 0; true; ++k) {
 //                     long double oldU = U2[i][j];
 //                     long double oldV = V2[i][j];
-
 //                     long double U1x = (U1[i + 1][j] - U1[i - 1][j]) / (2* dx);
 //                     long double U2x = (U2[i + 1][j] - U2[i - 1][j]) / (2* dx);
 //                     long double U1y = (U1[i][j + 1] - U1[i][j - 1]) / (2* dy);
@@ -123,7 +113,6 @@ mat3 P3(nX, mat2(nY, mat1(nZ)));
 //                     long double P1xx = (P1[i + 1][j] - 2* P1[i][j] + P1[i - 1][j]) / (dx* dx);
 //                     long double P1yy = (P1[i][j + 1] - 2* P1[i][j] + P1[i][j - 1]) / (dy* dy);
 //                     long double P2yy = (P2[i][j + 1] - 2* P2[i][j] + P2[i][j - 1]) / (dy* dy);
-
 //                     //TODO: chequear despejes de ecuación 3
 //                     U3[i][j] = U0[i][j] + 2* dt* (-U1[i][j]* (al* U1x  + (1 - al)* U2x ) - V1[i][j]* (al* U1y + (1 - al)* U2y)
 //                                                    - (1 / rho)* (al* P1x + (1 - al)* P2x) + nu* (al* U1xx + (1 - al)* U2xx + al* U1yy + (1 - al)* U2yy));
@@ -144,7 +133,6 @@ mat3 P3(nX, mat2(nY, mat1(nZ)));
 //         U2 = U3;
 //         V2 = V3;
 //         P2 = P3;
-
 //         U0 = U1;
 //         U1 = U2;
 //         V0 = V1;
@@ -152,9 +140,7 @@ mat3 P3(nX, mat2(nY, mat1(nZ)));
 //         P0 = P1;
 //         P1 = P2;
 //     }
-
-cerr << "DBG: process returned without errors" << endl;
-
+    cerr << "DBG: process returned without errors" << endl;
 }
 
 
