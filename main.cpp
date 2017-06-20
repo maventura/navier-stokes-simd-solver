@@ -14,9 +14,9 @@ using mat1 = vector<long double>;
 void printMat(mat3 m) {
     for (int i = 0; i < m.size(); ++i) {
         for (int j = 0; j < m[0].size(); ++j) {
-            for (int k = 0; k < m[0][0].size; ++k)
+            for (int k = 0; k < m[0][0].size(); ++k)
             {    
-                cout << m[i][j] << " " ;
+                cout << m[i][j][k] << " " ;
             }
         cout << endl;
         }
@@ -141,7 +141,7 @@ int main() {
 //         P1 = P2;
 //     }
 //     //return de algo
-// }
+ }
 
 
 
