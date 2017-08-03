@@ -14,7 +14,7 @@
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
-\title{Modelo Navier Stokes 2D}
+\title{Modelo Navier Stokes 3D}
 \author{}
 
 \begin{document}
@@ -72,46 +72,56 @@ $\frac{dU}{dt} = \frac{U^{n}_{i,j} - U^{n-1}_{i,j}}{dx} $
 \\
 
 \newpage
-\section{Esquema de Navier Stokes 2D}
+\section{Esquema de Navier Stokes 3D}
 \subsection{Primera ecuación}
 
-%%%%%%%%%%%%Ecuación de U sin modificaciones, como está en la práctica.
+\begin{enumerate}
 
-$$ \frac{\delta u}{\delta t} + u \frac{\delta u}{\delta x} + v \frac{\delta u}{\delta y} =  \frac{-1}{\rho} \frac{\delta p}{\delta x} + \nu (\frac{{\delta}^{2} u}{\delta {x}^{2}} + \frac{{\delta}^{2} u}{\delta {y}^{2}}) $$
+\item Primera ecuación de N-S para primera componente de la velocidad U:
 
-~\\
-~\\
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-$ \frac{ {u}^{n+1}_{i,j} - u^{n}_{i,j}}{ \Delta t} $
-$+ \alpha {u}^{n}_{i,j} \frac{ {u}^{n}_{i,j} - u^{n}_{i-1,j}}{ \Delta x} + (1 - \alpha) {u}^{n}_{i,j} \frac{ {u}^{n+1}_{i,j} - u^{n+1}_{i-1,j}}{ \Delta x}$ 
-\\
-$+ \alpha {v}^{n}_{i,j} \frac{ {u}^{n}_{i,j} - u^{n}_{i-1,j}}{ \Delta y} + (1 - \alpha) {u}^{n}_{i,j} \frac{ {u}^{n+1}_{i,j} - u^{n+1}_{i-1,j}}{ \Delta y}$
-\\
-$= \frac{-1}{\rho} ( \alpha \frac{p^{n}_{i+1,j} - p^{n}_{i-1,j} }{ 2 \Delta x } + (1 - \alpha) \frac{p^{n+1}_{i+1,j} - p^{n+1}_{i-1,j} }{ 2 \Delta x })  $
-\\
-$+ \nu (\alpha (\frac{ U^{n}_{i+1,j} - 2*U^{n}_{i,j} + U^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i+1,j} - 2*U^{n+1}_{i,j} + U^{n+1}_{i-1,j}}{dx^2})$
-\\
-$+ \alpha (\frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i,j+1} - 2*U^{n+1}_{i,j} + U^{n+1}_{i,j-1}}{dy^2}))$
-
+$$ \frac{\delta U}{\delta t} + U \frac{\delta U}{\delta x} + V \frac{\delta U}{\delta y} + W \frac{\delta U}{\delta z} =  \frac{-1}{\rho} \frac{\delta p}{\delta x} + \nu (\frac{{\delta}^{2} U}{\delta {x}^{2}} + \frac{{\delta}^{2} U}{\delta {y}^{2}} + \frac{{\delta}^{2} U}{\delta {z}^{2}}) $$
 
 ~\\
+
+\item Discretización utilizando diferencias finitas adelantadas para el tiempo, y atrasadas para las espaciales.
+~\\
+$ \frac{ {U}^{n+1}_{(i,j,k)} - U^{n}_{(i,j,k)}}{ \Delta t}  +  \alpha {U}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i-1,j,k)}}{ \Delta x} + (1 - \alpha) {U}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i-1,j,k)}}{ \Delta x}$ 
+\\
+$+ \alpha {V}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j-1,k)}}{ \Delta y} + (1 - \alpha) {V}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j-1,k)}}{ \Delta y}$
+\\
+$+ \alpha {W}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j,k-1)}}{ \Delta z} + (1 - \alpha) {W}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j,k-1)}}{ \Delta z}$
+\\
+$= \frac{-1}{\rho} ( \alpha \frac{p^{n}_{(i+1,j,k)} - p^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{p^{n+1}_{(i+1,j,k)} - p^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
+\\
+$+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{dx^2})$
+\\
+$+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j+1,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j-1,k)}}{dy^2}))$
+\\
+$+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1)}}{dz^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j,k+1)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j,k-1)}}{dz^2}))$
 ~\\
 
-\subsubsection{Despeje para primera ecuación}
+\item Despeje de término de interés:
+~\\
+$ {U}^{n+1}_{(i,j,k)} = U^{n}_{(i,j,k)} + \Delta t \left[ -  \alpha {U}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i-1,j,k)}}{ \Delta x} - (1 - \alpha) {U}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i-1,j,k)}}{ \Delta x} \right.$ 
+\\
+$- \alpha {V}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j-1,k)}}{ \Delta y} - (1 - \alpha) {V}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j-1,k)}}{ \Delta y}$
+\\
+$- \alpha {W}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j,k-1)}}{ \Delta z} - (1 - \alpha) {W}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j,k-1)}}{ \Delta z}$
+\\
+$- \frac{1}{\rho} ( \alpha \frac{p^{n}_{(i+1,j,k)} - p^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{p^{n+1}_{(i+1,j,k)} - p^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
+\\
+$+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{dx^2})$
+\\
+$+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j+1,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j-1,k)}}{dy^2}))$
+\\
+$ \left.+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1)}}{dz^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j,k+1)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j,k-1)}}{dz^2})) \right]$
+~\\
 
-$  {u}^{n+1}_{i,j} = u^{n}_{i,j}  $
-$+ \Delta t [- \alpha {u}^{n}_{i,j} \frac{ {u}^{n}_{i,j} - u^{n}_{i-1,j}}{ \Delta x} - (1 - \alpha) {u}^{n}_{i,j} \frac{ {u}^{n+1}_{i,j} - u^{n+1}_{i-1,j}}{ \Delta x}$ 
-\\
-$- \alpha {v}^{n}_{i,j} \frac{ {u}^{n}_{i,j} - u^{n}_{i-1,j}}{ \Delta y} - (1 - \alpha) {u}^{n}_{i,j} \frac{ {u}^{n+1}_{i,j} - u^{n+1}_{i-1,j}}{ \Delta y}$
-\\
-$+ \frac{-1}{\rho} ( \alpha \frac{p^{n}_{i+1,j} - p^{n}_{i-1,j} }{ 2 \Delta x } + (1 - \alpha) \frac{p^{n+1}_{i+1,j} - p^{n+1}_{i-1,j} }{ 2 \Delta x })  $
-\\
-$+ \nu (\alpha (\frac{ U^{n}_{i+1,j} - 2*U^{n}_{i,j} + U^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i+1,j} - 2*U^{n+1}_{i,j} + U^{n+1}_{i-1,j}}{dx^2})$
-\\
-$+ \alpha (\frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{i,j+1} - 2*U^{n+1}_{i,j} + U^{n+1}_{i,j-1}}{dy^2})) ]$
+
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+
 
 \subsection{Segunda ecuación}
 
