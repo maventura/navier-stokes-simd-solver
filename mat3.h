@@ -2,11 +2,13 @@
 using namespace std;
 
 class mat3 {
-  public:
+    
+    public:
     long double * data;
     int iMax;
     int jMax;
     int kMax;
+
     mat3() {
         iMax = 0;
         jMax = 0;
@@ -44,15 +46,14 @@ class mat3 {
   //en este caso, setea una sola row de la k-esima matriz
   //TODO: ver si es esta la funcionalidad buscada
     void setRow(int i, int k, mat3 &B) {
-        for (int j = 0; j < cols(); ++j) {
+        for (int j = 0; j < cols(); ++j)
             set(i, j, k, B.at(0, j, 0));
-        }
     }
 
     void setAll(mat3 &B) {
         for (int i = 0; i < rows(); ++i) {
             for (int j = 0; j < cols(); ++j) {
-                for (int k = 0; k < dims(); ++k)
+                for (int k = 0; k < dims(); ++k) {
                     set(i, j, k, B.at(i, j, k));
                 }
             }

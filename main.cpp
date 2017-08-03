@@ -1,26 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <chrono>  // for high_resolution_clock.
-#include <math.h>
 #include <sstream>
-
-
+#include <cmath>
+#include "mat3.h"
 using namespace std;
 
-using mat3 = vector<vector<vector<long double > > >;
-using mat2 = vector<vector<long double > >;
-using mat1 = vector<long double>;
-
-void printMat(mat3 m) {
-    for (int i = 0; i < m.size(); ++i) {
-        for (int j = 0; j < m[0].size(); ++j) {
-            for (int k = 0; k < m[0][0].size(); ++k) {
-                cout << m[i][j][k] << " " ;
-            }
-            cout << endl;
-        }
-    }
-}
 
 int main() {
     long double xMax = 2.0;
@@ -39,65 +24,50 @@ int main() {
     int nT = round(tMax / dt) + 1;
     long double al = 0.5;
 
-    mat3 U0(nX, mat2(nY, mat1(nZ)));
-    mat3 V0(nX, mat2(nY, mat1(nZ)));
-    mat3 W0(nX, mat2(nY, mat1(nZ)));
-    mat3 P0(nX, mat2(nY, mat1(nZ)));
+    mat3 U0(nX, nY, nZ, 0);
+    mat3 V0(nX, nY, nZ, 0);
+    mat3 W0(nX, nY, nZ, 0);
+    mat3 P0(nX, nY, nZ, 0);
 
-    mat3 U1(nX, mat2(nY, mat1(nZ)));
-    mat3 V1(nX, mat2(nY, mat1(nZ)));
-    mat3 W1(nX, mat2(nY, mat1(nZ)));
-    mat3 P1(nX, mat2(nY, mat1(nZ)));
+    mat3 U1(nX, nY, nZ, 0);
+    mat3 V1(nX, nY, nZ, 0);
+    mat3 W1(nX, nY, nZ, 0);
+    mat3 P1(nX, nY, nZ, 0);
 
-    mat3 U2(nX, mat2(nY, mat1(nZ)));
-    mat3 V2(nX, mat2(nY, mat1(nZ)));
-    mat3 W2(nX, mat2(nY, mat1(nZ)));
-    mat3 P2(nX, mat2(nY, mat1(nZ)));
+    mat3 U2(nX, nY, nZ, 0);
+    mat3 V2(nX, nY, nZ, 0);
+    mat3 W2(nX, nY, nZ, 0);
+    mat3 P2(nX, nY, nZ, 0);
 
-    mat3 U3(nX, mat2(nY, mat1(nZ)));
-    mat3 V3(nX, mat2(nY, mat1(nZ)));
-    mat3 W3(nX, mat2(nY, mat1(nZ)));
-    mat3 P3(nX, mat2(nY, mat1(nZ)));
+    mat3 U3(nX, nY, nZ, 0);
+    mat3 V3(nX, nY, nZ, 0);
+    mat3 W3(nX, nY, nZ, 0);
+    mat3 P3(nX, nY, nZ, 0);
 
-    for (int i = 0; i < nX; ++i) {
-        for (int j = 0; j < nY; ++j) {
-            fill(U0[i][j].begin(), U0[i][j].end(), 0);
-            fill(V0[i][j].begin(), V0[i][j].end(), 0);
-            fill(P0[i][j].begin(), P0[i][j].end(), 0);
-            fill(U1[i][j].begin(), U1[i][j].end(), 0);
-            fill(V1[i][j].begin(), V1[i][j].end(), 0);
-            fill(P1[i][j].begin(), P1[i][j].end(), 0);
-            fill(U2[i][j].begin(), U2[i][j].end(), 0);
-            fill(V2[i][j].begin(), V2[i][j].end(), 0);
-            fill(P2[i][j].begin(), P2[i][j].end(), 0);
-            fill(U3[i][j].begin(), U3[i][j].end(), 0);
-            fill(V3[i][j].begin(), V3[i][j].end(), 0);
-            fill(P3[i][j].begin(), P3[i][j].end(), 0);
-        }
-    }
     for (int i = 0; i < nX; ++i) {
         for (int k = 0; k < nZ; ++k) {
-            U0[i][nY - 1][k] = 1.0;
-            U1[i][nY - 1][k] = 1.0;
-            U2[i][nY - 1][k] = 1.0;
-            U3[i][nY - 1][k] = 1.0;
+            U0.set(i, nY - 1, k, 1.0);
+            U1.set(i, nY - 1, k, 1.0);
+            U2.set(i, nY - 1, k, 1.0);
+            U3.set(i, nY - 1, k, 1.0);
         }
     }
+
     for (long double t = 0.0; t < tMax; t = t + dt) {
-        printMat(U0);
-        printMat(V0);
-        printMat(W0);
+        U0.print();
+        V0.print();
+        W0.print();
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
                 for (int k = 0; k < nZ; ++k) {
                     for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
 
-                        long double oldU = U2[i][j][k];
+                        /*long double oldU = U2[i][j][k];
                         long double oldV = V2[i][j][k];
-                        long double oldW = W2[i][j][k];
+                        long double oldW = W2[i][j][k];*/
 
-                        long double U1x = (U1[i + 1][j][k] - U1[i - 1][j][k]) / (2 * dx);
-                        long double U2x = (U2[i + 1][j][k] - U2[i - 1][j][k]) / (2 * dx);
+                        long double U1x = (U1.at(i + 1, j, k) - U1.at(i - 1, j, k)) / (2 * dx);
+                        long double U2x = (U2.at(i + 1, j, k) - U2.at(i - 1, j, k)) / (2 * dx);
                         long double U1y = (U1[i][j + 1][k] - U1[i][j - 1][k]) / (2 * dy);
                         long double U2y = (U2[i][j + 1][k] - U2[i][j - 1][k]) / (2 * dy);
                         long double U1z = (U1[i][j][k + 1] - U1[i][j][k - 1]) / (2 * dz);
@@ -140,9 +110,13 @@ int main() {
 
 
 
+
+
+
+                        /* POR QUÉ ESTO?
                         U3[i][j][k] =  U2[i][j][k] + 0.001;
                         V3[i][j][k] =  V2[i][j][k] + 0.002;
-                        P3[i][j][k] =  P2[i][j][k] + 0.003;
+                        P3[i][j][k] =  P2[i][j][k] + 0.003;*/
 
                         // long double diff = sqrt( pow(U3[i][j][k] - oldU, 2) + pow(V3[i][j][k] - oldV, 2) + pow(W3[i][j][k] - oldW, 2 ) );
                         // if (diff < 0.01) {
@@ -151,14 +125,13 @@ int main() {
                         //     cerr << "WARNING: unstable." << endl;
                         //     break;
                         // }
-
                     }
                 }
             }
         }
         //TODO: the 3 matrices exist so that we work on them without changing old values of the 2 matrices.
         // But they represent the new 2 matrices. Change name.
-        U2 = U3;
+        /*U2 = U3;
         V2 = V3;
         W2 = W3;
         P2 = P3;
@@ -171,7 +144,7 @@ int main() {
         U1 = U2;
         V1 = V2;
         W1 = W2;
-        P1 = P2;
+        P1 = P2;*/
     }
     cerr << "DBG: process returned without errors" << endl;
 }
