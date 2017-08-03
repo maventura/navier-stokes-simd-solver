@@ -91,7 +91,7 @@ $+ \alpha {V}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j-1,k)}}{ \Delt
 \\
 $+ \alpha {W}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j,k-1)}}{ \Delta z} + (1 - \alpha) {W}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j,k-1)}}{ \Delta z}$
 \\
-$= \frac{-1}{\rho} ( \alpha \frac{p^{n}_{(i+1,j,k)} - p^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{p^{n+1}_{(i+1,j,k)} - p^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
+$= \frac{-1}{\rho} ( \alpha \frac{P^{n}_{(i+1,j,k)} - P^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{P^{n+1}_{(i+1,j,k)} - P^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
 \\
 $+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{dx^2})$
 \\
@@ -100,7 +100,7 @@ $+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^
 $+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1)}}{dz^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j,k+1)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j,k-1)}}{dz^2}))$
 ~\\
 
-\item Despeje de término de interés:
+\item Despeje del término de interés:
 ~\\
 $ {U}^{n+1}_{(i,j,k)} = U^{n}_{(i,j,k)} + \Delta t \left[ -  \alpha {U}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i-1,j,k)}}{ \Delta x} - (1 - \alpha) {U}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i-1,j,k)}}{ \Delta x} \right.$ 
 \\
@@ -108,7 +108,7 @@ $- \alpha {V}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j-1,k)}}{ \Delt
 \\
 $- \alpha {W}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j,k-1)}}{ \Delta z} - (1 - \alpha) {W}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j,k-1)}}{ \Delta z}$
 \\
-$- \frac{1}{\rho} ( \alpha \frac{p^{n}_{(i+1,j,k)} - p^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{p^{n+1}_{(i+1,j,k)} - p^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
+$- \frac{1}{\rho} ( \alpha \frac{P^{n}_{(i+1,j,k)} - P^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{P^{n+1}_{(i+1,j,k)} - P^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
 \\
 $+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{dx^2})$
 \\
@@ -125,50 +125,106 @@ $ \left.+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1
 
 \subsection{Segunda ecuación}
 
+\begin{enumerate}
 
-%%%%%%%%%%%%Ecuación de V sin modificaciones, como está en la práctica.
-
-$$ \frac{\delta v}{\delta t} + u \frac{\delta v}{\delta x} + v \frac{\delta v}{\delta y} =  \frac{-1}{\rho} \frac{\delta p}{\delta y} + \nu (\frac{{\delta}^{2} v}{\delta {x}^{2}} + \frac{{\delta}^{2} v}{\delta {y}^{2}}) $$
-
-~\\
-~\\
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-$ \frac{ {v}^{n+1}_{i,j} - v^{n}_{i,j}}{ \Delta t} $
-$+ \alpha {u}^{n}_{i,j} \frac{ {v}^{n}_{i,j} - v^{n}_{i-1,j}}{ \Delta x} + (1 - \alpha) {u}^{n}_{i,j} \frac{ {v}^{n+1}_{i,j} - v^{n+1}_{i-1,j}}{ \Delta x}$ 
-\\
-$+ \alpha {v}^{n}_{i,j} \frac{ {v}^{n}_{i,j} - v^{n}_{i-1,j}}{ \Delta y} + (1 - \alpha) {v}^{n}_{i,j} \frac{ {v}^{n+1}_{i,j} - v^{n+1}_{i-1,j}}{ \Delta y}$
-\\
-$= \frac{-1}{\rho} ( \alpha \frac{p^{n}_{i,j+1} - p^{n}_{i,j-1} }{ 2 \Delta y } + (1 - \alpha) \frac{p^{n+1}_{i,j+1} - p^{n+1}_{i,j-1} }{ 2 \Delta y })  $
-\\
-$+ \nu (\alpha (\frac{ v^{n}_{i+1,j} - 2*v^{n}_{i,j} + v^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{ v^{n+1}_{i+1,j} - 2*v^{n+1}_{i,j} + v^{n+1}_{i-1,j}}{dx^2})$
-\\
-$+ \alpha (\frac{ v^{n}_{i,j+1} - 2*v^{n}_{i,j} + v^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ v^{n+1}_{i,j+1} - 2*v^{n+1}_{i,j} + v^{n+1}_{i,j-1}}{dy^2}))$
-
+\item Segunda ecuación de N-S para segundo componente de la velocidad V.
+$$ \frac{\delta V}{\delta t} + U \frac{\delta V}{\delta x} + V \frac{\delta V}{\delta y} + W \frac{\delta V}{\delta z} =  \frac{-1}{\rho} \frac{\delta P}{\delta y} + \nu (\frac{{\delta}^{2} V}{\delta {x}^{2}} + \frac{{\delta}^{2} V}{\delta {y}^{2}} + \frac{{\delta}^{2} V}{\delta {z}^{2}}) $$
 
 ~\\
+
+\item Discretización utilizando diferencias finitas adelantadas para el tiempo, y atrasadas para las espaciales.
+$ \frac{ {V}^{n+1}_{i,j,k} - V^{n}_{i,j,k}}{ \Delta t} $
+$+ \alpha {U}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i-1,j,k}}{\Delta x} + (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i-1,j,k}}{ \Delta x}$ 
+\\
+$+ \alpha {V}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i,j-1,k}}{ \Delta y} + (1 - \alpha) {V}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i,j-1,k}}{ \Delta y}$
+\\
+$+ \alpha {W}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i,j,k-1}}{ \Delta z} + (1 - \alpha) {W}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i,j,k-1}}{ \Delta z}$
+\\
+$= \frac{-1}{\rho} ( \alpha \frac{P^{n}_{i,j+1,k} - P^{n}_{i,j-1,k} }{ 2 \Delta y } + (1 - \alpha) \frac{P^{n+1}_{i,j+1,k} - P^{n+1}_{i,j-1,k} }{ 2 \Delta y })  $
+\\
+$+ \nu (\alpha (\frac{ V^{n}_{i+1,j,k} - 2*V^{n}_{i,j,k} + V^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i+1,j,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i-1,j,k}}{dx^2})$
+\\
+$+ \alpha (\frac{ V^{n}_{i,j+1,k} - 2*V^{n}_{i,j,k} + V^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j-1,k}}{dy^2}))$
+\\
+$+ \alpha (\frac{ V^{n}_{i,j,k+1} - 2*V^{n}_{i,j,k} + V^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j,k+1} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j,k-1}}{dz^2}))$
+
 ~\\
 
-\subsubsection{Despeje para segunda ecuación}
+\item Despeje para segunda ecuación del término de interés
 
-$ {v}^{n+1}_{i,j}  $
-$= v^{n}_{i,j} + \Delta t [- \alpha {u}^{n}_{i,j} \frac{ {v}^{n}_{i,j} - v^{n}_{i-1,j}}{ \Delta x} - (1 - \alpha) {u}^{n}_{i,j} \frac{ {v}^{n+1}_{i,j} - v^{n+1}_{i-1,j}}{ \Delta x}$ 
+$ {V}^{n+1}_{i,j,k} = V^{n}_{i,j,k} + \Delta t $
+$ \left[ - \alpha {U}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i-1,j,k}}{\Delta x} - (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i-1,j,k}}{ \Delta x} \right. $ 
 \\
-$- \alpha {v}^{n}_{i,j} \frac{ {v}^{n}_{i,j} - v^{n}_{i-1,j}}{ \Delta y} - (1 - \alpha) {v}^{n}_{i,j} \frac{ {v}^{n+1}_{i,j} - v^{n+1}_{i-1,j}}{ \Delta y}$
+$- \alpha {V}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i,j-1,k}}{ \Delta y} - (1 - \alpha) {V}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i,j-1,k}}{ \Delta y}$
 \\
-$+ \frac{-1}{\rho} ( \alpha \frac{p^{n}_{i,j+1} - p^{n}_{i,j-1} }{ 2 \Delta y } + (1 - \alpha) \frac{p^{n+1}_{i,j+1} - p^{n+1}_{i,j-1} }{ 2 \Delta y })  $
+$- \alpha {W}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i,j,k-1}}{ \Delta z} - (1 - \alpha) {W}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i,j,k-1}}{ \Delta z}$
 \\
-$+ \nu (\alpha (\frac{ v^{n}_{i+1,j} - 2*v^{n}_{i,j} + v^{n}_{i-1,j}}{dx^2}) + (1-\alpha)*(\frac{ v^{n+1}_{i+1,j} - 2*v^{n+1}_{i,j} + v^{n+1}_{i-1,j}}{dx^2})$
+$- \frac{1}{\rho} ( \alpha \frac{P^{n}_{i,j+1,k} - P^{n}_{i,j-1,k} }{ 2 \Delta y } + (1 - \alpha) \frac{P^{n+1}_{i,j+1,k} - P^{n+1}_{i,j-1,k} }{ 2 \Delta y })  $
 \\
-$+ \alpha (\frac{ v^{n}_{i,j+1} - 2*v^{n}_{i,j} + v^{n}_{i,j-1}}{dy^2}) + (1-\alpha)*(\frac{ v^{n+1}_{i,j+1} - 2*v^{n+1}_{i,j} + v^{n+1}_{i,j-1}}{dy^2}))]$
+$+ \nu (\alpha (\frac{ V^{n}_{i+1,j,k} - 2*V^{n}_{i,j,k} + V^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i+1,j,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i-1,j,k}}{dx^2})$
+\\
+$ + \alpha (\frac{ V^{n}_{i,j+1,k} - 2*V^{n}_{i,j,k} + V^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j-1,k}}{dy^2})) $
+\\
+$\left. + \alpha (\frac{ V^{n}_{i,j,k+1} - 2*V^{n}_{i,j,k} + V^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j,k+1} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j,k-1}}{dz^2})) \right]$
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
-
+~\\
+\end{enumerate}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Tercera ecuación}
 
+\begin{enumerate}
+
+\item Tercera ecuación de N-S para tercer componente de la velocidad W.
+$$ \frac{\delta W}{\delta t} + U \frac{\delta W}{\delta x} + V \frac{\delta W}{\delta y} + W \frac{\delta W}{\delta z} =  \frac{-1}{\rho} \frac{\delta P}{\delta z} + \nu (\frac{{\delta}^{2} W}{\delta {x}^{2}} + \frac{{\delta}^{2} W}{\delta {y}^{2}} + \frac{{\delta}^{2} W}{\delta {z}^{2}}) $$
+
+~\\
+
+\item Discretización utilizando diferencias finitas adelantadas para el tiempo, y atrasadas para las espaciales.
+$ \frac{ {W}^{n+1}_{i,j,k} - W^{n}_{i,j,k}}{ \Delta t} $
+$+ \alpha {U}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i-1,j,k}}{\Delta x} + (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i-1,j,k}}{ \Delta x}$ 
+\\
+$+ \alpha {V}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i,j-1,k}}{ \Delta y} + (1 - \alpha) {V}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i,j-1,k}}{ \Delta y}$
+\\
+$+ \alpha {W}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i,j,k-1}}{ \Delta z} + (1 - \alpha) {W}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i,j,k-1}}{ \Delta z}$
+\\
+$= \frac{-1}{\rho} ( \alpha \frac{P^{n}_{i,j,k+1} - P^{n}_{i,j,k-1} }{ 2 \Delta z } + (1 - \alpha) \frac{P^{n+1}_{i,j,k+1} - P^{n+1}_{i,j,k-1} }{ 2 \Delta z })  $
+\\
+$+ \nu (\alpha (\frac{ W^{n}_{i+1,j,k} - 2*W^{n}_{i,j,k} + W^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i+1,j,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i-1,j,k}}{dx^2})$
+\\
+$+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2}))$
+\\
+$ + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2})) $
+
+~\\
+
+\item Despeje para segunda ecuación del término de interés
+
+$  {W}^{n+1}_{i,j,k} = W^{n}_{i,j,k} + \Delta t} $
+$\left[ - \alpha {U}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i-1,j,k}}{\Delta x} - (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i-1,j,k}}{ \Delta x} \right.$ 
+\\
+$- \alpha {V}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i,j-1,k}}{ \Delta y} - (1 - \alpha) {V}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i,j-1,k}}{ \Delta y}$
+\\
+$- \alpha {W}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i,j,k-1}}{ \Delta z} - (1 - \alpha) {W}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i,j,k-1}}{ \Delta z}$
+\\
+$- \frac{1}{\rho} ( \alpha \frac{P^{n}_{i,j,k+1} - P^{n}_{i,j,k-1} }{ 2 \Delta z } + (1 - \alpha) \frac{P^{n+1}_{i,j,k+1} - P^{n+1}_{i,j,k-1} }{ 2 \Delta z })  $
+\\
+$+ \nu (\alpha (\frac{ W^{n}_{i+1,j,k} - 2*W^{n}_{i,j,k} + W^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i+1,j,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i-1,j,k}}{dx^2})$
+\\
+$+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2}))$
+\\
+$\left. + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2})) \right]$
+
+~\\
+
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Cuarta ecuación}
+
 %%tercera ecuacion sin modificar
-Para obtener la tercera ecuación, en la que se introduce el término de presión, de manera discretizada hacemos el siguiente proceso (facilitado por Lorena Barba):
+Para obtener la cuarta ecuación, en la que se introduce el término de presión, hacemos el siguiente proceso (facilitado por Lorena Barba):
 
 \begin{enumerate}
 \item De la ecuación vectorial de Navier-Strokes:
@@ -189,36 +245,10 @@ Para obtener la tercera ecuación, en la que se introduce el término de presió
 
 Esta es la ecuación vectorial que aparece en la página de 12 steps for N-S.\\
 Esto es porque no tenemos manera obvia de relacionar la velocidad con la presión a partir de la ecuación de Navier Strokes.\\
-Además porque nosotros queremos cumplir la ecuación de "mass conservation", pero en el mundo discretizado no siempre se cumple. Para compensar el hecho de forzar a que lo sea (en el paso 4), usamos el cálculo de la velocidad que se hace en las ecuaciones primera y segunda. Las tomamos como un paso intermedio (citando a Barba, calculamos $u^{n+\frac{1}{2}}$) y luego la utilizamos en la tercera ecuación (esto también justifica el por qué la ecuación de la presión debe ser la tercera).\\
-
+Además porque nosotros queremos cumplir la ecuación de "mass conservation", pero en el mundo discretizado no siempre se cumple. Para compensar el hecho de forzar a que lo sea (en el paso 4), usamos el cálculo de la velocidad que se hace en las ecuaciones primera, segunda y tercera. Las tomamos como un paso intermedio (citando a Barba, calculamos $u^{n+\frac{1}{2}}$) y luego la utilizamos en la cuarta ecuación (esto también justifica el por qué la ecuación de la presión debe ser la última).\\
 ~\\
-
 Todo esto, es importante repetirlo, es exclusivamente para el caso donde nuestra representación de los números (como en la computadora) es discreta. Si estuviesemos en un ámbito de trabajo continuo, la ecuación de presión que se usa es la misma que está en la guía 3 del ejercicio 6.
 
-% $$ \frac{\delta^{2}p}{\delta x^{2}} + \frac{\delta^{2}p}{\delta y^{2}} = -\rho (\frac{\delta u}{\delta x} \frac{\delta u}{\delta x} + \frac{\delta u}{\delta y} \frac{\delta v}{\delta x} + \frac{\delta v}{\delta y}\frac{\delta v}{\delta y})$$
 
-
-% ~\\
-% ~\\
-
-% $ \alpha \frac{p_{i+1,j}^{n}-2p_{i,j}^{n}+p_{i-1,j}^{n}}{\Delta x^2} + (1-\alpha) \frac{p_{i+1,j}^{n+1}-2p_{i,j}^{n+1}+p_{i-1,j}^{n+1}}{\Delta x^2} + \alpha \frac{p_{i,j+1}^{n}-2*p_{i,j}^{n}+p_{i,j-1}^{n}}{\Delta y^2} + (1-\alpha) \frac{p_{i,j+1}^{n+1}-2*p_{i,j}^{n+1}+p_{i,j-1}^{n+1}}{\Delta y^2} = $
-% ~\\
-% $\rho\left[\frac{1}{\Delta t} \left( \alpha \frac{u_{i+1,j}^{n} -u_{i-1,j}^{n} }{2\Delta x} + (1-\alpha) \frac{u_{i+1,j}^{n+1} -u_{i-1,j}^{n+1} }{2\Delta x} + \alpha \frac{v_{i,j+1}^{n} - v_{i,j-1}^{n}}{2\Delta y} + (1-\alpha) \frac{v_{i,j+1}^{n+1} - v_{i,j-1}^{n+1}}{2\Delta y} \right)\right.$
-
-% $- \left( \alpha \frac{u_{i+1,j}^{n}-u_{i-1,j}^{n}}{2\Delta x} + (1-\alpha) \frac{u_{i+1,j}^{n+1}-u_{i-1,j}^{n+1}}{2\Delta x} \right) \left( \alpha \frac{u_{i+1,j}^{n}-u_{i-1,j}^{n}}{2\Delta x} + (1-\alpha) \frac{u_{i+1,j}^{n+1}-u_{i-1,j}^{n+1}}{2\Delta x} \right)
-% -  \ 2 \left( \alpha\frac{u_{i,j+1}^{n}-u_{i,j-1}^{n}}{2\Delta y} + (1-\alpha) \frac{u_{i,j+1}^{n+1}-u_{i,j-1}^{n+1}}{2\Delta y} \right) \left( \alpha\frac{v_{i+1,j}^{n}-v_{i-1,j}^{n}}{2\Delta x} + (1-\alpha) \frac{v_{i+1,j}^{n+1}-v_{i-1,j}^{n+1}}{2\Delta x} \right)
-% -\left. \left( \alpha\frac{v_{i,j+1}^{n}-v_{i,j-1}^{n}}{2\Delta y} + (1-\alpha) \frac{v_{i,j+1}^{n+1}-v_{i,j-1}^{n+1}}{2\Delta y} \right) \left( \alpha\frac{v_{i,j+1}^{n}-v_{i,j-1}^{n}}{2\Delta y} + (1-\alpha) \frac{v_{i,j+1}^{n+1}-v_{i,j-1}^{n+1}}{2\Delta y} \right)  \right] $
-
-
-% \subsection{Tercera ecuación (P). Despejes para punto fijo}
- 
-%  $ P^{n+1}_{i,j} $
-% \\
-% $= \frac{P^{n+1}_{i-1,j}}{2} + \frac{P^{n+1}_{i+1,j}}{2} $
-%  $ + \frac{dx^{2}}{2\alpha-2} * \{-\alpha \frac{P^{n}_{i+1,j} -2*P^{n}_{i,j} + P^{n}_{i-1,j}}{dx^{2}}$
-%  $ -\alpha \frac{P^{n}_{i,j+1} -2*P^{n}_{i,j} + P^{n}_{i,j-1}}{dy^{2}}$ 
-%  $-(1-\alpha) \frac{P^{n+1}_{i,j+1} -2*P^{n+1}_{i,j} + P^{n+1}_{i,j-1}}{dy^{2}}$
-%  $ -\rho [ ((\alpha * \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} + (1-\alpha) * \frac{U^{n+1}_{i+1,j} - U^{n+1}_{i-1,j}}{2dx}))^{2} + 2 * (\alpha * \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} + (1- \alpha) * \frac{U^{n+1}_{i,j+1} - U^{n+1}_{i,j-1}}{2dy}) * (\alpha * \frac{V^{n}_{i+1,j}-V^{n}_{i-1,j}}{2dx} + (1-\alpha) (\frac{V^{n+1}_{i+1,j}-V^{n+1}_{i-1,j}}{2dx})) + ((\alpha * \frac{V^{n}_{i,j+1} - V^{n}_{i,j-1}}{2dy} + (1-\alpha) * \frac{V^{n+1}_{i,j+1} - V^{n+1}_{i,j-1}}{2dy}))^{2}] \} $
- 
  
 \end{document}
