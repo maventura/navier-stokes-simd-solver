@@ -2,55 +2,76 @@
 using namespace std;
 
 class mat3 {
-    
-    public:
-    long double * data;
-    int iMax;
-    int jMax;
-    int kMax;
 
-    mat3() {
-        iMax = 0;
-        jMax = 0;
-        kMax = 0;
+public:
+    mat3();
+    ~mat3();
+    mat3(int i_max_, int j_max_, int k_max_);
+    mat3(int i_max_, int j_max_, int k_max_, long double val);
+    void inic(long double val);
+    void set(int i, int j, int k, long double val);
+    void setRow(int i, int k, mat3 &B);
+    void setAll(mat3 &B);
+    void add(int i, int j, int k, long double val);
+    long double at(int i, int j, int k);
+    long double cols();
+    long double rows();
+    long double dims();
+    void print();
+
+
+
+    private:
+    long double * data;
+    int i_max_;
+    int j_max_;
+    int k_max_;
+
+
+};
+
+    mat3::mat3() {
+        i_max_ = 0;
+        j_max_ = 0;
+        k_max_ = 0;
         data = NULL;
     }
 
-    mat3(int iMax, int jMax, int kMax) {
-        this->iMax = iMax;
-        this->jMax = jMax;
-        this->kMax = kMax;
+    mat3::mat3(int i_max_, int j_max_, int k_max_) {
+        this->i_max_ = i_max_;
+        this->j_max_ = j_max_;
+        this->k_max_ = k_max_;
         inic(0);
     }
 
 
-    mat3(int iMax, int jMax, int kMax, long double val) {
-        this->iMax = iMax;
-        this->jMax = jMax;
-        this->kMax = kMax;
+    mat3::mat3(int i_max_, int j_max_, int k_max_, long double val) {
+        this->i_max_ = i_max_;
+        this->j_max_ = j_max_;
+        this->k_max_ = k_max_;
         inic(val);
     }
 
-    void inic(long double val) {
-        int n = iMax * jMax * kMax;
+    void mat3::inic(long double val) {
+        int n = i_max_ * j_max_ * k_max_;
         data = new long double[n];
 
         for (int k = 0; k < n; k++)
             data[k] = val;
     }
 
-    void set(int i, int j, int k, long double val) {
-        data[iMax * jMax * k + i * jMax + j] = val;
+    void mat3::set(int i, int j, int k, long double val) {
+        data[k_max_ * j_max_ * i + j*k_max_ + k] = val;
     }
 
   //en este caso, setea una sola row de la k-esima matriz
   //TODO: ver si es esta la funcionalidad buscada
-    void setRow(int i, int k, mat3 &B) {
+    void mat3::setRow(int i, int k, mat3 &B) {
         for (int j = 0; j < cols(); ++j)
             set(i, j, k, B.at(0, j, 0));
     }
 
-    void setAll(mat3 &B) {
+    void mat3::setAll(mat3 &B) {
         for (int i = 0; i < rows(); ++i) {
             for (int j = 0; j < cols(); ++j) {
                 for (int k = 0; k < dims(); ++k) {
@@ -61,36 +82,36 @@ class mat3 {
     }
 
 
-    void add(int i, int j, int k, long double val) {
-        data[iMax * jMax * k + i * jMax + j] += val;
+    void mat3::add(int i, int j, int k, long double val) {
+        data[i_max_ * j_max_ * k + i * j_max_ + j] += val;
     }
 
 
-    long double at(int i, int j, int k) {
-        return data[iMax * jMax * k + i * jMax + j];
+    long double mat3::at(int i, int j, int k) {
+        return data[k_max_ * j_max_ * i + j*k_max_ + k];
     }
 
 
-    long double cols() {
-        return jMax;
+    long double mat3::cols() {
+        return j_max_;
     }
 
 
-    long double rows() {
-        return iMax;
+    long double mat3::rows() {
+        return i_max_;
     }
     
     
-    long double dims() {
-        return kMax;
+    long double mat3::dims() {
+        return k_max_;
     }
 
 
-    void print() {
-        for(int k = 0; k < kMax; k++) {
-            for (int i = 0; i < iMax; i++) {
-                for (int j = 0; j < jMax; j++) {
-                    cout << data[iMax * jMax * k + i * jMax + j] << " ";
+    void mat3::print() {
+        for(int k = 0; k < k_max_; k++) {
+            for (int i = 0; i < i_max_; i++) {
+                for (int j = 0; j < j_max_; j++) {
+                    cout << data[i_max_ * j_max_ * k + i * j_max_ + j] << " ";
                 }
                 cout << endl;
             }
@@ -104,8 +125,7 @@ class mat3 {
 
 
 
-    ~mat3() {
+    mat3::~mat3() {
         if (data != NULL)
             delete [] data;
     }
-};

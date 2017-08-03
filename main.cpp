@@ -7,6 +7,20 @@
 using namespace std;
 
 
+
+long double diff(mat3 &A, mat3 &B) {
+    long double sum = 0;
+    for (int i = 0; i < A.rows(); ++i) {
+        for (int j = 0; j < A.cols(); ++j) {
+                    for (int k = 0; k < A.cols(); ++k) {
+
+            sum += pow(B.at(i, j, k) - A.at(i, j, k), 2);
+        }
+    }
+}
+    return sqrt(sum);
+}
+
 int main() {
     long double xMax = 2.0;
     long double yMax = 2.0;
@@ -62,51 +76,51 @@ int main() {
                 for (int k = 0; k < nZ; ++k) {
                     for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
 
-                        /*long double oldU = U2[i][j][k];
-                        long double oldV = V2[i][j][k];
-                        long double oldW = W2[i][j][k];*/
+                        /*long double oldU = U2.at(i,j,k);
+                        long double oldV = V2.at(i,j,k);
+                        long double oldW = W2.at(i,j,k);*/
 
                         long double U1x = (U1.at(i + 1, j, k) - U1.at(i - 1, j, k)) / (2 * dx);
                         long double U2x = (U2.at(i + 1, j, k) - U2.at(i - 1, j, k)) / (2 * dx);
-                        long double U1y = (U1[i][j + 1][k] - U1[i][j - 1][k]) / (2 * dy);
-                        long double U2y = (U2[i][j + 1][k] - U2[i][j - 1][k]) / (2 * dy);
-                        long double U1z = (U1[i][j][k + 1] - U1[i][j][k - 1]) / (2 * dz);
-                        long double U2z = (U2[i][j][k + 1] - U2[i][j][k - 1]) / (2 * dz);
+                        long double U1y = (U1.at(i,j + 1,k) - U1.at(i,j - 1,k)) / (2 * dy);
+                        long double U2y = (U2.at(i,j + 1,k) - U2.at(i,j - 1,k)) / (2 * dy);
+                        long double U1z = (U1.at(i,j,k + 1) - U1.at(i,j,k - 1)) / (2 * dz);
+                        long double U2z = (U2.at(i,j,k + 1) - U2.at(i,j,k - 1)) / (2 * dz);
 
-                        long double U1xx = (U1[i + 1][j][k] - 2 * U1[i][j][k] + U1[i - 1][j][k]) / (dx * dx);
-                        long double U2xx = (U2[i + 1][j][k] - 2 * U2[i][j][k] + U2[i - 1][j][k]) / (dx * dx);
-                        long double U1yy = (U1[i][j + 1][k] - 2 * U1[i][j][k] + U1[i][j - 1][k]) / (dy * dy);
-                        long double U2yy = (U2[i][j + 1][k] - 2 * U2[i][j][k] + U2[i][j - 1][k]) / (dy * dy);
-                        long double U1zz = (U1[i][j][k + 1] - 2 * U1[i][j][k] + U1[i][j][k - 1]) / (dz * dz);
-                        long double U2zz = (U2[i][j][k + 1] - 2 * U2[i][j][k] + U2[i][j][k - 1]) / (dz * dz);
+                        long double U1xx = (U1.at(i + 1,j,k) - 2 * U1.at(i,j,k) + U1.at(i - 1,j,k)) / (dx * dx);
+                        long double U2xx = (U2.at(i + 1,j,k) - 2 * U2.at(i,j,k) + U2.at(i - 1,j,k)) / (dx * dx);
+                        long double U1yy = (U1.at(i,j + 1,k) - 2 * U1.at(i,j,k) + U1.at(i,j - 1,k)) / (dy * dy);
+                        long double U2yy = (U2.at(i,j + 1,k) - 2 * U2.at(i,j,k) + U2.at(i,j - 1,k)) / (dy * dy);
+                        long double U1zz = (U1.at(i,j,k + 1) - 2 * U1.at(i,j,k) + U1.at(i,j,k - 1)) / (dz * dz);
+                        long double U2zz = (U2.at(i,j,k + 1) - 2 * U2.at(i,j,k) + U2.at(i,j,k - 1)) / (dz * dz);
 
-                        long double P1x = (P1[i + 1][j][k] - P1[i - 1][j][k]) / (2 * dx);
-                        long double P2x = (P2[i + 1][j][k] - P2[i - 1][j][k]) / (2 * dx);
-                        long double P1y = (P1[i][j + 1][k] - P1[i][j - 1][k]) / (2 * dy);
-                        long double P2y = (P2[i][j + 1][k] - P2[i][j - 1][k]) / (2 * dy);
-                        long double P1z = (P1[i][j][k + 1] - P1[i][j][k - 1]) / (2 * dz);
-                        long double P2z = (P2[i][j][k + 1] - P2[i][j][k - 1]) / (2 * dz);
+                        long double P1x = (P1.at(i + 1,j,k) - P1.at(i - 1,j,k)) / (2 * dx);
+                        long double P2x = (P2.at(i + 1,j,k) - P2.at(i - 1,j,k)) / (2 * dx);
+                        long double P1y = (P1.at(i,j + 1,k) - P1.at(i,j - 1,k)) / (2 * dy);
+                        long double P2y = (P2.at(i,j + 1,k) - P2.at(i,j - 1,k)) / (2 * dy);
+                        long double P1z = (P1.at(i,j,k + 1) - P1.at(i,j,k - 1)) / (2 * dz);
+                        long double P2z = (P2.at(i,j,k + 1) - P2.at(i,j,k - 1)) / (2 * dz);
 
-                        long double V1x = (V1[i + 1][j][k] - V1[i - 1][j][k]) / (2 * dx);
-                        long double V2x = (V2[i + 1][j][k] - V2[i - 1][j][k]) / (2 * dx);
-                        long double V1y = (V1[i][j + 1][k] - V1[i][j - 1][k]) / (2 * dy);
-                        long double V2y = (V2[i][j + 1][k] - V2[i][j - 1][k]) / (2 * dy);
-                        long double V1z = (V1[i][j][k + 1] - V1[i][j][k - 1]) / (2 * dz);
-                        long double V2z = (V2[i][j][k + 1] - V2[i][j][k - 1]) / (2 * dz);
+                        long double V1x = (V1.at(i + 1,j,k) - V1.at(i - 1,j,k)) / (2 * dx);
+                        long double V2x = (V2.at(i + 1,j,k) - V2.at(i - 1,j,k)) / (2 * dx);
+                        long double V1y = (V1.at(i,j + 1,k) - V1.at(i,j - 1,k)) / (2 * dy);
+                        long double V2y = (V2.at(i,j + 1,k) - V2.at(i,j - 1,k)) / (2 * dy);
+                        long double V1z = (V1.at(i,j,k + 1) - V1.at(i,j,k - 1)) / (2 * dz);
+                        long double V2z = (V2.at(i,j,k + 1) - V2.at(i,j,k - 1)) / (2 * dz);
 
-                        long double V1xx = (V1[i + 1][j][k] - 2 * V1[i][j][k] + V1[i - 1][j][k]) / (dx * dx);
-                        long double V2xx = (V2[i + 1][j][k] - 2 * V2[i][j][k] + V2[i - 1][j][k]) / (dx * dx);
-                        long double V1yy = (V1[i][j + 1][k] - 2 * V1[i][j][k] + V1[i][j - 1][k]) / (dy * dy);
-                        long double V2yy = (V2[i][j + 1][k] - 2 * V2[i][j][k] + V2[i][j - 1][k]) / (dy * dy);
-                        long double V1zz = (V1[i][j][k + 1] - 2 * V1[i][j][k] + V1[i][j][k - 1]) / (dz * dz);
-                        long double V2zz = (V2[i][j][k + 1] - 2 * V2[i][j][k] + V2[i][j][k - 1]) / (dz * dz);
+                        long double V1xx = (V1.at(i + 1,j,k) - 2 * V1.at(i,j,k) + V1.at(i - 1,j,k)) / (dx * dx);
+                        long double V2xx = (V2.at(i + 1,j,k) - 2 * V2.at(i,j,k) + V2.at(i - 1,j,k)) / (dx * dx);
+                        long double V1yy = (V1.at(i,j + 1,k) - 2 * V1.at(i,j,k) + V1.at(i,j - 1,k)) / (dy * dy);
+                        long double V2yy = (V2.at(i,j + 1,k) - 2 * V2.at(i,j,k) + V2.at(i,j - 1,k)) / (dy * dy);
+                        long double V1zz = (V1.at(i,j,k + 1) - 2 * V1.at(i,j,k) + V1.at(i,j,k - 1)) / (dz * dz);
+                        long double V2zz = (V2.at(i,j,k + 1) - 2 * V2.at(i,j,k) + V2.at(i,j,k - 1)) / (dz * dz);
 
-                        long double P1xx = (P1[i + 1][j][k] - 2 * P1[i][j][k] + P1[i - 1][j][k]) / (dx * dx);
-                        long double P1yy = (P1[i][j + 1][k] - 2 * P1[i][j][k] + P1[i][j - 1][k]) / (dy * dy);
-                        long double P1zz = (P1[i][j][k + 1] - 2 * P1[i][j][k] + P1[i][j][k - 1]) / (dz * dz);
-                        long double P2xx = (P2[i + 1][j][k] - 2 * P2[i][j][k] + P2[i - 1][j][k]) / (dx * dx);
-                        long double P2yy = (P2[i][j + 1][k] - 2 * P2[i][j][k] + P2[i][j - 1][k]) / (dy * dy);
-                        long double P2zz = (P2[i][j][k + 1] - 2 * P2[i][j][k] + P2[i][j][k - 1]) / (dz * dz);
+                        long double P1xx = (P1.at(i + 1,j,k) - 2 * P1.at(i,j,k) + P1.at(i - 1,j,k)) / (dx * dx);
+                        long double P1yy = (P1.at(i,j + 1,k) - 2 * P1.at(i,j,k) + P1.at(i,j - 1,k)) / (dy * dy);
+                        long double P1zz = (P1.at(i,j,k + 1) - 2 * P1.at(i,j,k) + P1.at(i,j,k - 1)) / (dz * dz);
+                        long double P2xx = (P2.at(i + 1,j,k) - 2 * P2.at(i,j,k) + P2.at(i - 1,j,k)) / (dx * dx);
+                        long double P2yy = (P2.at(i,j + 1,k) - 2 * P2.at(i,j,k) + P2.at(i,j - 1,k)) / (dy * dy);
+                        long double P2zz = (P2.at(i,j,k + 1) - 2 * P2.at(i,j,k) + P2.at(i,j,k - 1)) / (dz * dz);
 
 
 
@@ -114,11 +128,11 @@ int main() {
 
 
                         /* POR QUÉ ESTO?
-                        U3[i][j][k] =  U2[i][j][k] + 0.001;
-                        V3[i][j][k] =  V2[i][j][k] + 0.002;
-                        P3[i][j][k] =  P2[i][j][k] + 0.003;*/
+                        U3.at(i,j,k) =  U2.at(i,j,k) + 0.001;
+                        V3.at(i,j,k) =  V2.at(i,j,k) + 0.002;
+                        P3.at(i,j,k) =  P2.at(i,j,k) + 0.003;*/
 
-                        // long double diff = sqrt( pow(U3[i][j][k] - oldU, 2) + pow(V3[i][j][k] - oldV, 2) + pow(W3[i][j][k] - oldW, 2 ) );
+                        // long double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
                         // if (diff < 0.01) {
                         //     break;
                         // } else if (iter > 50) {
