@@ -10,7 +10,6 @@ public:
     mat3(int i_max_, int j_max_, int k_max_, long double val);
     void inic(long double val);
     void set(int i, int j, int k, long double val);
-    void setRow(int i, int k, mat3 &B);
     void setAll(mat3 &B);
     void add(int i, int j, int k, long double val);
     long double at(int i, int j, int k);
@@ -64,13 +63,6 @@ public:
         data[k_max_ * j_max_ * i + j*k_max_ + k] = val;
     }
 
-  //en este caso, setea una sola row de la k-esima matriz
-  //TODO: ver si es esta la funcionalidad buscada
-    void mat3::setRow(int i, int k, mat3 &B) {
-        for (int j = 0; j < cols(); ++j)
-            set(i, j, k, B.at(0, j, 0));
-    }
-
     void mat3::setAll(mat3 &B) {
         for (int i = 0; i < rows(); ++i) {
             for (int j = 0; j < cols(); ++j) {
@@ -100,8 +92,8 @@ public:
     long double mat3::rows() {
         return i_max_;
     }
-    
-    
+
+
     long double mat3::dims() {
         return k_max_;
     }
