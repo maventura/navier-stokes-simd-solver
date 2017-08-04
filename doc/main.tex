@@ -181,6 +181,7 @@ $$ \frac{\delta W}{\delta t} + U \frac{\delta W}{\delta x} + V \frac{\delta W}{\
 ~\\
 
 \item Discretización utilizando diferencias finitas adelantadas para el tiempo, y atrasadas para las espaciales.
+
 $ \frac{ {W}^{n+1}_{i,j,k} - W^{n}_{i,j,k}}{ \Delta t} $
 $+ \alpha {U}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i-1,j,k}}{\Delta x} + (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i-1,j,k}}{ \Delta x}$ 
 \\
@@ -192,16 +193,16 @@ $= \frac{-1}{\rho} ( \alpha \frac{P^{n}_{i,j,k+1} - P^{n}_{i,j,k-1} }{ 2 \Delta 
 \\
 $+ \nu (\alpha (\frac{ W^{n}_{i+1,j,k} - 2*W^{n}_{i,j,k} + W^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i+1,j,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i-1,j,k}}{dx^2})$
 \\
-$+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2}))$
+$+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2})$
 \\
-$ + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2})) $
+$ + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2}) $
 
 ~\\
 
 \item Despeje para segunda ecuación del término de interés
 
-$  {W}^{n+1}_{i,j,k} = W^{n}_{i,j,k} + \Delta t} $
-$\left[ - \alpha {U}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i-1,j,k}}{\Delta x} - (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i-1,j,k}}{ \Delta x} \right.$ 
+$ W^{n+1}_{i,j,k} =  W^{n}_{i,j,k} +  \Delta t \left[ \right.$
+$- \alpha {U}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i-1,j,k}}{\Delta x} - (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i-1,j,k}}{ \Delta x}$ 
 \\
 $- \alpha {V}^{n}_{i,j,k} \frac{ {W}^{n}_{i,j,k} - W^{n}_{i,j-1,k}}{ \Delta y} - (1 - \alpha) {V}^{n}_{i,j,k} \frac{ {W}^{n+1}_{i,j,k} - W^{n+1}_{i,j-1,k}}{ \Delta y}$
 \\
@@ -211,9 +212,9 @@ $- \frac{1}{\rho} ( \alpha \frac{P^{n}_{i,j,k+1} - P^{n}_{i,j,k-1} }{ 2 \Delta z
 \\
 $+ \nu (\alpha (\frac{ W^{n}_{i+1,j,k} - 2*W^{n}_{i,j,k} + W^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i+1,j,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i-1,j,k}}{dx^2})$
 \\
-$+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2}))$
+$+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2})$
 \\
-$\left. + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2})) \right]$
+$\left. + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2}) \right]$
 
 ~\\
 
