@@ -113,10 +113,6 @@ public:
         cout << endl;
     }
 
-
-
-
-
     mat3::~mat3() {
         if (data != NULL)
             delete [] data;

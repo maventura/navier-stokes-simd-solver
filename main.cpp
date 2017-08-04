@@ -4,6 +4,8 @@
 #include <sstream>
 #include <cmath>
 #include "mat3.h"
+#include "io.h"
+
 using namespace std;
 
 
@@ -76,10 +78,6 @@ int main() {
                 for (int k = 0; k < nZ; ++k) {
                     for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
 
-                        /*long double oldU = U2.at(i,j,k);
-                        long double oldV = V2.at(i,j,k);
-                        long double oldW = W2.at(i,j,k);*/
-
                         long double U1x = (U1.at(i + 1, j, k) - U1.at(i - 1, j, k)) / (2 * dx);
                         long double U2x = (U2.at(i + 1, j, k) - U2.at(i - 1, j, k)) / (2 * dx);
                         long double U1y = (U1.at(i,j + 1,k) - U1.at(i,j - 1,k)) / (2 * dy);
@@ -127,10 +125,7 @@ int main() {
 
 
 
-                        /* POR QUÉ ESTO?
-                        U3.at(i,j,k) =  U2.at(i,j,k) + 0.001;
-                        V3.at(i,j,k) =  V2.at(i,j,k) + 0.002;
-                        P3.at(i,j,k) =  P2.at(i,j,k) + 0.003;*/
+
 
                         // long double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
                         // if (diff < 0.01) {
@@ -160,5 +155,4 @@ int main() {
         W1 = W2;
         P1 = P2;*/
     }
-    cerr << "DBG: process returned without errors" << endl;
 }
