@@ -11,6 +11,9 @@ public:
   io(string file_name, string type);
   ~io();
   void write(string s);
+  void writeDouble(double d);
+  void writeInt(int i);
+
   bool readLine(string &s);
   bool readWord(string &s);
   bool readDouble(double &n);
@@ -33,6 +36,7 @@ private:
   string file_name_;
   ofstream out;
   ifstream in;
+
 };
 
 void io::force(){
@@ -64,6 +68,22 @@ void io::write(string s){
     return;
   }
   out << s;
+}
+
+void io::writeDouble(double d){
+  if(type_ == type_read){
+    cerr << "Error: Trying to write to read only io" << endl;
+    return;
+  }
+  out << d;
+}
+
+void io::writeInt(int i){
+  if(type_ == type_read){
+    cerr << "Error: Trying to write to read only io" << endl;
+    return;
+  }
+  out << i;
 }
 
 void io::newLine(){

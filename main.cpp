@@ -7,7 +7,11 @@
 
 using namespace std;
 
-int main() {
-  simulator s;
-  s.process();
+
+int main(int argc, char const *argv[]) {
+
+  simulator sim;
+  sim.process();
+
+  return 0;
 }
