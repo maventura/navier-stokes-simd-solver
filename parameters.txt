@@ -1,0 +1,11 @@
+xMax 2.0
+yMax 2.0
+zMax 2.0
+tMax 1.0
+nu 0.1
+rho 1
+dx 0.1
+dy 0.1
+dz 0.1
+dt 0.1
+al 0.5
