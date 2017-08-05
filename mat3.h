@@ -8,6 +8,9 @@ public:
     ~mat3();
     mat3(int i_max_, int j_max_, int k_max_);
     mat3(int i_max_, int j_max_, int k_max_, double val);
+    void confAndInit(int i_max_, int j_max_, int k_max_, double val);
+    //TODO: No control over multiple allocations using confAndInit.
+
     void inic(double val);
     void set(int i, int j, int k, double val);
     void setAll(mat3 &B);
@@ -52,10 +55,10 @@ public:
     }
 
     void mat3::inic(double val) {
-        int n = i_max_ * j_max_ * k_max_;
-        data = new double[n];
+        int size = i_max_ * j_max_ * k_max_;
+        data = new double[size];
 
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < size; k++)
             data[k] = val;
     }
 
@@ -116,4 +119,24 @@ public:
     mat3::~mat3() {
         if (data != NULL)
             delete [] data;
+    }
+
+    double diff(mat3 &A, mat3 &B) {
+        double sum = 0;
+        for (int i = 0; i < A.rows(); ++i) {
+            for (int j = 0; j < A.cols(); ++j) {
+                        for (int k = 0; k < A.cols(); ++k) {
+
+                sum += pow(B.at(i, j, k) - A.at(i, j, k), 2);
+            }
+        }
+    }
+        return sqrt(sum);
+    }
+
+    void mat3::confAndInit(int i_max_, int j_max_, int k_max_, double val){
+      this->i_max_ = i_max_;
+      this->j_max_ = j_max_;
+      this->k_max_ = k_max_;
+      inic(val);
     }
