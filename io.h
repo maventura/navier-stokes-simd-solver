@@ -46,7 +46,6 @@ void io::force(){
 io::io(string file_name, string type){
   type_ = type;
   file_name_ = file_name;
-
   if(type_ == type_read){
     in.open(file_name_);
     return;

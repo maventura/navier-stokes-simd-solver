@@ -15,7 +15,7 @@ private:
   double xMax,  yMax,  zMax,  tMax;
   double nu, rho, C_d;
   double dx,  dy,  dz,  dt;
-  int nX, nY, nZ, nT;
+  int nX, nY, nZ, nT, iter;
 
   double al, fixedPointError, minFixedPointIters;
   double pi = atan(1)*4;
@@ -103,10 +103,16 @@ void simulator::setBorderConditions(){
 }
 
 void simulator::process(){
+  iter = 0;
   for (t = 0; t < tMax; t = t + dt) {
-    U0.print();
-    V0.print();
-    W0.print();
+    iter++;
+    ostringstream U0_name;
+    U0_name << "asd" << iter;
+
+    //saveVtk(U0, U0_name.str());
+    //crashes, why?
+
+
     for (int i = 1; i < nX - 1; ++i) {
       for (int j = 1; j < nY - 1; ++j) {
         for (int k = 0; k < nZ; ++k) {
@@ -149,39 +155,40 @@ void simulator::process(){
 
 void simulator::saveVtk(mat3 m, string file_name){
 // Save a 3-D scalar array in VTK format.
-
+  if(false){
   io out(file_name, io::type_write);
+  return;
   out.write("# vtk DataFile Version 2.0");
   out.newLine();
   out.write("ASCII");
   out.newLine();
   out.write("DATASET STRUCTURED_POINTS");
   out.newLine();
-  out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
+  //out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
   out.newLine();
   out.write("ORIGIN    0.000   0.000   0.000");
   out.newLine();
   out.write("SPACING    1.000   1.000   1.000");
   out.newLine();
-  out.write("POINT_DATA   " + to_string(nX*nY));
+  //out.write("POINT_DATA   " + to_string(nX*nY));
   out.newLine();
   out.write("SCALARS scalars float");
   out.newLine();
   out.write("LOOKUP_TABLE default");
   out.newLine();
 
-  for(int a = 1; a < nX; a++){
-    for(int b = 1; b < nY; b++){
-      for(int c = 1; c < nZ; c++){
-          out.writeDouble(m.at(a,b,c));
+  for (int i = 1; i < nX - 1; ++i) {
+    for (int j = 1; j < nY - 1; ++j) {
+      for (int k = 0; k < nZ; ++k) {
+          out.writeDouble(m.at(i,j,k));
       }
       out.newLine();
     }
   }
   out.close();
+}
   return;
 }
-
 
 void simulator::calcTerms(int i, int j, int k){
   U1x = (U1.at(i + 1, j, k) - U1.at(i - 1, j, k)) / (2 * dx);
