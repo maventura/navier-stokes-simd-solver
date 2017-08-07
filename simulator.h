@@ -32,7 +32,9 @@ private:
   mat3 U2, V2, W2, P2;
 
   void calcTerms(int i, int j, int k);
-  void saveVtk(mat3 state, string file_name);
+  void saveVtk(mat3 &state, string file_name);
+  void saveCSV(mat3 &state, string file_name);
+
   void setBorderConditions();
   void readParameters(string file_name);
 };
@@ -103,27 +105,34 @@ void simulator::setBorderConditions(){
 }
 
 void simulator::process(){
-  iter = 0;
+  iter = 0; //TODO: Iter has two uses, fix.
   for (t = 0; t < tMax; t = t + dt) {
     iter++;
-    ostringstream U0_name;
-    U0_name << "asd" << iter;
+    ostringstream U_name;
+    ostringstream V_name;
+    ostringstream W_name;
+    ostringstream P_name;
 
-    //saveVtk(U0, U0_name.str());
-    //crashes, why?
-
+    U_name << "./out/U_" << iter << ".vtk";
+    ostringstream V0_name;
+    V_name << "./out/V_" << iter << ".vtk";
+    ostringstream W0_name;
+    W_name << "./out/W_" << iter << ".vtk";
+    ostringstream P0_name;
+    P_name << "./out/P_" << iter << ".vtk";
+    saveVtk(U0,U_name.str());
+    saveVtk(V0,V_name.str());
+    saveVtk(W0,W_name.str());
+    saveVtk(P0,P_name.str());
 
     for (int i = 1; i < nX - 1; ++i) {
       for (int j = 1; j < nY - 1; ++j) {
-        for (int k = 0; k < nZ; ++k) {
+        for (int k = 1; k < nZ - 1; ++k) {
           for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
 
             calcTerms(i,j,k);
 
-            U2.set(i,j,k,U2.at(i,j,k)+1);
-            V2.set(i,j,k,V2.at(i,j,k)+10);
-            W2.set(i,j,k,W2.at(i,j,k)+100);
-            P2.set(i,j,k,P2.at(i,j,k)+1000);
+            //Calculations go here.
 
             // double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
             // if (diff < 0.01) {
@@ -153,42 +162,67 @@ void simulator::process(){
 }
 
 
-void simulator::saveVtk(mat3 m, string file_name){
+void simulator::saveVtk(mat3 &m, string file_name){
 // Save a 3-D scalar array in VTK format.
-  if(false){
   io out(file_name, io::type_write);
-  return;
   out.write("# vtk DataFile Version 2.0");
+  out.newLine();
+  out.write("Comment goes here");
   out.newLine();
   out.write("ASCII");
   out.newLine();
+  out.newLine();
+
   out.write("DATASET STRUCTURED_POINTS");
   out.newLine();
-  //out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
+  out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
   out.newLine();
+  out.newLine();
+
   out.write("ORIGIN    0.000   0.000   0.000");
   out.newLine();
   out.write("SPACING    1.000   1.000   1.000");
   out.newLine();
-  //out.write("POINT_DATA   " + to_string(nX*nY));
+  out.newLine();
+  out.write("POINT_DATA   " + to_string(nX*nY*nZ));
   out.newLine();
   out.write("SCALARS scalars float");
   out.newLine();
   out.write("LOOKUP_TABLE default");
   out.newLine();
+  out.newLine();
 
-  for (int i = 1; i < nX - 1; ++i) {
-    for (int j = 1; j < nY - 1; ++j) {
+  for (int i = 0; i < nX; ++i) {
+    for (int j = 0; j < nY; ++j) {
       for (int k = 0; k < nZ; ++k) {
           out.writeDouble(m.at(i,j,k));
+          out.write(" ");
       }
       out.newLine();
     }
   }
   out.close();
 }
-  return;
+
+
+
+void simulator::saveCSV(mat3 &m, string file_name){
+// Save a 3-D scalar array in VTK format.
+  io out(file_name, io::type_write);
+
+  for (int i = 1; i < nX - 1; ++i) {
+    for (int j = 1; j < nY - 1; ++j) {
+      for (int k = 0; k < nZ; ++k) {
+          out.writeDouble(m.at(i,j,k));
+          out.write(", ");
+
+      }
+      out.newLine();
+    }
+  }
+  out.close();
 }
+
 
 void simulator::calcTerms(int i, int j, int k){
   U1x = (U1.at(i + 1, j, k) - U1.at(i - 1, j, k)) / (2 * dx);
