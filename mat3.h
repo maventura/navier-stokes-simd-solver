@@ -1,3 +1,6 @@
+#ifndef MAT3_H
+#define MAT3_H
+
 #include <iostream>
 using namespace std;
 
@@ -140,3 +143,5 @@ public:
       this->k_max_ = k_max_;
       inic(val);
     }
+
+#endif

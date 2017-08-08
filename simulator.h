@@ -3,7 +3,7 @@
 
 #include <math.h>
 #include "mat3.h"
-#include "mat3.h"
+//#include "mat3.h"
 #include "io.h"
 
 class simulator{
@@ -26,8 +26,18 @@ private:
 
   //Calculation variables,
   double U1x, U2x, U1y, U2y, U1z, U2z, U1xx, U2xx, U1yy, U2yy, U1zz, U2zz;
-  double P1x, P2x, P1y, P2y, P1z, P2z, V1x, V2x, V1y, V2y, V1z, V2z;
   double V1xx, V2xx, V1yy, V2yy, V1zz, V2zz, P1xx, P1yy, P1zz, P2xx, P2yy, P2zz;
+  double W1x, W2x, W1y, W2y, W1z, W2z, W1xx, W2xx, W1yy, W2yy, W1zz, W2zz;
+  double P1x, P2x, P1y, P2y, P1z, P2z, V1x, V2x, V1y, V2y, V1z, V2z;
+
+  double U1xb, U2xb, U1yb, U2yb, U1zb, U2zb;
+  double V1xb, V2xb, V1yb, V2yb, V1zb, V2zb;
+  double W1xb, W2xb, W1yb, W2yb, W1zb, W2zb;
+
+  double U1xf, U2xf, U1yf, U2yf, U1zf, U2zf;
+  double V1xf, V2xf, V1yf, V2yf, V1zf, V2zf;
+  double W1xf, W2xf, W1yf, W2yf, W1zf, W2zf;
+
   mat3 U0, V0, W0, P0;
   mat3 U1, V1, W1, P1;
   mat3 U2, V2, W2, P2;
@@ -80,7 +90,7 @@ void simulator::readParameters(string file_name){
     if(tag == "rho") file.readDouble(rho);
     if(tag == "dx") file.readDouble(dx);
     if(tag == "dy") file.readDouble(dy);
-    if(tag == "dz") file.readDouble(dy);
+    if(tag == "dz") file.readDouble(dz);
     if(tag == "dt") file.readDouble(dt);
     if(tag == "al") file.readDouble(al);
     if(tag == "fixedPointError") file.readDouble(fixedPointError);
@@ -127,19 +137,29 @@ void simulator::process(){
     saveVtk(W0,W_name.str());
     saveVtk(P0,P_name.str());
 
-    for (int i = 1; i < nX - 1; ++i) {
-      for (int j = 1; j < nY - 1; ++j) {
-        for (int k = 1; k < nZ - 1; ++k) {
-          for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
+    for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
+      for (int i = 1; i < nX - 1; ++i) {
+        for (int j = 1; j < nY - 1; ++j) {
+          for (int k = 1; k < nZ - 1; ++k) {
 
             calcTerms(i,j,k);
 
             //Calculations go here. Change names later.
-            double nuevoU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1x - (1-al) * U1.at(i,j,k) * U2x - al * V1.at(i,j,k) * U1y - (1-al) * V1.at(i,j,k) * U2y - al * W1.at(i,j,k) * U1z - (1-al) * W1.at(i,j,k) * U2z) - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
-            double nuevoV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1x - (1-al) * U1.at(i,j,k) * V2x - al * V1.at(i,j,k) * V1y - (1-al) * V1.at(i,j,k) * V2y - al * W1.at(i,j,k) * V1z - (1-al) * W1.at(i,j,k) * V2z) - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
-            double nuevoW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1x - (1-al) * U1.at(i,j,k) * W2x - al * V1.at(i,j,k) * W1y - (1-al) * V1.at(i,j,k) * W2y - al * W1.at(i,j,k) * W1z - (1-al) * W1.at(i,j,k) * W2z) - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
+            double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1xb - (1-al) * U1.at(i,j,k) * U2xb - al * V1.at(i,j,k) * U1yb - (1-al) * V1.at(i,j,k) * U2yb - al * W1.at(i,j,k) * U1zb - (1-al) * W1.at(i,j,k) * U2zb - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
+            double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1xb - (1-al) * U1.at(i,j,k) * V2xb - al * V1.at(i,j,k) * V1yb - (1-al) * V1.at(i,j,k) * V2yb - al * W1.at(i,j,k) * V1zb - (1-al) * W1.at(i,j,k) * V2zb - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
+            double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1xb - (1-al) * U1.at(i,j,k) * W2xb - al * V1.at(i,j,k) * W1yb - (1-al) * V1.at(i,j,k) * W2yb - al * W1.at(i,j,k) * W1zb - (1-al) * W1.at(i,j,k) * W2zb - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
 
-            double nuevoP = 0; //todo
+            double A = (1/dt)*(U1x + V1y + W1y) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
+            double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
+
+            U2.set(i,j,k, newU);
+            V2.set(i,j,k, newV);
+            W2.set(i,j,k, newW);
+            P2.set(i,j,k, newP);
+
+          //simple diffusion for testing.
+          //  U2.set(i,j,k,(U1.at(i,j,k)+U1.at(i+1,j,k)+U1.at(i,j+1,k)+U1.at(i,j,k+1)+U1.at(i-1,j,k)+U1.at(i,j-1,k) +U1.at(i,j,k-1))/7.0 );
+          //  if(i == 10 && j == 10 && k == 10) U2.set(i,j,k, 50);
 
             // double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
             // if (diff < 0.01) {
@@ -217,8 +237,8 @@ void simulator::saveCSV(mat3 &m, string file_name){
 // Save a 3-D scalar array in VTK format.
   io out(file_name, io::type_write);
 
-  for (int i = 1; i < nX - 1; ++i) {
-    for (int j = 1; j < nY - 1; ++j) {
+  for (int i = 0; i < nX - 1; ++i) {
+    for (int j = 0; j < nY - 1; ++j) {
       for (int k = 0; k < nZ; ++k) {
           out.writeDouble(m.at(i,j,k));
           out.write(", ");
@@ -232,6 +252,7 @@ void simulator::saveCSV(mat3 &m, string file_name){
 
 
 void simulator::calcTerms(int i, int j, int k){
+
   U1x = (U1.at(i + 1, j, k) - U1.at(i - 1, j, k)) / (2 * dx);
   U2x = (U2.at(i + 1, j, k) - U2.at(i - 1, j, k)) / (2 * dx);
   U1y = (U1.at(i,j + 1,k) - U1.at(i,j - 1,k)) / (2 * dy);
@@ -245,13 +266,6 @@ void simulator::calcTerms(int i, int j, int k){
   U2yy = (U2.at(i,j + 1,k) - 2 * U2.at(i,j,k) + U2.at(i,j - 1,k)) / (dy * dy);
   U1zz = (U1.at(i,j,k + 1) - 2 * U1.at(i,j,k) + U1.at(i,j,k - 1)) / (dz * dz);
   U2zz = (U2.at(i,j,k + 1) - 2 * U2.at(i,j,k) + U2.at(i,j,k - 1)) / (dz * dz);
-
-  P1x = (P1.at(i + 1,j,k) - P1.at(i - 1,j,k)) / (2 * dx);
-  P2x = (P2.at(i + 1,j,k) - P2.at(i - 1,j,k)) / (2 * dx);
-  P1y = (P1.at(i,j + 1,k) - P1.at(i,j - 1,k)) / (2 * dy);
-  P2y = (P2.at(i,j + 1,k) - P2.at(i,j - 1,k)) / (2 * dy);
-  P1z = (P1.at(i,j,k + 1) - P1.at(i,j,k - 1)) / (2 * dz);
-  P2z = (P2.at(i,j,k + 1) - P2.at(i,j,k - 1)) / (2 * dz);
 
   V1x = (V1.at(i + 1,j,k) - V1.at(i - 1,j,k)) / (2 * dx);
   V2x = (V2.at(i + 1,j,k) - V2.at(i - 1,j,k)) / (2 * dx);
@@ -267,11 +281,78 @@ void simulator::calcTerms(int i, int j, int k){
   V1zz = (V1.at(i,j,k + 1) - 2 * V1.at(i,j,k) + V1.at(i,j,k - 1)) / (dz * dz);
   V2zz = (V2.at(i,j,k + 1) - 2 * V2.at(i,j,k) + V2.at(i,j,k - 1)) / (dz * dz);
 
+  W1x = (W1.at(i + 1,j,k) - W1.at(i - 1,j,k)) / (2 * dx);
+  W2x = (W2.at(i + 1,j,k) - W2.at(i - 1,j,k)) / (2 * dx);
+  W1y = (W1.at(i,j + 1,k) - W1.at(i,j - 1,k)) / (2 * dy);
+  W2y = (W2.at(i,j + 1,k) - W2.at(i,j - 1,k)) / (2 * dy);
+  W1z = (W1.at(i,j,k + 1) - W1.at(i,j,k - 1)) / (2 * dz);
+  W2z = (W2.at(i,j,k + 1) - W2.at(i,j,k - 1)) / (2 * dz);
+
+  W1xx = (W1.at(i + 1,j,k) - 2 * W1.at(i,j,k) + W1.at(i - 1,j,k)) / (dx * dx);
+  W2xx = (W2.at(i + 1,j,k) - 2 * W2.at(i,j,k) + W2.at(i - 1,j,k)) / (dx * dx);
+  W1yy = (W1.at(i,j + 1,k) - 2 * W1.at(i,j,k) + W1.at(i,j - 1,k)) / (dy * dy);
+  W2yy = (W2.at(i,j + 1,k) - 2 * W2.at(i,j,k) + W2.at(i,j - 1,k)) / (dy * dy);
+  W1zz = (W1.at(i,j,k + 1) - 2 * W1.at(i,j,k) + W1.at(i,j,k - 1)) / (dz * dz);
+  W2zz = (W2.at(i,j,k + 1) - 2 * W2.at(i,j,k) + W2.at(i,j,k - 1)) / (dz * dz);
+
+  P1x = (P1.at(i + 1,j,k) - P1.at(i - 1,j,k)) / (2 * dx);
+  P2x = (P2.at(i + 1,j,k) - P2.at(i - 1,j,k)) / (2 * dx);
+  P1y = (P1.at(i,j + 1,k) - P1.at(i,j - 1,k)) / (2 * dy);
+  P2y = (P2.at(i,j + 1,k) - P2.at(i,j - 1,k)) / (2 * dy);
+  P1z = (P1.at(i,j,k + 1) - P1.at(i,j,k - 1)) / (2 * dz);
+  P2z = (P2.at(i,j,k + 1) - P2.at(i,j,k - 1)) / (2 * dz);
+
   P1xx = (P1.at(i + 1,j,k) - 2 * P1.at(i,j,k) + P1.at(i - 1,j,k)) / (dx * dx);
   P1yy = (P1.at(i,j + 1,k) - 2 * P1.at(i,j,k) + P1.at(i,j - 1,k)) / (dy * dy);
   P1zz = (P1.at(i,j,k + 1) - 2 * P1.at(i,j,k) + P1.at(i,j,k - 1)) / (dz * dz);
   P2xx = (P2.at(i + 1,j,k) - 2 * P2.at(i,j,k) + P2.at(i - 1,j,k)) / (dx * dx);
   P2yy = (P2.at(i,j + 1,k) - 2 * P2.at(i,j,k) + P2.at(i,j - 1,k)) / (dy * dy);
   P2zz = (P2.at(i,j,k + 1) - 2 * P2.at(i,j,k) + P2.at(i,j,k - 1)) / (dz * dz);
+
+  //Backward.
+    U1xb = (U1.at(i + 1, j, k) - U1.at(i , j, k)) / dx;
+    U2xb = (U2.at(i + 1, j, k) - U2.at(i, j, k)) / dx;
+    U1yb = (U1.at(i,j + 1, k) - U1.at(i,j,k)) / dy;
+    U2yb = (U2.at(i,j + 1, k) - U2.at(i,j,k)) / dy;
+    U1zb = (U1.at(i,j,k + 1) - U1.at(i,j,k)) / dz;
+    U2zb = (U2.at(i,j,k + 1) - U2.at(i,j,k)) / dz;
+
+    V1xb = (V1.at(i + 1,j,k) - V1.at(i,j,k)) / dx;
+    V2xb = (V2.at(i + 1,j,k) - V2.at(i,j,k)) / dx;
+    V1yb = (V1.at(i,j + 1,k) - V1.at(i,j,k)) / dy;
+    V2yb = (V2.at(i,j + 1,k) - V2.at(i,j,k)) / dy;
+    V1zb = (V1.at(i,j,k + 1) - V1.at(i,j,k)) / dz;
+    V2zb = (V2.at(i,j,k + 1) - V2.at(i,j,k)) / dz;
+
+    W1xb = (W1.at(i + 1,j,k) - W1.at(i,j,k)) / dx;
+    W2xb = (W2.at(i + 1,j,k) - W2.at(i,j,k)) / dx;
+    W1yb = (W1.at(i,j + 1,k) - W1.at(i,j,k)) / dy;
+    W2yb = (W2.at(i,j + 1,k) - W2.at(i,j,k)) / dy;
+    W1zb = (W1.at(i,j,k + 1) - W1.at(i,j,k)) / dz;
+    W2zb = (W2.at(i,j,k + 1) - W2.at(i,j,k)) / dz;
+
+    //Forward.
+      U1xf = (U1.at(i, j, k) - U1.at(i - 1, j, k)) / dx;
+      U2xf = (U2.at(i, j, k) - U2.at(i - 1, j, k)) / dx;
+      U1yf = (U1.at(i,j,k) - U1.at(i,j - 1,k)) / dy;
+      U2yf = (U2.at(i,j,k) - U2.at(i,j - 1,k)) / dy;
+      U1zf = (U1.at(i,j,k) - U1.at(i,j,k - 1)) / dz;
+      U2zf = (U2.at(i,j,k) - U2.at(i,j,k - 1)) / dz;
+
+      V1xf = (V1.at(i,j,k) - V1.at(i - 1,j,k)) / dx;
+      V2xf = (V2.at(i,j,k) - V2.at(i - 1,j,k)) / dx;
+      V1yf = (V1.at(i,j,k) - V1.at(i,j - 1,k)) / dy;
+      V2yf = (V2.at(i,j,k) - V2.at(i,j - 1,k)) / dy;
+      V1zf = (V1.at(i,j,k) - V1.at(i,j,k - 1)) / dz;
+      V2zf = (V2.at(i,j,k) - V2.at(i,j,k - 1)) / dz;
+
+      W1xf = (W1.at(i,j,k) - W1.at(i - 1,j,k)) / dx;
+      W2xf = (W2.at(i,j,k) - W2.at(i - 1,j,k)) / dx;
+      W1yf = (W1.at(i,j,k) - W1.at(i,j - 1,k)) / dy;
+      W2yf = (W2.at(i,j,k) - W2.at(i,j - 1,k)) / dy;
+      W1zf = (W1.at(i,j,k) - W1.at(i,j,k - 1)) / dz;
+      W2zf = (W2.at(i,j,k) - W2.at(i,j,k - 1)) / dz;
+
+
 }
 #endif
