@@ -107,43 +107,33 @@ void simulator::setBorderConditions(){
 //TODO: Add if(cavityFlow) here and in the parameters.
 for (int i = 0; i < nX; ++i) {
     for (int k = 0; k < nZ; ++k) {
-        // U0.set(i, nY - 1, k, 1.0);
-        // U1.set(i, nY - 1, k, 1.0);
-        // U2.set(i, nY - 1, k, 1.0);
+      U0.set(i, nY - 1, k, 1.0);
+      U1.set(i, nY - 1, k, 1.0);
+      U2.set(i, nY - 1, k, 1.0);
 
-        U1.set(2,2,2,0.1);
-        U2.set(2,2,2,0.1);
-        U0.set(2,2,2,0.1);
+      P0.set(i,nY-2,k, P0.at(i,nY-1,k));
+      P1.set(i,nY-2,k, P0.at(i,nY-1,k));
+      P2.set(i,nY-2,k, P0.at(i,nY-1,k));
 
+      P0.set(i,1,k, P0.at(i,0,k));
+      P1.set(i,1,k, P1.at(i,0,k));
+      P2.set(i,1,k, P2.at(i,0,k));
 
-        U1.set(8,2,2,-0.1);
-        U2.set(8,2,2,-0.1);
-        U0.set(8,2,2,-0.1);
+      P0.set(nX-1,i,k, P0.at(nX-2,i,k));
+      P1.set(nX-1,i,k, P1.at(nX-2,i,k));
+      P2.set(nX-1,i,k, P2.at(nX-2,i,k));
 
+      P0.set(0,i,k, P0.at(1,i,k));
+      P1.set(0,i,k, P1.at(1,i,k));
+      P2.set(0,i,k, P2.at(1,i,k));
 
-        P0.set(i,nY-2,k, P0.at(i,nY-1,k));
-        P1.set(i,nY-2,k, P0.at(i,nY-1,k));
-        P2.set(i,nY-2,k, P0.at(i,nY-1,k));
+      P0.set(i,k,nZ-1, P0.at(i,k,nZ-2));
+      P1.set(i,k,nZ-1, P1.at(i,k,nZ-2));
+      P2.set(i,k,nZ-1, P2.at(i,k,nZ-2));
 
-        P0.set(i,1,k, P0.at(i,0,k));
-        P1.set(i,1,k, P1.at(i,0,k));
-        P2.set(i,1,k, P2.at(i,0,k));
-
-        P0.set(nX-1,i,k, P0.at(nX-2,i,k));
-        P1.set(nX-1,i,k, P1.at(nX-2,i,k));
-        P2.set(nX-1,i,k, P2.at(nX-2,i,k));
-
-        P0.set(0,i,k, P0.at(1,i,k));
-        P1.set(0,i,k, P1.at(1,i,k));
-        P2.set(0,i,k, P2.at(1,i,k));
-
-        P0.set(i,k,nZ-1, P0.at(i,k,nZ-2));
-        P1.set(i,k,nZ-1, P1.at(i,k,nZ-2));
-        P2.set(i,k,nZ-1, P2.at(i,k,nZ-2));
-
-        P0.set(i,k,0, P0.at(i,k,1));
-        P1.set(i,k,0, P1.at(i,k,1));
-        P2.set(i,k,0, P2.at(i,k,1));
+      P0.set(i,k,0, P0.at(i,k,1));
+      P1.set(i,k,0, P1.at(i,k,1));
+      P2.set(i,k,0, P2.at(i,k,1));
     }
 }
 //some point has to be always equal to zero to act
