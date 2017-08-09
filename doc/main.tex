@@ -84,7 +84,7 @@ $$ \frac{\delta U}{\delta t} + U \frac{\delta U}{\delta x} + V \frac{\delta U}{\
 ~\\
 
 \item Discretización utilizando diferencias finitas adelantadas para el tiempo, y atrasadas para las espaciales.
-~\\
+
 $ \frac{ {U}^{n+1}_{(i,j,k)} - U^{n}_{(i,j,k)}}{ \Delta t}  +  \alpha {U}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i-1,j,k)}}{ \Delta x} + (1 - \alpha) {U}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i-1,j,k)}}{ \Delta x}$ 
 \\
 $+ \alpha {V}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j-1,k)}}{ \Delta y} + (1 - \alpha) {V}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j-1,k)}}{ \Delta y}$
@@ -93,15 +93,15 @@ $+ \alpha {W}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j,k-1)}}{ \Delt
 \\
 $= \frac{-1}{\rho} ( \alpha \frac{P^{n}_{(i+1,j,k)} - P^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{P^{n+1}_{(i+1,j,k)} - P^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
 \\
-$+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{dx^2})$
+$+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{\Delta x^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{\Delta x^2})$
 \\
-$+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j+1,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j-1,k)}}{dy^2}))$
+$+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j+1,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j-1,k)}}{dy^2})$
 \\
 $+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1)}}{dz^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j,k+1)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j,k-1)}}{dz^2}))$
 ~\\
 
 \item Despeje del término de interés:
-~\\
+
 $ {U}^{n+1}_{(i,j,k)} = U^{n}_{(i,j,k)} + \Delta t \left[ -  \alpha {U}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i-1,j,k)}}{ \Delta x} - (1 - \alpha) {U}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i-1,j,k)}}{ \Delta x} \right.$ 
 \\
 $- \alpha {V}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j-1,k)}}{ \Delta y} - (1 - \alpha) {V}^{n}_{(i,j,k)} \frac{ {U}^{n+1}_{(i,j,k)} - U^{n+1}_{(i,j-1,k)}}{ \Delta y}$
@@ -110,9 +110,9 @@ $- \alpha {W}^{n}_{(i,j,k)} \frac{ {U}^{n}_{(i,j,k)} - U^{n}_{(i,j,k-1)}}{ \Delt
 \\
 $- \frac{1}{\rho} ( \alpha \frac{P^{n}_{(i+1,j,k)} - P^{n}_{(i-1,j,k)} }{ 2 \Delta x } + (1 - \alpha) \frac{P^{n+1}_{(i+1,j,k)} - P^{n+1}_{(i-1,j,k)} }{ 2 \Delta x })  $
 \\
-$+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{dx^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{dx^2})$
+$+ \nu (\alpha (\frac{ U^{n}_{(i+1,j,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i-1,j,k)}}{\Delta x^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i+1,j,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i-1,j,k)}}{\Delta x^2})$
 \\
-$+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j+1,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j-1,k)}}{dy^2}))$
+$+ \alpha (\frac{ U^{n}_{(i,j+1,k)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j-1,k)}}{dy^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j+1,k)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j-1,k)}}{dy^2})$
 \\
 $ \left.+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1)}}{dz^2}) + (1-\alpha)*(\frac{ U^{n+1}_{(i,j,k+1)} - 2*U^{n+1}_{(i,j,k)} + U^{n+1}_{(i,j,k-1)}}{dz^2})) \right]$
 ~\\
@@ -128,11 +128,13 @@ $ \left.+ \alpha (\frac{ U^{n}_{(i,j,k+1)} - 2*U^{n}_{(i,j,k)} + U^{n}_{(i,j,k-1
 \begin{enumerate}
 
 \item Segunda ecuación de N-S para segundo componente de la velocidad V.
+
 $$ \frac{\delta V}{\delta t} + U \frac{\delta V}{\delta x} + V \frac{\delta V}{\delta y} + W \frac{\delta V}{\delta z} =  \frac{-1}{\rho} \frac{\delta P}{\delta y} + \nu (\frac{{\delta}^{2} V}{\delta {x}^{2}} + \frac{{\delta}^{2} V}{\delta {y}^{2}} + \frac{{\delta}^{2} V}{\delta {z}^{2}}) $$
 
 ~\\
 
 \item Discretización utilizando diferencias finitas adelantadas para el tiempo, y atrasadas para las espaciales.
+
 $ \frac{ {V}^{n+1}_{i,j,k} - V^{n}_{i,j,k}}{ \Delta t} $
 $+ \alpha {U}^{n}_{i,j,k} \frac{ {V}^{n}_{i,j,k} - V^{n}_{i-1,j,k}}{\Delta x} + (1 - \alpha) {U}^{n}_{i,j,k} \frac{ {V}^{n+1}_{i,j,k} - V^{n+1}_{i-1,j,k}}{ \Delta x}$ 
 \\
@@ -144,7 +146,7 @@ $= \frac{-1}{\rho} ( \alpha \frac{P^{n}_{i,j+1,k} - P^{n}_{i,j-1,k} }{ 2 \Delta 
 \\
 $+ \nu (\alpha (\frac{ V^{n}_{i+1,j,k} - 2*V^{n}_{i,j,k} + V^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i+1,j,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i-1,j,k}}{dx^2})$
 \\
-$+ \alpha (\frac{ V^{n}_{i,j+1,k} - 2*V^{n}_{i,j,k} + V^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j-1,k}}{dy^2}))$
+$+ \alpha (\frac{ V^{n}_{i,j+1,k} - 2*V^{n}_{i,j,k} + V^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j-1,k}}{dy^2})$
 \\
 $+ \alpha (\frac{ V^{n}_{i,j,k+1} - 2*V^{n}_{i,j,k} + V^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j,k+1} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j,k-1}}{dz^2}))$
 
@@ -163,11 +165,11 @@ $- \frac{1}{\rho} ( \alpha \frac{P^{n}_{i,j+1,k} - P^{n}_{i,j-1,k} }{ 2 \Delta y
 \\
 $+ \nu (\alpha (\frac{ V^{n}_{i+1,j,k} - 2*V^{n}_{i,j,k} + V^{n}_{i-1,j,k}}{dx^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i+1,j,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i-1,j,k}}{dx^2})$
 \\
-$ + \alpha (\frac{ V^{n}_{i,j+1,k} - 2*V^{n}_{i,j,k} + V^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j-1,k}}{dy^2})) $
+$ + \alpha (\frac{ V^{n}_{i,j+1,k} - 2*V^{n}_{i,j,k} + V^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j+1,k} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j-1,k}}{dy^2}) $
 \\
 $\left. + \alpha (\frac{ V^{n}_{i,j,k+1} - 2*V^{n}_{i,j,k} + V^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ V^{n+1}_{i,j,k+1} - 2*V^{n+1}_{i,j,k} + V^{n+1}_{i,j,k-1}}{dz^2})) \right]$
-
 ~\\
+
 \end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -176,6 +178,7 @@ $\left. + \alpha (\frac{ V^{n}_{i,j,k+1} - 2*V^{n}_{i,j,k} + V^{n}_{i,j,k-1}}{dz
 \begin{enumerate}
 
 \item Tercera ecuación de N-S para tercer componente de la velocidad W.
+
 $$ \frac{\delta W}{\delta t} + U \frac{\delta W}{\delta x} + V \frac{\delta W}{\delta y} + W \frac{\delta W}{\delta z} =  \frac{-1}{\rho} \frac{\delta P}{\delta z} + \nu (\frac{{\delta}^{2} W}{\delta {x}^{2}} + \frac{{\delta}^{2} W}{\delta {y}^{2}} + \frac{{\delta}^{2} W}{\delta {z}^{2}}) $$
 
 ~\\
@@ -195,9 +198,9 @@ $+ \nu (\alpha (\frac{ W^{n}_{i+1,j,k} - 2*W^{n}_{i,j,k} + W^{n}_{i-1,j,k}}{dx^2
 \\
 $+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2})$
 \\
-$ + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2}) $
-
+$ + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2}) )$
 ~\\
+
 
 \item Despeje para segunda ecuación del término de interés
 
@@ -214,7 +217,7 @@ $+ \nu (\alpha (\frac{ W^{n}_{i+1,j,k} - 2*W^{n}_{i,j,k} + W^{n}_{i-1,j,k}}{dx^2
 \\
 $+ \alpha (\frac{ W^{n}_{i,j+1,k} - 2*W^{n}_{i,j,k} + W^{n}_{i,j-1,k}}{dy^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j+1,k} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j-1,k}}{dy^2})$
 \\
-$\left. + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2}) \right]$
+$\left. + \alpha (\frac{ W^{n}_{i,j,k+1} - 2*W^{n}_{i,j,k} + W^{n}_{i,j,k-1}}{dz^2}) + (1-\alpha)*(\frac{ W^{n+1}_{i,j,k+1} - 2*W^{n+1}_{i,j,k} + W^{n+1}_{i,j,k-1}}{dz^2}) )\right]$
 
 ~\\
 
