@@ -48,6 +48,9 @@ private:
 
   void setBorderConditions();
   void readParameters(string file_name);
+
+  void testEquation(int i, int j, int k);
+  void barbaEquation(int i,int j,int k);
 };
 
 simulator::simulator(){
@@ -172,36 +175,8 @@ void simulator::process(){
           for (int k = 1; k < nZ - 1; ++k) {
 
             calcTerms(i,j,k);
-
-            //Calculations go here. Change names later.
-            double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1xb - (1-al) * U1.at(i,j,k) * U2xb - al * V1.at(i,j,k) * U1yb - (1-al) * V1.at(i,j,k) * U2yb - al * W1.at(i,j,k) * U1zb - (1-al) * W1.at(i,j,k) * U2zb - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
-            double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1xb - (1-al) * U1.at(i,j,k) * V2xb - al * V1.at(i,j,k) * V1yb - (1-al) * V1.at(i,j,k) * V2yb - al * W1.at(i,j,k) * V1zb - (1-al) * W1.at(i,j,k) * V2zb - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
-            double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1xb - (1-al) * U1.at(i,j,k) * W2xb - al * V1.at(i,j,k) * W1yb - (1-al) * V1.at(i,j,k) * W2yb - al * W1.at(i,j,k) * W1zb - (1-al) * W1.at(i,j,k) * W2zb - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
-
-            double A = (1/dt)*(U1x + V1y + W1y) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
-            double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
-
-            if(isnan(newP)){
-              cerr << "Error: Nan found. Returning." << endl;
-              return;
-            }
-
-            U2.set(i,j,k, newU);
-            V2.set(i,j,k, newV);
-            W2.set(i,j,k, newW);
-            P2.set(i,j,k, newP);
-
-          //simple diffusion for testing.
-          //  U2.set(i,j,k,(U1.at(i,j,k)+U1.at(i+1,j,k)+U1.at(i,j+1,k)+U1.at(i,j,k+1)+U1.at(i-1,j,k)+U1.at(i,j-1,k) +U1.at(i,j,k-1))/7.0 );
-          //  if(i == 10 && j == 10 && k == 10) U2.set(i,j,k, 50);
-
-            // double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
-            // if (diff < 0.01) {
-            //     break;
-            // } else if (iter > 50) {
-            //     cerr << "WARNING: unstable." << endl;
-            //     break;
-            // }
+            barbaEquation(i,j,k);
+            //testEquation(i,j,k);
           }
         }
       }
@@ -220,6 +195,46 @@ void simulator::process(){
     P1.setAll(P2);
   }
   cerr << "Message: Processing finished correctly" << endl << flush;
+}
+
+
+void simulator::testEquation(int i, int j, int k){
+  //simple diffusion for testing.
+  U2.set(i,j,k,(U1.at(i,j,k)+U1.at(i+1,j,k)+U1.at(i,j+1,k)+U1.at(i,j,k+1)+U1.at(i-1,j,k)+U1.at(i,j-1,k) +U1.at(i,j,k-1))/7.0 );
+  if(i == 10 && j == 10 && k == 10) U2.set(i,j,k, 50);
+
+  double diff = sqrt( pow(U2.at(i,j,k) - U1.at(i,j,k), 2) + pow(V2.at(i,j,k) - V1.at(i,j,k), 2) + pow(W2.at(i,j,k) - W1.at(i,j,k), 2 ) );
+  if (diff < 0.01) {
+    //TODO: Ver que onda esto...
+    //break;
+  } else if (iter > 50) {
+    cerr << "WARNING: unstable." << endl;
+    //break;
+  }
+}
+
+
+void simulator::barbaEquation(int i, int j, int k){
+
+  double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1xb - (1-al) * U1.at(i,j,k) * U2xb - al * V1.at(i,j,k) * U1yb - (1-al) * V1.at(i,j,k) * U2yb - al * W1.at(i,j,k) * U1zb - (1-al) * W1.at(i,j,k) * U2zb - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
+  
+  double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1xb - (1-al) * U1.at(i,j,k) * V2xb - al * V1.at(i,j,k) * V1yb - (1-al) * V1.at(i,j,k) * V2yb - al * W1.at(i,j,k) * V1zb - (1-al) * W1.at(i,j,k) * V2zb - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
+  
+  double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1xb - (1-al) * U1.at(i,j,k) * W2xb - al * V1.at(i,j,k) * W1yb - (1-al) * V1.at(i,j,k) * W2yb - al * W1.at(i,j,k) * W1zb - (1-al) * W1.at(i,j,k) * W2zb - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
+
+  double A = (1/dt)*(U1x + V1y + W1y) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
+  double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
+
+  //if(isnan(newP)){
+  //  cerr << "Error: Nan found. Returning." << endl;
+  //  return;
+  //}
+
+  U2.set(i,j,k, newU);
+  V2.set(i,j,k, newV);
+  W2.set(i,j,k, newW);
+  P2.set(i,j,k, newP);
+
 }
 
 
