@@ -166,7 +166,7 @@ void simulator::process(){
     saveVtk(W0,W_name.str());
     saveVtk(P0,P_name.str());
 
-    for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
+    for (int iter = 0; iter < 50; ++iter) { //TODO: Iter termination condition
       for (int i = 1; i < nX - 1; ++i) {
         for (int j = 1; j < nY - 1; ++j) {
           for (int k = 1; k < nZ - 1; ++k) {
@@ -180,6 +180,11 @@ void simulator::process(){
 
             double A = (1/dt)*(U1x + V1y + W1y) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
             double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
+
+            if(isnan(newP)){
+              cerr << "Error: Nan found. Returning." << endl;
+              return;
+            }
 
             U2.set(i,j,k, newU);
             V2.set(i,j,k, newV);
