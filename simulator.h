@@ -110,33 +110,33 @@ void simulator::setBorderConditions(){
 //TODO: Add if(cavityFlow) here and in the parameters.
 for (int i = 0; i < nX; ++i) {
     for (int k = 0; k < nZ; ++k) {
-        U0.set(i, nY - 1, k, 1.0);
-        U1.set(i, nY - 1, k, 1.0);
-        U2.set(i, nY - 1, k, 1.0);
+      U0.set(i, nY - 1, k, 1.0);
+      U1.set(i, nY - 1, k, 1.0);
+      U2.set(i, nY - 1, k, 1.0);
 
-        P0.set(i,nY-2,k, P0.at(i,nY-1,k));
-        P1.set(i,nY-2,k, P0.at(i,nY-1,k));
-        P2.set(i,nY-2,k, P0.at(i,nY-1,k));
+      P0.set(i,nY-2,k, P0.at(i,nY-1,k));
+      P1.set(i,nY-2,k, P0.at(i,nY-1,k));
+      P2.set(i,nY-2,k, P0.at(i,nY-1,k));
 
-        P0.set(i,1,k, P0.at(i,0,k));
-        P1.set(i,1,k, P1.at(i,0,k));
-        P2.set(i,1,k, P2.at(i,0,k));
+      P0.set(i,1,k, P0.at(i,0,k));
+      P1.set(i,1,k, P1.at(i,0,k));
+      P2.set(i,1,k, P2.at(i,0,k));
 
-        P0.set(nX-1,i,k, P0.at(nX-2,i,k));
-        P1.set(nX-1,i,k, P1.at(nX-2,i,k));
-        P2.set(nX-1,i,k, P2.at(nX-2,i,k));
+      P0.set(nX-1,i,k, P0.at(nX-2,i,k));
+      P1.set(nX-1,i,k, P1.at(nX-2,i,k));
+      P2.set(nX-1,i,k, P2.at(nX-2,i,k));
 
-        P0.set(0,i,k, P0.at(1,i,k));
-        P1.set(0,i,k, P1.at(1,i,k));
-        P2.set(0,i,k, P2.at(1,i,k));
+      P0.set(0,i,k, P0.at(1,i,k));
+      P1.set(0,i,k, P1.at(1,i,k));
+      P2.set(0,i,k, P2.at(1,i,k));
 
-        P0.set(i,k,nZ-1, P0.at(i,k,nZ-2));
-        P1.set(i,k,nZ-1, P1.at(i,k,nZ-2));
-        P2.set(i,k,nZ-1, P2.at(i,k,nZ-2));
+      P0.set(i,k,nZ-1, P0.at(i,k,nZ-2));
+      P1.set(i,k,nZ-1, P1.at(i,k,nZ-2));
+      P2.set(i,k,nZ-1, P2.at(i,k,nZ-2));
 
-        P0.set(i,k,0, P0.at(i,k,1));
-        P1.set(i,k,0, P1.at(i,k,1));
-        P2.set(i,k,0, P2.at(i,k,1));
+      P0.set(i,k,0, P0.at(i,k,1));
+      P1.set(i,k,0, P1.at(i,k,1));
+      P2.set(i,k,0, P2.at(i,k,1));
     }
 }
 //some point has to be always equal to zero to act
@@ -169,7 +169,7 @@ void simulator::process(){
     saveVtk(W0,W_name.str());
     saveVtk(P0,P_name.str());
 
-    for (int iter = 0; iter < 50; ++iter) { //TODO: Iter termination condition
+    for (int iter = 0; iter < 10; ++iter) { //TODO: Iter termination condition
       for (int i = 1; i < nX - 1; ++i) {
         for (int j = 1; j < nY - 1; ++j) {
           for (int k = 1; k < nZ - 1; ++k) {
@@ -177,6 +177,11 @@ void simulator::process(){
             calcTerms(i,j,k);
             barbaEquation(i,j,k);
             //testEquation(i,j,k);
+
+            if(isnan(newP)){
+              cerr << "Error: Nan found. Returning." << endl;
+              return;
+            }
           }
         }
       }
@@ -203,26 +208,47 @@ void simulator::testEquation(int i, int j, int k){
   U2.set(i,j,k,(U1.at(i,j,k)+U1.at(i+1,j,k)+U1.at(i,j+1,k)+U1.at(i,j,k+1)+U1.at(i-1,j,k)+U1.at(i,j-1,k) +U1.at(i,j,k-1))/7.0 );
   if(i == 10 && j == 10 && k == 10) U2.set(i,j,k, 50);
 
-  double diff = sqrt( pow(U2.at(i,j,k) - U1.at(i,j,k), 2) + pow(V2.at(i,j,k) - V1.at(i,j,k), 2) + pow(W2.at(i,j,k) - W1.at(i,j,k), 2 ) );
-  if (diff < 0.01) {
-    //TODO: Ver que onda esto...
-    //break;
-  } else if (iter > 50) {
-    cerr << "WARNING: unstable." << endl;
-    //break;
-  }
+  double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
+  // if (diff < 0.01) {
+  //     break;
+  // } else if (iter > 50) {
+  //     cerr << "WARNING: unstable." << endl;
+  //     break;
+  // }
 }
 
 
-void simulator::barbaEquation(int i, int j, int k){
-
+void simulator::barbaSpacialBackwardEq(int i, int j, int k){
+//spatial backward:
   double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1xb - (1-al) * U1.at(i,j,k) * U2xb - al * V1.at(i,j,k) * U1yb - (1-al) * V1.at(i,j,k) * U2yb - al * W1.at(i,j,k) * U1zb - (1-al) * W1.at(i,j,k) * U2zb - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
-  
   double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1xb - (1-al) * U1.at(i,j,k) * V2xb - al * V1.at(i,j,k) * V1yb - (1-al) * V1.at(i,j,k) * V2yb - al * W1.at(i,j,k) * V1zb - (1-al) * W1.at(i,j,k) * V2zb - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
-  
   double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1xb - (1-al) * U1.at(i,j,k) * W2xb - al * V1.at(i,j,k) * W1yb - (1-al) * V1.at(i,j,k) * W2yb - al * W1.at(i,j,k) * W1zb - (1-al) * W1.at(i,j,k) * W2zb - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
 
-  double A = (1/dt)*(U1x + V1y + W1y) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
+
+  double A = (1/dt)*(U1x + V1y + W1z) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
+  double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
+
+  //if(isnan(newP)){
+  //  cerr << "Error: Nan found. Returning." << endl;
+  //  return;
+  //}
+
+  U2.set(i,j,k, newU);
+  V2.set(i,j,k, newV);
+  W2.set(i,j,k, newW);
+  P2.set(i,j,k, newP);
+}
+
+
+void simulator::barbaSpacialCenteredEq(int i, int j, int k){
+
+  //Spatial centered.
+  double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1x - (1-al) * U1.at(i,j,k) * U2x - al * V1.at(i,j,k) * U1y - (1-al) * V1.at(i,j,k) * U2y - al * W1.at(i,j,k) * U1z - (1-al) * W1.at(i,j,k) * U2z - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
+  double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1x - (1-al) * U1.at(i,j,k) * V2x - al * V1.at(i,j,k) * V1y - (1-al) * V1.at(i,j,k) * V2y - al * W1.at(i,j,k) * V1z - (1-al) * W1.at(i,j,k) * V2z - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
+  double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1x - (1-al) * U1.at(i,j,k) * W2x - al * V1.at(i,j,k) * W1y - (1-al) * V1.at(i,j,k) * W2y - al * W1.at(i,j,k) * W1z - (1-al) * W1.at(i,j,k) * W2z - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
+
+
+  double A = (1/dt)*(U1x + V1y + W1z) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
   double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
 
   //if(isnan(newP)){
