@@ -62,7 +62,8 @@ simulator::simulator(){
   nX = round(xMax / dx) + 1;
   nY = round(yMax / dy) + 1;
   nZ = round(yMax / dy) + 1;
-  nT = round(tMax / dt) + 1;double al;
+  nT = round(tMax / dt) + 1;
+  double al;
 
   U0.confAndInit(nX, nY, nZ, 0);
   V0.confAndInit(nX, nY, nZ, 0);
@@ -112,7 +113,7 @@ void simulator::readParameters(string file_name){
 
 void simulator::setBorderConditions(){
   //TODO: Add if(cavityFlow) here and in the parameters.
-for (int i = 0; i < nX; ++i) {
+  for (int i = 0; i < nX; ++i) {
     for (int k = 0; k < nZ; ++k) {
       U0.set(i, nY - 1, k, 1.0);
       U1.set(i, nY - 1, k, 1.0);
@@ -142,12 +143,12 @@ for (int i = 0; i < nX; ++i) {
       P1.set(i,k,0, P1.at(i,k,1));
       P2.set(i,k,0, P2.at(i,k,1));
     }
-}
-//some point has to be always equal to zero to act
-//as reference for the potential.
-P0.set(5,5,0, 0);
-P1.set(5,5,0, 0);
-P2.set(5,5,0, 0);
+  }
+  //some point has to be always equal to zero to act
+  //as reference for the potential.
+  P0.set(5,5,0, 0);
+  P1.set(5,5,0, 0);
+  P2.set(5,5,0, 0);
 }
 
 
@@ -179,7 +180,8 @@ void simulator::process(){
           for (int k = 1; k < nZ - 1; ++k) {
 
             calcTerms(i,j,k);
-            barbaSpacialCenteredEq(i,j,k);
+            originalEquation(i,j,k);
+            //barbaSpacialCenteredEq(i,j,k);
             //barbaSpacialBackwardEq(i,j,k);
             //testEquation(i,j,k);
           }
@@ -263,19 +265,20 @@ void simulator::barbaSpacialCenteredEq(int i, int j, int k){
 
 }
 
-
+//the one that pressure is originated by sums and its not dependant on time
 void simulator::originalEquation(int i, int j, int k){
   //Spatial centered.
   double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1x - (1-al) * U1.at(i,j,k) * U2x - al * V1.at(i,j,k) * U1y - (1-al) * V1.at(i,j,k) * U2y - al * W1.at(i,j,k) * U1z - (1-al) * W1.at(i,j,k) * U2z - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
   double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1x - (1-al) * U1.at(i,j,k) * V2x - al * V1.at(i,j,k) * V1y - (1-al) * V1.at(i,j,k) * V2y - al * W1.at(i,j,k) * V1z - (1-al) * W1.at(i,j,k) * V2z - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
   double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1x - (1-al) * U1.at(i,j,k) * W2x - al * V1.at(i,j,k) * W1y - (1-al) * V1.at(i,j,k) * W2y - al * W1.at(i,j,k) * W1z - (1-al) * W1.at(i,j,k) * W2z - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
 
-  //double newP = ;
+  double S = 2*rho*(U1x*V1y+U1x*W1z+V1y*W1y-U1y*V1x-U1z*W1x-W1y*V1y);
+  double newP = ((P1.at(i+1,j,k)+P1.at(i-1,j,k))*dy*dy*dz*dz + (P1.at(i,j+1,k)+P1.at(i,j-1,k))*dx*dx*dz*dz + (P1.at(i,j,k+1)+P1.at(i,j,k-1))*dx*dx*dy*dy - S*(dx*dx*dy*dy*dz*dz))/(dx*dx+dy*dy+dz*dz);
 
-  U0.set(i,j,k, newU);
-  V0.set(i,j,k, newV);
-  W0.set(i,j,k, newW);
-  //P0.set(i,j,k, newP);
+  U2.set(i,j,k, newU);
+  V2.set(i,j,k, newV);
+  W2.set(i,j,k, newW);
+  P2.set(i,j,k, newP);
 }
 
 
