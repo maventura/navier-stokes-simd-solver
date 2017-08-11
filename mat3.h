@@ -25,7 +25,6 @@ public:
     void print();
 
 
-
     private:
     double * data;
     int i_max_;
@@ -78,7 +77,6 @@ public:
             }
         }
     }
-
 
     void mat3::add(int i, int j, int k, double val) {
         data[i_max_ * j_max_ * k + i * j_max_ + j] += val;
