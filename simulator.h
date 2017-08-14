@@ -42,6 +42,12 @@ private:
   mat3 U1, V1, W1, P1;
   mat3 U2, V2, W2, P2;
 
+  mat3 U_aux_0, V_aux_0, W_aux_0;
+  mat3 U_aux_1, V_aux_1, W_aux_1;
+  mat3 U_aux_2, V_aux_2, W_aux_2;
+
+  double Re, Fx, Fy, Fz;
+
   void centralSpeed(int i, int j, int k);
   void centralPressure(int i, int j, int k);
 
@@ -56,6 +62,8 @@ private:
   void barbaSpacialBackwardEq(int i, int j, int k);
   void barbaSpacialCenteredEq(int i, int j, int k);
   void originalEquation(int i, int j, int k);
+  void chorinProjection(int i, int j, int k);
+
 };
 
 simulator::simulator(){
@@ -71,17 +79,27 @@ simulator::simulator(){
   U0.confAndInit(nX, nY, nZ, 0);
   V0.confAndInit(nX, nY, nZ, 0);
   W0.confAndInit(nX, nY, nZ, 0);
-  P0.confAndInit(nX, nY, nZ, 0);
+  P0.confAndInit(nX, nY, nZ, 1);
 
   U1.confAndInit(nX, nY, nZ, 0);
   V1.confAndInit(nX, nY, nZ, 0);
   W1.confAndInit(nX, nY, nZ, 0);
-  P1.confAndInit(nX, nY, nZ, 0);
+  P1.confAndInit(nX, nY, nZ, 1);
 
   U2.confAndInit(nX, nY, nZ, 0);
   V2.confAndInit(nX, nY, nZ, 0);
   W2.confAndInit(nX, nY, nZ, 0);
-  P2.confAndInit(nX, nY, nZ, 0);
+  P2.confAndInit(nX, nY, nZ, 1);
+
+  U_aux_0.confAndInit(nX, nY, nZ, 0);
+  V_aux_0.confAndInit(nX, nY, nZ, 0);
+  W_aux_0.confAndInit(nX, nY, nZ, 0);
+  U_aux_1.confAndInit(nX, nY, nZ, 0);
+  V_aux_1.confAndInit(nX, nY, nZ, 0);
+  W_aux_1.confAndInit(nX, nY, nZ, 0);
+  U_aux_2.confAndInit(nX, nY, nZ, 0);
+  V_aux_2.confAndInit(nX, nY, nZ, 0);
+  W_aux_2.confAndInit(nX, nY, nZ, 0);
 
   setBorderConditions();
 }
@@ -183,10 +201,10 @@ void simulator::process(){
           for (int k = 1; k < nZ - 1; ++k) {
 
             calcTerms(i,j,k);
-            centralPressure(i,j,k);
+            //scentralPressure(i,j,k);
 
+           // chorinProjection(i,j,k);
             originalEquation(i,j,k);
-
             //barbaSpacialCenteredEq(i,j,k);
             //barbaSpacialBackwardEq(i,j,k);
             //testEquation(i,j,k);
@@ -208,6 +226,57 @@ void simulator::process(){
     P1.setAll(P2);
   }
   cerr << "Message: Processing finished correctly" << endl << flush;
+}
+
+
+void simulator::chorinProjection(int i, int j, int k){
+  //TODO: definir R, Fx, Fy, Fz, definir b^(-1) = dt
+  Re = 1/nu; //TODO: ...
+  Fx = 0;
+  Fy = 0;
+  Fz = 0;
+  if(i == 5 && j == 5 && k == 5) Fx = 1;
+
+  double valueX = U1.at(i,j,k) - (Re*dt/(2*dx))*U1.at(i,j,k)*(U_aux_0.at(i+1,j,k) - U_aux_0.at(i-1,j,k)) + (dt/pow(dx,2)) * (U_aux_0.at(i+1,j,k) + U_aux_0.at(i-1,j,k) - 2* U_aux_0.at(i,j,k));
+  double valueY = V1.at(i,j,k) - (Re*dt/(2*dx))*U1.at(i,j,k)*(V_aux_0.at(i+1,j,k) - V_aux_0.at(i-1,j,k)) + (dt/pow(dx,2)) * (V_aux_0.at(i+1,j,k) + V_aux_0.at(i-1,j,k) - 2* V_aux_0.at(i,j,k));
+  double valueZ = W1.at(i,j,k) - (Re*dt/(2*dx))*U1.at(i,j,k)*(W_aux_0.at(i+1,j,k) - W_aux_0.at(i-1,j,k)) + (dt/pow(dx,2)) * (W_aux_0.at(i+1,j,k) + W_aux_0.at(i-1,j,k) - 2* W_aux_0.at(i,j,k));
+
+  U_aux_0.set(i,j,k, valueX);
+  V_aux_0.set(i,j,k, valueY);
+  W_aux_0.set(i,j,k, valueZ);
+
+
+  valueX = U_aux_0.at(i,j,k) - (Re*dt/(2*dy))*V_aux_0.at(i,j,k)*(U_aux_1.at(i,j+1,k) - U_aux_1.at(i,j-1,k)) + (dt/pow(dy,2)) * (U_aux_1.at(i,j+1,k) + U_aux_1.at(i,j-1,k) - 2* U_aux_1.at(i,j,k));
+  valueY = V_aux_0.at(i,j,k) - (Re*dt/(2*dy))*V_aux_0.at(i,j,k)*(V_aux_1.at(i,j+1,k) - V_aux_1.at(i,j-1,k)) + (dt/pow(dy,2)) * (V_aux_1.at(i,j+1,k) + V_aux_1.at(i,j-1,k) - 2* V_aux_1.at(i,j,k));
+  valueZ = W_aux_0.at(i,j,k) - (Re*dt/(2*dy))*V_aux_0.at(i,j,k)*(W_aux_1.at(i,j+1,k) - W_aux_1.at(i,j-1,k)) + (dt/pow(dy,2)) * (W_aux_1.at(i,j+1,k) + W_aux_1.at(i,j-1,k) - 2* W_aux_1.at(i,j,k));
+
+  U_aux_1.set(i,j,k, valueX);
+  V_aux_1.set(i,j,k, valueY);
+  W_aux_1.set(i,j,k, valueZ);
+
+
+  valueX = U_aux_1.at(i,j,k) - (Re*dt/(2*dz))*W_aux_1.at(i,j,k)*(U_aux_2.at(i,j,k+1) - U_aux_2.at(i,j,k-1)) + (dt/pow(dz,2)) * (U_aux_2.at(i,j,k+1) + U_aux_2.at(i,j,k-1) - 2* U_aux_2.at(i,j,k)) + dt * Fx;
+  valueY = V_aux_1.at(i,j,k) - (Re*dt/(2*dz))*W_aux_1.at(i,j,k)*(V_aux_2.at(i,j,k+1) - V_aux_2.at(i,j,k-1)) + (dt/pow(dz,2)) * (V_aux_2.at(i,j,k+1) + V_aux_2.at(i,j,k-1) - 2* V_aux_2.at(i,j,k)) + dt * Fy;
+  valueZ = W_aux_1.at(i,j,k) - (Re*dt/(2*dz))*W_aux_1.at(i,j,k)*(W_aux_2.at(i,j,k+1) - W_aux_2.at(i,j,k-1)) + (dt/pow(dz,2)) * (W_aux_2.at(i,j,k+1) + W_aux_2.at(i,j,k-1) - 2* W_aux_2.at(i,j,k)) + dt * Fz;
+
+  U_aux_2.set(i,j,k, valueX);
+  V_aux_2.set(i,j,k, valueY);
+  W_aux_2.set(i,j,k, valueZ);
+
+
+  double G_u = (0.5/dx)*(P1.at(i+1,j,k) - P1.at(i-1,j,k));
+  double G_v = (0.5/dy)*(P1.at(i,j+1,k) - P1.at(i,j-1,k));
+  double G_w = (0.5/dz)*(P1.at(i,j,k+1) - P1.at(i,j,k-1));
+  
+
+  //Finish U iteration.
+  U2.set(i, j, k, U_aux_2.at(i,j,k) - dt*G_u);
+
+  double Du = U1x + V1y + W1z;
+  double lambda = 0.5;
+  //Finish P iteration.
+  P2.set(i,j,k, P2.at(i,j,k) - lambda*Du);
+
 }
 
 
