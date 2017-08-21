@@ -84,7 +84,6 @@ simulator::simulator(){
   nT = round(tMax / dt) + 1;
   Re = 1/nu;//TODO: find out value
 
-
   U0.confAndInit(nX, nY, nZ, 0);
   V0.confAndInit(nX, nY, nZ, 0);
   W0.confAndInit(nX, nY, nZ, 0);
@@ -171,6 +170,10 @@ void simulator::setBorderConditions(){
       U1.set(i, nY - 1, k, 0.01);
       U2.set(i, nY - 1, k, 0.01);
 
+      U0.set(i, nY - 2, k, 0.01);
+      U1.set(i, nY - 2, k, 0.01);
+      U2.set(i, nY - 2, k, 0.01);
+
 
       //Update pressure conditions.
       P0.set(i,nY-2,k, P0.at(i,nY-1,k));
@@ -220,11 +223,38 @@ void simulator::setBorderConditions(){
       }
     }
   }
+
+  for (int it = 0; it < 20; it++) {
+    for (int i = 1; i < nX-1; ++i) {
+      for (int j = 1; j < nY-1; ++j) {
+        for (int k = 1; k < nZ-1; ++k) {
+          //segundas ecuaciones psi (dependen de psi, v y omega)
+          double rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
+          phx2.set(i,j,k, rhs/2.0);
+
+          rhs = phy2.at(i+1,j,k) + phy2.at(i-1,j,k) + (dx*dx) * ( (phy2.at(i,j+1,k)-2*phy2.at(i,j,k) + phy2.at(i,j-1,k))/(dy*dy)  +  (phy2.at(i,j,k+1)-2*phy2.at(i,j,k) + phy2.at(i,j,k-1))/(dz*dz) + omy1.at(i,j,k));
+          phy2.set(i,j,k, rhs/2.0);
+
+          rhs = phz2.at(i+1,j,k) + phz2.at(i-1,j,k) + (dx*dx) * ( (phz2.at(i,j+1,k)-2*phz2.at(i,j,k) + phz2.at(i,j-1,k))/(dy*dy)  +  (phz2.at(i,j,k+1)-2*phz2.at(i,j,k) + phz2.at(i,j,k-1))/(dz*dz) + omz1.at(i,j,k));
+          phz2.set(i,j,k, rhs/2.0);
+        }
+      }
+    }
+  }
+  phx1.setAll(phx2);
+  phx0.setAll(phx2);
+
+  phy1.setAll(phy2);
+  phy0.setAll(phy2);
+
+  phz1.setAll(phz2);
+  phz0.setAll(phz2);
+
 }
 
 
 void simulator::process(){
-  step = 0; 
+  step = 0;
   for (t = 0; t < tMax; t = t + dt) {
     cerr << 100*t/tMax << "%" << endl;
     step++;
@@ -240,15 +270,15 @@ void simulator::process(){
     W_name << "./out/W_" << step << ".vtk";
     ostringstream P0_name;
     P_name << "./out/P_" << step << ".vtk";
-    saveVtk(U0,U_name.str());
-    saveVtk(V0,V_name.str());
-    saveVtk(W0,W_name.str());
+    saveVtk(U2,U_name.str());
+    saveVtk(V2,V_name.str());
+    saveVtk(W2,W_name.str());
     //saveVtk(P0,P_name.str());
 
-    for (int iter = 0; iter < 15; ++iter) {
-      for (int i = 1; i < nX-1; ++i) {
-        for (int j = 1; j < nY-1; ++j) {
-          for (int k = 1; k < nZ-1; ++k) {
+    for (int iter = 0; iter < 20; ++iter) {
+      for (int i = 2; i < nX-2; ++i) {
+        for (int j = 2; j < nY-2; ++j) {
+          for (int k = 2; k < nZ-2; ++k) {
 
             calcTerms(i,j,k);
             //scentralPressure(i,j,k);
@@ -298,14 +328,14 @@ void simulator::process(){
 
 
 void simulator::vorticityVectorPotencial(int i, int j, int k){
-
+  //@Mocksos(2008)
   //primeras ecuaciones omega (dependen de omega y v)
   double rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k));
   rhs = rhs - V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k));
   rhs = rhs - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1));
   rhs = rhs + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z;
   rhs = rhs + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
-  
+
   omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
 
   rhs = -U1.at(i,j,k)*(1/(2*dx))*(omy2.at(i+1,j,k) - omy2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omy2.at(i,j+1,k) - omy2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omy2.at(i,j,k+1) - omy2.at(i,j,k-1)) + omx1.at(i,j,k) * V2x + omy1.at(i,j,k) * V2y + omz1.at(i,j,k) * V2z + (1/Re) * ((omy2.at(i+1,j,k) - 2*omy2.at(i,j,k) + omy2.at(i-1,j,k))/(dx*dx) + (omy2.at(i,j+1,k) - 2*omy2.at(i,j,k) + omy2.at(i,j-1,k))/(dy*dy) + (omy2.at(i,j,k+1) - 2*omy2.at(i,j,k) + omy2.at(i,j,k-1))/(dz*dz));
@@ -316,13 +346,13 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
 
   //segundas ecuaciones psi (dependen de psi, v y omega)
   rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
-  phx2.set(i,j,k, rhs);
+  phx2.set(i,j,k, rhs/2.0);
 
   rhs = phy2.at(i+1,j,k) + phy2.at(i-1,j,k) + (dx*dx) * ( (phy2.at(i,j+1,k)-2*phy2.at(i,j,k) + phy2.at(i,j-1,k))/(dy*dy)  +  (phy2.at(i,j,k+1)-2*phy2.at(i,j,k) + phy2.at(i,j,k-1))/(dz*dz) + omy1.at(i,j,k));
-  phy2.set(i,j,k, rhs);
+  phy2.set(i,j,k, rhs/2.0);
 
   rhs = phz2.at(i+1,j,k) + phz2.at(i-1,j,k) + (dx*dx) * ( (phz2.at(i,j+1,k)-2*phz2.at(i,j,k) + phz2.at(i,j-1,k))/(dy*dy)  +  (phz2.at(i,j,k+1)-2*phz2.at(i,j,k) + phz2.at(i,j,k-1))/(dz*dz) + omz1.at(i,j,k));
-  phz2.set(i,j,k, rhs);
+  phz2.set(i,j,k, rhs/2.0);
 
   U2.set(i,j,k, (phz2.at(i,j+1,k) - phz2.at(i,j-1,k))/(2*dy) - (phy2.at(i,j,k+1) - phy2.at(i,j,k-1))/(2*dz));
   V2.set(i,j,k, (phx2.at(i,j,k+1) - phx2.at(i,j,k-1))/(2*dz) - (phz2.at(i+1,j,k) - phz2.at(i-1,j,k))/(2*dx));
@@ -337,6 +367,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
 
 
 void simulator::chorinProjection(int i, int j, int k){
+  //@Chorin(1968).
   //TODO: definir R, Fx, Fy, Fz, definir b^(-1) = dt
   Re = 1/nu; //TODO: ...
   Fx = 0;
@@ -351,7 +382,6 @@ void simulator::chorinProjection(int i, int j, int k){
   U_aux_0.set(i,j,k, valueX);
   V_aux_0.set(i,j,k, valueY);
   W_aux_0.set(i,j,k, valueZ);
-
 
   valueX = U_aux_0.at(i,j,k) - (Re*dt/(2*dy))*V_aux_0.at(i,j,k)*(U_aux_1.at(i,j+1,k) - U_aux_1.at(i,j-1,k)) + (dt/pow(dy,2)) * (U_aux_1.at(i,j+1,k) + U_aux_1.at(i,j-1,k) - 2* U_aux_1.at(i,j,k));
   valueY = V_aux_0.at(i,j,k) - (Re*dt/(2*dy))*V_aux_0.at(i,j,k)*(V_aux_1.at(i,j+1,k) - V_aux_1.at(i,j-1,k)) + (dt/pow(dy,2)) * (V_aux_1.at(i,j+1,k) + V_aux_1.at(i,j-1,k) - 2* V_aux_1.at(i,j,k));
@@ -403,6 +433,7 @@ void simulator::testEquation(int i, int j, int k){
 
 
 void simulator::barbaSpacialBackwardEq(int i, int j, int k){
+  //@LorenaBarba
   //spatial backward:
   double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1xb - (1-al) * U1.at(i,j,k) * U2xb - al * V1.at(i,j,k) * U1yb - (1-al) * V1.at(i,j,k) * U2yb - al * W1.at(i,j,k) * U1zb - (1-al) * W1.at(i,j,k) * U2zb - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
   double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1xb - (1-al) * U1.at(i,j,k) * V2xb - al * V1.at(i,j,k) * V1yb - (1-al) * V1.at(i,j,k) * V2yb - al * W1.at(i,j,k) * V1zb - (1-al) * W1.at(i,j,k) * V2zb - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
