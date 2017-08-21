@@ -65,7 +65,7 @@ public:
     }
 
     void mat3::set(int i, int j, int k, double val) {
-      if(isnan(val)){
+      if(std::isnan(val)){
       cerr << "Error: Setting Nan value. Terminating." << endl;
       std::exit(1);
       }
