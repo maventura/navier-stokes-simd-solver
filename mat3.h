@@ -65,10 +65,15 @@ public:
     }
 
     void mat3::set(int i, int j, int k, double val) {
-        data[k_max_ * j_max_ * i + j*k_max_ + k] = val;
+      if(isnan(val)){
+      cerr << "Error: Setting Nan value. Terminating." << endl;
+      std::exit(1);
+      }
+      data[k_max_ * j_max_ * i + j*k_max_ + k] = val;
     }
 
     void mat3::setAll(mat3 &B) {
+      double val;
         for (int i = 0; i < rows(); ++i) {
             for (int j = 0; j < cols(); ++j) {
                 for (int k = 0; k < dims(); ++k) {

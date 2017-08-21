@@ -164,16 +164,14 @@ void simulator::setBorderConditions(){
   //TODO: Add if(cavityFlow) here and in the parameters.
   for (int i = 0; i < nX; ++i) {
     for (int k = 0; k < nZ; ++k) {
-      U0.set(i, nY - 1, k, 1.0);
-      U1.set(i, nY - 1, k, 1.0);
-      U2.set(i, nY - 1, k, 1.0);
+
+      //Set CAvity flow conditions.
+      U0.set(i, nY - 1, k, 0.01);
+      U1.set(i, nY - 1, k, 0.01);
+      U2.set(i, nY - 1, k, 0.01);
 
 
-      U0.set(i, nY - 2, k, 1.0);
-      U1.set(i, nY - 2, k, 1.0);
-      U2.set(i, nY - 2, k, 1.0);
-
-
+      //Update pressure conditions.
       P0.set(i,nY-2,k, P0.at(i,nY-1,k));
       P1.set(i,nY-2,k, P0.at(i,nY-1,k));
       P2.set(i,nY-2,k, P0.at(i,nY-1,k));
@@ -204,6 +202,25 @@ void simulator::setBorderConditions(){
   P0.set(5,5,0, 0);
   P1.set(5,5,0, 0);
   P2.set(5,5,0, 0);
+
+  //Vorticity conditions:
+  for (int i = 1; i < nX-1; ++i) {
+    for (int j = 1; j < nY-1; ++j) {
+      for (int k = 1; k < nZ-1; ++k) {
+        calcTerms(i,j,k);
+        omx1.set(i, j, k, W1y - V1z);
+        omx2.set(i, j, k, W2y - V2z);
+
+        omy1.set(i, j, k, U1z - W1x);
+        omy2.set(i, j, k, U2z - W2x);
+
+        omx1.set(i, j, k, V1x - U1y);
+        omx2.set(i, j, k, V2x - U2y);
+      }
+    }
+  }
+
+
 }
 
 
@@ -254,10 +271,27 @@ void simulator::process(){
     W0.setAll(W1);
     P0.setAll(P1);
 
+    phx0.setAll(phx1);
+    phy0.setAll(phy1);
+    phz0.setAll(phz1);
+
+    omx0.setAll(omx1);
+    omy0.setAll(omy1);
+    omz0.setAll(omz1);
+
     U1.setAll(U2);
     V1.setAll(V2);
     W1.setAll(W2);
     P1.setAll(P2);
+
+//phx1.print();
+    phx1.setAll(phx2);
+    phy1.setAll(phy2);
+    phz1.setAll(phz2);
+
+    omx1.setAll(omx2);
+    omy1.setAll(omy2);
+    omz1.setAll(omz2);
   }
   cerr << "Message: Processing finished correctly" << endl << flush;
 }
@@ -266,7 +300,7 @@ void simulator::process(){
 
 void simulator::vorticityVectorPotencial(int i, int j, int k){
 
-  //primeras ecuaciones omega
+  //primeras ecuaciones omega (dependen de omega y v)
   double rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1)) + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
   omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
 
@@ -276,7 +310,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
   rhs = -U1.at(i,j,k)*(1/(2*dx))*(omz2.at(i+1,j,k) - omz2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omz2.at(i,j+1,k) - omz2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omz2.at(i,j,k+1) - omz2.at(i,j,k-1)) + omx1.at(i,j,k) * W2x + omy1.at(i,j,k) * W2y + omz1.at(i,j,k) * W2z + (1/Re) * ((omz2.at(i+1,j,k) - 2*omz2.at(i,j,k) + omz2.at(i-1,j,k))/(dx*dx) + (omz2.at(i,j+1,k) - 2*omz2.at(i,j,k) + omz2.at(i,j-1,k))/(dy*dy) + (omz2.at(i,j,k+1) - 2*omz2.at(i,j,k) + omz2.at(i,j,k-1))/(dz*dz));
   omz2.set(i,j,k, -omz1.at(i,j,k) + (rhs * dt));
 
-  //segundas ecuaciones omega y phi
+  //segundas ecuaciones psi (dependen de psi, v y omega)
   rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
   phx2.set(i,j,k, rhs);
 
