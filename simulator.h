@@ -16,7 +16,7 @@ private:
   double xMax,  yMax,  zMax,  tMax;
   double nu, rho, C_d;
   double dx,  dy,  dz,  dt;
-  int nX, nY, nZ, nT, iter;
+  int nX, nY, nZ, nT, step;
 
   double al, fixedPointError, minFixedPointIters;
   double pi = atan(1)*4;
@@ -42,6 +42,14 @@ private:
   mat3 U1, V1, W1, P1;
   mat3 U2, V2, W2, P2;
 
+  mat3 omx0, omy0, omz0;
+  mat3 omx1, omy1, omz1;
+  mat3 omx2, omy2, omz2;
+
+  mat3 phx0, phy0, phz0;
+  mat3 phx1, phy1, phz1;
+  mat3 phx2, phy2, phz2;
+
   mat3 U_aux_0, V_aux_0, W_aux_0;
   mat3 U_aux_1, V_aux_1, W_aux_1;
   mat3 U_aux_2, V_aux_2, W_aux_2;
@@ -63,7 +71,7 @@ private:
   void barbaSpacialCenteredEq(int i, int j, int k);
   void originalEquation(int i, int j, int k);
   void chorinProjection(int i, int j, int k);
-
+  void vorticityVectorPotencial(int i, int j, int k);
 };
 
 simulator::simulator(){
@@ -90,6 +98,26 @@ simulator::simulator(){
   V2.confAndInit(nX, nY, nZ, 0);
   W2.confAndInit(nX, nY, nZ, 0);
   P2.confAndInit(nX, nY, nZ, 1);
+
+  phx0.confAndInit(nX, nY, nZ, 0);
+  phx1.confAndInit(nX, nY, nZ, 0);
+  phx2.confAndInit(nX, nY, nZ, 0);
+  phy0.confAndInit(nX, nY, nZ, 0);
+  phy1.confAndInit(nX, nY, nZ, 0);
+  phy2.confAndInit(nX, nY, nZ, 0);
+  phz0.confAndInit(nX, nY, nZ, 0);
+  phz1.confAndInit(nX, nY, nZ, 0);
+  phz2.confAndInit(nX, nY, nZ, 0);
+
+  omx0.confAndInit(nX, nY, nZ, 0);
+  omx1.confAndInit(nX, nY, nZ, 0);
+  omx2.confAndInit(nX, nY, nZ, 0);
+  omy0.confAndInit(nX, nY, nZ, 0);
+  omy1.confAndInit(nX, nY, nZ, 0);
+  omy2.confAndInit(nX, nY, nZ, 0);
+  omz0.confAndInit(nX, nY, nZ, 0);
+  omz1.confAndInit(nX, nY, nZ, 0);
+  omz2.confAndInit(nX, nY, nZ, 0);
 
   U_aux_0.confAndInit(nX, nY, nZ, 0);
   V_aux_0.confAndInit(nX, nY, nZ, 0);
@@ -140,6 +168,12 @@ void simulator::setBorderConditions(){
       U1.set(i, nY - 1, k, 1.0);
       U2.set(i, nY - 1, k, 1.0);
 
+
+      U0.set(i, nY - 2, k, 1.0);
+      U1.set(i, nY - 2, k, 1.0);
+      U2.set(i, nY - 2, k, 1.0);
+
+
       P0.set(i,nY-2,k, P0.at(i,nY-1,k));
       P1.set(i,nY-2,k, P0.at(i,nY-1,k));
       P2.set(i,nY-2,k, P0.at(i,nY-1,k));
@@ -174,37 +208,37 @@ void simulator::setBorderConditions(){
 
 
 void simulator::process(){
-  iter = 0; //TODO: Iter has two uses, fix.
+  step = 0; //TODO: Iter has two uses, fix.
   for (t = 0; t < tMax; t = t + dt) {
     cerr << 100*t/tMax << "%" << endl;
-    iter++;
+    step++;
     ostringstream U_name;
     ostringstream V_name;
     ostringstream W_name;
     ostringstream P_name;
 
-    U_name << "./out/U_" << iter << ".vtk";
+    U_name << "./out/U_" << step << ".vtk";
     ostringstream V0_name;
-    V_name << "./out/V_" << iter << ".vtk";
+    V_name << "./out/V_" << step << ".vtk";
     ostringstream W0_name;
-    W_name << "./out/W_" << iter << ".vtk";
+    W_name << "./out/W_" << step << ".vtk";
     ostringstream P0_name;
-    P_name << "./out/P_" << iter << ".vtk";
+    P_name << "./out/P_" << step << ".vtk";
     saveVtk(U0,U_name.str());
     saveVtk(V0,V_name.str());
     saveVtk(W0,W_name.str());
-    saveVtk(P0,P_name.str());
+    //saveVtk(P0,P_name.str());
 
-    for (int iter = 0; iter < 2; ++iter) { //TODO: Iter termination condition
-      for (int i = 1; i < nX - 1; ++i) {
-        for (int j = 1; j < nY - 1; ++j) {
-          for (int k = 1; k < nZ - 1; ++k) {
+    for (int iter = 0; iter < 20; ++iter) {
+      for (int i = 1; i < nX-1; ++i) {
+        for (int j = 1; j < nY-1; ++j) {
+          for (int k = 1; k < nZ-1; ++k) {
 
             calcTerms(i,j,k);
             //scentralPressure(i,j,k);
-
-           // chorinProjection(i,j,k);
-            originalEquation(i,j,k);
+            vorticityVectorPotencial(i,j,k);
+            //chorinProjection(i,j,k);
+            //originalEquation(i,j,k);
             //barbaSpacialCenteredEq(i,j,k);
             //barbaSpacialBackwardEq(i,j,k);
             //testEquation(i,j,k);
@@ -226,6 +260,41 @@ void simulator::process(){
     P1.setAll(P2);
   }
   cerr << "Message: Processing finished correctly" << endl << flush;
+}
+
+
+
+void simulator::vorticityVectorPotencial(int i, int j, int k){
+
+  //primeras ecuaciones omega
+  double rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1)) + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
+  omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
+
+  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omy2.at(i+1,j,k) - omy2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omy2.at(i,j+1,k) - omy2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omy2.at(i,j,k+1) - omy2.at(i,j,k-1)) + omx1.at(i,j,k) * V2x + omy1.at(i,j,k) * V2y + omz1.at(i,j,k) * V2z + (1/Re) * ((omy2.at(i+1,j,k) - 2*omy2.at(i,j,k) + omy2.at(i-1,j,k))/(dx*dx) + (omy2.at(i,j+1,k) - 2*omy2.at(i,j,k) + omy2.at(i,j-1,k))/(dy*dy) + (omy2.at(i,j,k+1) - 2*omy2.at(i,j,k) + omy2.at(i,j,k-1))/(dz*dz));
+  omy2.set(i,j,k, -omy1.at(i,j,k) + (rhs * dt));
+
+  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omz2.at(i+1,j,k) - omz2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omz2.at(i,j+1,k) - omz2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omz2.at(i,j,k+1) - omz2.at(i,j,k-1)) + omx1.at(i,j,k) * W2x + omy1.at(i,j,k) * W2y + omz1.at(i,j,k) * W2z + (1/Re) * ((omz2.at(i+1,j,k) - 2*omz2.at(i,j,k) + omz2.at(i-1,j,k))/(dx*dx) + (omz2.at(i,j+1,k) - 2*omz2.at(i,j,k) + omz2.at(i,j-1,k))/(dy*dy) + (omz2.at(i,j,k+1) - 2*omz2.at(i,j,k) + omz2.at(i,j,k-1))/(dz*dz));
+  omz2.set(i,j,k, -omz1.at(i,j,k) + (rhs * dt));
+
+  //segundas ecuaciones omega y phi
+  rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
+  phx2.set(i,j,k, rhs);
+
+  rhs = phy2.at(i+1,j,k) + phy2.at(i-1,j,k) + (dx*dx) * ( (phy2.at(i,j+1,k)-2*phy2.at(i,j,k) + phy2.at(i,j-1,k))/(dy*dy)  +  (phy2.at(i,j,k+1)-2*phy2.at(i,j,k) + phy2.at(i,j,k-1))/(dz*dz) + omy1.at(i,j,k));
+  phy2.set(i,j,k, rhs);
+
+  rhs = phz2.at(i+1,j,k) + phz2.at(i-1,j,k) + (dx*dx) * ( (phz2.at(i,j+1,k)-2*phz2.at(i,j,k) + phz2.at(i,j-1,k))/(dy*dy)  +  (phz2.at(i,j,k+1)-2*phz2.at(i,j,k) + phz2.at(i,j,k-1))/(dz*dz) + omz1.at(i,j,k));
+  phz2.set(i,j,k, rhs);
+
+  U2.set(i,j,k, (phz2.at(i,j+1,k) - phz2.at(i,j-1,k))/(2*dy) - (phy2.at(i,j,k+1) - phy2.at(i,j,k-1))/(2*dz));
+  V2.set(i,j,k, (phx2.at(i,j,k+1) - phx2.at(i,j,k-1))/(2*dz) - (phz2.at(i+1,j,k) - phz2.at(i-1,j,k))/(2*dx));
+  W2.set(i,j,k, (phy2.at(i+1,j,k) - phy2.at(i-1,j,k))/(2*dx) - (phx2.at(i,j+1,k) - phx2.at(i,j-1,k))/(2*dy));
+
+
+
+  if(10 < i && 20 > i && 10 < j && 20 > j && 10 < k && 20 > k){
+    omx2.set(i,j,k,1);
+  }
 }
 
 
@@ -267,14 +336,14 @@ void simulator::chorinProjection(int i, int j, int k){
   double G_u = (0.5/dx)*(P1.at(i+1,j,k) - P1.at(i-1,j,k));
   double G_v = (0.5/dy)*(P1.at(i,j+1,k) - P1.at(i,j-1,k));
   double G_w = (0.5/dz)*(P1.at(i,j,k+1) - P1.at(i,j,k-1));
-  
 
-  //Finish U iteration.
+
+  //Finish U stepation.
   U2.set(i, j, k, U_aux_2.at(i,j,k) - dt*G_u);
 
   double Du = U1x + V1y + W1z;
   double lambda = 0.5;
-  //Finish P iteration.
+  //Finish P stepation.
   P2.set(i,j,k, P2.at(i,j,k) - lambda*Du);
 
 }
@@ -288,7 +357,7 @@ void simulator::testEquation(int i, int j, int k){
   //double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
   // if (diff < 0.01) {
   //     break;
-  // } else if (iter > 50) {
+  // } else if (step > 50) {
   //     cerr << "WARNING: unstable." << endl;
   //     break;
   // }
