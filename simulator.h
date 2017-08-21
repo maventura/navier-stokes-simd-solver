@@ -82,7 +82,8 @@ simulator::simulator(){
   nY = round(yMax / dy) + 1;
   nZ = round(yMax / dy) + 1;
   nT = round(tMax / dt) + 1;
-  double al;
+  Re = 1/nu;//TODO: find out value
+
 
   U0.confAndInit(nX, nY, nZ, 0);
   V0.confAndInit(nX, nY, nZ, 0);
@@ -219,13 +220,11 @@ void simulator::setBorderConditions(){
       }
     }
   }
-
-
 }
 
 
 void simulator::process(){
-  step = 0; //TODO: Iter has two uses, fix.
+  step = 0; 
   for (t = 0; t < tMax; t = t + dt) {
     cerr << 100*t/tMax << "%" << endl;
     step++;
@@ -246,7 +245,7 @@ void simulator::process(){
     saveVtk(W0,W_name.str());
     //saveVtk(P0,P_name.str());
 
-    for (int iter = 0; iter < 20; ++iter) {
+    for (int iter = 0; iter < 15; ++iter) {
       for (int i = 1; i < nX-1; ++i) {
         for (int j = 1; j < nY-1; ++j) {
           for (int k = 1; k < nZ-1; ++k) {
@@ -301,7 +300,12 @@ void simulator::process(){
 void simulator::vorticityVectorPotencial(int i, int j, int k){
 
   //primeras ecuaciones omega (dependen de omega y v)
-  double rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1)) + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
+  double rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k));
+  rhs = rhs - V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k));
+  rhs = rhs - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1));
+  rhs = rhs + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z;
+  rhs = rhs + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
+  
   omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
 
   rhs = -U1.at(i,j,k)*(1/(2*dx))*(omy2.at(i+1,j,k) - omy2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omy2.at(i,j+1,k) - omy2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omy2.at(i,j,k+1) - omy2.at(i,j,k-1)) + omx1.at(i,j,k) * V2x + omy1.at(i,j,k) * V2y + omz1.at(i,j,k) * V2z + (1/Re) * ((omy2.at(i+1,j,k) - 2*omy2.at(i,j,k) + omy2.at(i-1,j,k))/(dx*dx) + (omy2.at(i,j+1,k) - 2*omy2.at(i,j,k) + omy2.at(i,j-1,k))/(dy*dy) + (omy2.at(i,j,k+1) - 2*omy2.at(i,j,k) + omy2.at(i,j,k-1))/(dz*dz));
@@ -326,9 +330,9 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
 
 
 
-  if(10 < i && 20 > i && 10 < j && 20 > j && 10 < k && 20 > k){
-    omx2.set(i,j,k,1);
-  }
+  //if(10 < i && 20 > i && 10 < j && 20 > j && 10 < k && 20 > k){
+  //  omx2.set(i,j,k,1);
+  //}
 }
 
 
@@ -399,7 +403,7 @@ void simulator::testEquation(int i, int j, int k){
 
 
 void simulator::barbaSpacialBackwardEq(int i, int j, int k){
-//spatial backward:
+  //spatial backward:
   double newU = U1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * U1xb - (1-al) * U1.at(i,j,k) * U2xb - al * V1.at(i,j,k) * U1yb - (1-al) * V1.at(i,j,k) * U2yb - al * W1.at(i,j,k) * U1zb - (1-al) * W1.at(i,j,k) * U2zb - (1/rho) * (al * P1x + (1-al) * P2x) + nu * (al * U1xx + (1-al) * U2xx + al * U1yy + (1-al) * U2yy + al * U1zz + (1-al) * U2zz) );
   double newV = V1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * V1xb - (1-al) * U1.at(i,j,k) * V2xb - al * V1.at(i,j,k) * V1yb - (1-al) * V1.at(i,j,k) * V2yb - al * W1.at(i,j,k) * V1zb - (1-al) * W1.at(i,j,k) * V2zb - (1/rho) * (al * P1y + (1-al) * P2y) + nu * (al * V1xx + (1-al) * V2xx + al * V1yy + (1-al) * V2yy + al * V1zz + (1-al) * V2zz) );
   double newW = W1.at(i,j,k) + dt * (-al * U1.at(i,j,k) * W1xb - (1-al) * U1.at(i,j,k) * W2xb - al * V1.at(i,j,k) * W1yb - (1-al) * V1.at(i,j,k) * W2yb - al * W1.at(i,j,k) * W1zb - (1-al) * W1.at(i,j,k) * W2zb - (1/rho) * (al * P1z + (1-al) * P2z) + nu * (al * W1xx + (1-al) * W2xx + al * W1yy + (1-al) * W2yy + al * W1zz + (1-al) * W2zz) );
@@ -461,7 +465,7 @@ void simulator::originalEquation(int i, int j, int k){
 
 
 void simulator::saveVtk(mat3 &m, string file_name){
-// Save a 3-D scalar array in VTK format.
+  // Save a 3-D scalar array in VTK format.
   io out(file_name, io::type_write);
   out.write("# vtk DataFile Version 2.0");
   out.newLine();
@@ -505,7 +509,7 @@ void simulator::saveVtk(mat3 &m, string file_name){
 
 
 void simulator::saveCSV(mat3 &m, string file_name){
-// Save a 3-D scalar array in VTK format.
+  // Save a 3-D scalar array in VTK format.
   io out(file_name, io::type_write);
 
   for (int i = 0; i < nX - 1; ++i) {
@@ -603,28 +607,26 @@ void simulator::calcTerms(int i, int j, int k){
     W2zb = (W2.at(i,j,k + 1) - W2.at(i,j,k)) / dz;
 
     //Forward.
-      U1xf = (U1.at(i, j, k) - U1.at(i - 1, j, k)) / dx;
-      U2xf = (U2.at(i, j, k) - U2.at(i - 1, j, k)) / dx;
-      U1yf = (U1.at(i,j,k) - U1.at(i,j - 1,k)) / dy;
-      U2yf = (U2.at(i,j,k) - U2.at(i,j - 1,k)) / dy;
-      U1zf = (U1.at(i,j,k) - U1.at(i,j,k - 1)) / dz;
-      U2zf = (U2.at(i,j,k) - U2.at(i,j,k - 1)) / dz;
+    U1xf = (U1.at(i, j, k) - U1.at(i - 1, j, k)) / dx;
+    U2xf = (U2.at(i, j, k) - U2.at(i - 1, j, k)) / dx;
+    U1yf = (U1.at(i,j,k) - U1.at(i,j - 1,k)) / dy;
+    U2yf = (U2.at(i,j,k) - U2.at(i,j - 1,k)) / dy;
+    U1zf = (U1.at(i,j,k) - U1.at(i,j,k - 1)) / dz;
+    U2zf = (U2.at(i,j,k) - U2.at(i,j,k - 1)) / dz;
 
-      V1xf = (V1.at(i,j,k) - V1.at(i - 1,j,k)) / dx;
-      V2xf = (V2.at(i,j,k) - V2.at(i - 1,j,k)) / dx;
-      V1yf = (V1.at(i,j,k) - V1.at(i,j - 1,k)) / dy;
-      V2yf = (V2.at(i,j,k) - V2.at(i,j - 1,k)) / dy;
-      V1zf = (V1.at(i,j,k) - V1.at(i,j,k - 1)) / dz;
-      V2zf = (V2.at(i,j,k) - V2.at(i,j,k - 1)) / dz;
+    V1xf = (V1.at(i,j,k) - V1.at(i - 1,j,k)) / dx;
+    V2xf = (V2.at(i,j,k) - V2.at(i - 1,j,k)) / dx;
+    V1yf = (V1.at(i,j,k) - V1.at(i,j - 1,k)) / dy;
+    V2yf = (V2.at(i,j,k) - V2.at(i,j - 1,k)) / dy;
+    V1zf = (V1.at(i,j,k) - V1.at(i,j,k - 1)) / dz;
+    V2zf = (V2.at(i,j,k) - V2.at(i,j,k - 1)) / dz;
 
-      W1xf = (W1.at(i,j,k) - W1.at(i - 1,j,k)) / dx;
-      W2xf = (W2.at(i,j,k) - W2.at(i - 1,j,k)) / dx;
-      W1yf = (W1.at(i,j,k) - W1.at(i,j - 1,k)) / dy;
-      W2yf = (W2.at(i,j,k) - W2.at(i,j - 1,k)) / dy;
-      W1zf = (W1.at(i,j,k) - W1.at(i,j,k - 1)) / dz;
-      W2zf = (W2.at(i,j,k) - W2.at(i,j,k - 1)) / dz;
-
-
+    W1xf = (W1.at(i,j,k) - W1.at(i - 1,j,k)) / dx;
+    W2xf = (W2.at(i,j,k) - W2.at(i - 1,j,k)) / dx;
+    W1yf = (W1.at(i,j,k) - W1.at(i,j - 1,k)) / dy;
+    W2yf = (W2.at(i,j,k) - W2.at(i,j - 1,k)) / dy;
+    W1zf = (W1.at(i,j,k) - W1.at(i,j,k - 1)) / dz;
+    W2zf = (W2.at(i,j,k) - W2.at(i,j,k - 1)) / dz;
 }
 
 void simulator::centralSpeed(int i, int j, int k){
