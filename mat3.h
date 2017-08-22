@@ -16,7 +16,9 @@ public:
 
     void inic(double val);
     void set(int i, int j, int k, double val);
-    void setAll(mat3 &B);
+    void copyAll(mat3 &B);
+    void setAll(double val);
+
     void add(int i, int j, int k, double val);
     double at(int i, int j, int k);
     double cols();
@@ -64,6 +66,15 @@ public:
             data[k] = val;
     }
 
+
+    void mat3::setAll(double val) {
+        int size = i_max_ * j_max_ * k_max_;
+        for (int k = 0; k < size; k++)
+            data[k] = val;
+    }
+
+
+
     void mat3::set(int i, int j, int k, double val) {
       if(std::isnan(val)){
       cerr << "Error: Setting Nan value. Terminating." << endl;
@@ -72,7 +83,7 @@ public:
       data[k_max_ * j_max_ * i + j*k_max_ + k] = val;
     }
 
-    void mat3::setAll(mat3 &B) {
+    void mat3::copyAll(mat3 &B) {
       double val;
         for (int i = 0; i < rows(); ++i) {
             for (int j = 0; j < cols(); ++j) {

@@ -224,7 +224,7 @@ void simulator::setBorderConditions(){
     }
   }
 
-  for (int it = 0; it < 50; it++) {
+  for (int it = 0; it < 10; it++) {
     for (int i = 1; i < nX-1; ++i) {
       for (int j = 1; j < nY-1; ++j) {
         for (int k = 1; k < nZ-1; ++k) {
@@ -239,28 +239,27 @@ void simulator::setBorderConditions(){
           phz2.set(i,j,k, rhs/2.0);*/
 
           //variante en el despeje de las segundas ecuaciones de psi
-          double aux = (dy * dz * (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx * dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx * dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+          double aux;
+          aux = (dy*dy*dz*dz* (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx*dx * dz*dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx*dx * dy*dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
           phx2.set(i,j,k,aux);
 
-          aux = (dy * dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx * dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx * dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+          aux = (dy*dy*dz*dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx*dx * dz*dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx*dx * dy*dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omy1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
           phy2.set(i,j,k,aux);
 
-          aux = (dy * dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx * dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx * dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+          aux = (dy*dy*dz*dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx*dx * dz*dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx*dx * dy*dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omz1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
           phz2.set(i,j,k,aux);
         }
       }
     }
   }
-  phx1.setAll(phx2);
-  phx0.setAll(phx2);
+  phx1.copyAll(phx2);
+  phx0.copyAll(phx2);
 
-  phy1.setAll(phy2);
-  phy0.setAll(phy2);
+  phy1.copyAll(phy2);
+  phy0.copyAll(phy2);
 
-  phz1.setAll(phz2);
-  phz0.setAll(phz2);
-
-  phx1.print();
+  phz1.copyAll(phz2);
+  phz0.copyAll(phz2);
 
 }
 
@@ -270,11 +269,8 @@ void simulator::process(){
   for (t = 0; t < tMax; t = t + dt) {
     cerr << 100*t/tMax << "%" << endl;
     step++;
-    ostringstream U_name;
-    ostringstream V_name;
-    ostringstream W_name;
-    ostringstream P_name;
 
+/*
     U_name << "./out/U_" << step << ".vtk";
     ostringstream V0_name;
     V_name << "./out/V_" << step << ".vtk";
@@ -286,14 +282,35 @@ void simulator::process(){
     saveVtk(V2,V_name.str());
     saveVtk(W2,W_name.str());
     //saveVtk(P0,P_name.str());
-    for (int stage = 1; stage < 4; ++stage){
-      for (int iter = 0; iter < 20; ++iter) {
-        for (int i = 2; i < nX-2; ++i) {
-          for (int j = 2; j < nY-2; ++j) {
-            for (int k = 2; k < nZ-2; ++k) {
+    */
+
+    for (int stage = 1; stage < 2; ++stage) {
+      for (int iter = 0; iter < 15; ++iter) {
+        step++;
+        ostringstream U_name;
+        ostringstream V_name;
+        ostringstream W_name;
+        ostringstream P_name;
+        U_name << "./out/U_" << step << ".vtk";
+        ostringstream V0_name;
+        V_name << "./out/V_" << step << ".vtk";
+        ostringstream W0_name;
+        W_name << "./out/W_" << step << ".vtk";
+        ostringstream P0_name;
+        P_name << "./out/P_" << step << ".vtk";
+        saveVtk(U2,U_name.str());
+        saveVtk(V2,V_name.str());
+        saveVtk(W2,W_name.str());
+
+        for (int i = 1; i < nX-1; ++i) {
+          for (int j = 1; j < nY-1; ++j) {
+            for (int k = 1; k < nZ-1; ++k) {
 
               calcTerms(i,j,k);
+
               vorticityVectorPotencial(i,j,k,stage);
+              vorticityVectorPotencial(i,j,k,stage+1);
+              vorticityVectorPotencial(i,j,k,stage+2);
             }
           }
         }
@@ -302,32 +319,32 @@ void simulator::process(){
     //TODO: the 3 matrices exist so that we work on them without changing old values of the 2 matrices.
     // But they represent the new 2 matrices. Change name.
 
-    U0.setAll(U1);
-    V0.setAll(V1);
-    W0.setAll(W1);
-    P0.setAll(P1);
+    U0.copyAll(U1);
+    V0.copyAll(V1);
+    W0.copyAll(W1);
+    P0.copyAll(P1);
 
-    phx0.setAll(phx1);
-    phy0.setAll(phy1);
-    phz0.setAll(phz1);
+    phx0.copyAll(phx1);
+    phy0.copyAll(phy1);
+    phz0.copyAll(phz1);
 
-    omx0.setAll(omx1);
-    omy0.setAll(omy1);
-    omz0.setAll(omz1);
+    omx0.copyAll(omx1);
+    omy0.copyAll(omy1);
+    omz0.copyAll(omz1);
 
-    U1.setAll(U2);
-    V1.setAll(V2);
-    W1.setAll(W2);
-    P1.setAll(P2);
+    U1.copyAll(U2);
+    V1.copyAll(V2);
+    W1.copyAll(W2);
+    P1.copyAll(P2);
 
-//phx1.print();
-    phx1.setAll(phx2);
-    phy1.setAll(phy2);
-    phz1.setAll(phz2);
+    phx1.copyAll(phx2);
+    phy1.copyAll(phy2);
+    phz1.copyAll(phz2);
 
-    omx1.setAll(omx2);
-    omy1.setAll(omy2);
-    omz1.setAll(omz2);
+    omx1.copyAll(omx2);
+    omy1.copyAll(omy2);
+    omz1.copyAll(omz2);
+
   }
   cerr << "Message: Processing finished correctly" << endl << flush;
 }
@@ -335,6 +352,7 @@ void simulator::process(){
 
 
 void simulator::vorticityVectorPotencial(int i, int j, int k, int stage){
+
   //@Mocksos(2008)
   double rhs;
   double aux;
@@ -363,16 +381,16 @@ void simulator::vorticityVectorPotencial(int i, int j, int k, int stage){
     phz2.set(i,j,k, rhs/2.0);*/
 
     //variante en el despeje de las segundas ecuaciones de psi
-    aux = (dy * dz * (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx * dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx * dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+    aux = (dy*dy*dz*dz* (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx*dx * dz*dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx*dx * dy*dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
     phx2.set(i,j,k,aux);
 
-    aux = (dy * dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx * dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx * dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+    aux = (dy*dy*dz*dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx*dx * dz*dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx*dx * dy*dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omy1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
     phy2.set(i,j,k,aux);
 
-    aux = (dy * dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx * dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx * dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+    aux = (dy*dy*dz*dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx*dx * dz*dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx*dx * dy*dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omz1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
     phz2.set(i,j,k,aux);
-
     break;
+
   case 3:
     U2.set(i,j,k, (phz2.at(i,j+1,k) - phz2.at(i,j-1,k))/(2*dy) - (phy2.at(i,j,k+1) - phy2.at(i,j,k-1))/(2*dz));
     V2.set(i,j,k, (phx2.at(i,j,k+1) - phx2.at(i,j,k-1))/(2*dz) - (phz2.at(i+1,j,k) - phz2.at(i-1,j,k))/(2*dx));
