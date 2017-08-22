@@ -170,9 +170,9 @@ void simulator::setBorderConditions(){
       U1.set(i, nY - 1, k, 0.01);
       U2.set(i, nY - 1, k, 0.01);
 
-      U0.set(i, nY - 2, k, 0.01);
-      U1.set(i, nY - 2, k, 0.01);
-      U2.set(i, nY - 2, k, 0.01);
+      //U0.set(i, nY - 2, k, 0.01);
+      //U1.set(i, nY - 2, k, 0.01);
+      //U2.set(i, nY - 2, k, 0.01);
 
 
       //Update pressure conditions.
@@ -212,8 +212,8 @@ void simulator::setBorderConditions(){
     for (int j = 1; j < nY-1; ++j) {
       for (int k = 1; k < nZ-1; ++k) {
         calcTerms(i,j,k);
-        omx1.set(i, j, k, W1y - V1z);
-        omx2.set(i, j, k, W2y - V2z);
+        omz1.set(i, j, k, W1y - V1z);
+        omz2.set(i, j, k, W2y - V2z);
 
         omy1.set(i, j, k, U1z - W1x);
         omy2.set(i, j, k, U2z - W2x);
