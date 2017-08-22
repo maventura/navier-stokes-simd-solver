@@ -71,7 +71,7 @@ private:
   void barbaSpacialCenteredEq(int i, int j, int k);
   void originalEquation(int i, int j, int k);
   void chorinProjection(int i, int j, int k);
-  void vorticityVectorPotencial(int i, int j, int k);
+  void vorticityVectorPotencial(int i, int j, int k, int stage);
 };
 
 simulator::simulator(){
@@ -224,19 +224,29 @@ void simulator::setBorderConditions(){
     }
   }
 
-  for (int it = 0; it < 20; it++) {
+  for (int it = 0; it < 50; it++) {
     for (int i = 1; i < nX-1; ++i) {
       for (int j = 1; j < nY-1; ++j) {
         for (int k = 1; k < nZ-1; ++k) {
           //segundas ecuaciones psi (dependen de psi, v y omega)
-          double rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
+          /*double rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
           phx2.set(i,j,k, rhs/2.0);
 
           rhs = phy2.at(i+1,j,k) + phy2.at(i-1,j,k) + (dx*dx) * ( (phy2.at(i,j+1,k)-2*phy2.at(i,j,k) + phy2.at(i,j-1,k))/(dy*dy)  +  (phy2.at(i,j,k+1)-2*phy2.at(i,j,k) + phy2.at(i,j,k-1))/(dz*dz) + omy1.at(i,j,k));
           phy2.set(i,j,k, rhs/2.0);
 
           rhs = phz2.at(i+1,j,k) + phz2.at(i-1,j,k) + (dx*dx) * ( (phz2.at(i,j+1,k)-2*phz2.at(i,j,k) + phz2.at(i,j-1,k))/(dy*dy)  +  (phz2.at(i,j,k+1)-2*phz2.at(i,j,k) + phz2.at(i,j,k-1))/(dz*dz) + omz1.at(i,j,k));
-          phz2.set(i,j,k, rhs/2.0);
+          phz2.set(i,j,k, rhs/2.0);*/
+
+          //variante en el despeje de las segundas ecuaciones de psi
+          double aux = (dy * dz * (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx * dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx * dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+          phx2.set(i,j,k,aux);
+
+          aux = (dy * dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx * dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx * dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+          phy2.set(i,j,k,aux);
+
+          aux = (dy * dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx * dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx * dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+          phz2.set(i,j,k,aux);
         }
       }
     }
@@ -249,6 +259,8 @@ void simulator::setBorderConditions(){
 
   phz1.setAll(phz2);
   phz0.setAll(phz2);
+
+  phx1.print();
 
 }
 
@@ -274,20 +286,15 @@ void simulator::process(){
     saveVtk(V2,V_name.str());
     saveVtk(W2,W_name.str());
     //saveVtk(P0,P_name.str());
+    for (int stage = 1; stage < 4; ++stage){
+      for (int iter = 0; iter < 20; ++iter) {
+        for (int i = 2; i < nX-2; ++i) {
+          for (int j = 2; j < nY-2; ++j) {
+            for (int k = 2; k < nZ-2; ++k) {
 
-    for (int iter = 0; iter < 20; ++iter) {
-      for (int i = 2; i < nX-2; ++i) {
-        for (int j = 2; j < nY-2; ++j) {
-          for (int k = 2; k < nZ-2; ++k) {
-
-            calcTerms(i,j,k);
-            //scentralPressure(i,j,k);
-            vorticityVectorPotencial(i,j,k);
-            //chorinProjection(i,j,k);
-            //originalEquation(i,j,k);
-            //barbaSpacialCenteredEq(i,j,k);
-            //barbaSpacialBackwardEq(i,j,k);
-            //testEquation(i,j,k);
+              calcTerms(i,j,k);
+              vorticityVectorPotencial(i,j,k,stage);
+            }
           }
         }
       }
@@ -327,37 +334,52 @@ void simulator::process(){
 
 
 
-void simulator::vorticityVectorPotencial(int i, int j, int k){
+void simulator::vorticityVectorPotencial(int i, int j, int k, int stage){
   //@Mocksos(2008)
-  //primeras ecuaciones omega (dependen de omega y v)
-  double rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k));
-  rhs = rhs - V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k));
-  rhs = rhs - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1));
-  rhs = rhs + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z;
-  rhs = rhs + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
+  double rhs;
+  double aux;
+  switch (stage){
+    case 1:
+    //primeras ecuaciones omega (dependen de omega y v)
+    rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k)) - V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1)) + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
 
-  omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
+    omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
 
-  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omy2.at(i+1,j,k) - omy2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omy2.at(i,j+1,k) - omy2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omy2.at(i,j,k+1) - omy2.at(i,j,k-1)) + omx1.at(i,j,k) * V2x + omy1.at(i,j,k) * V2y + omz1.at(i,j,k) * V2z + (1/Re) * ((omy2.at(i+1,j,k) - 2*omy2.at(i,j,k) + omy2.at(i-1,j,k))/(dx*dx) + (omy2.at(i,j+1,k) - 2*omy2.at(i,j,k) + omy2.at(i,j-1,k))/(dy*dy) + (omy2.at(i,j,k+1) - 2*omy2.at(i,j,k) + omy2.at(i,j,k-1))/(dz*dz));
-  omy2.set(i,j,k, -omy1.at(i,j,k) + (rhs * dt));
+    rhs = -U1.at(i,j,k)*(1/(2*dx))*(omy2.at(i+1,j,k) - omy2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omy2.at(i,j+1,k) - omy2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omy2.at(i,j,k+1) - omy2.at(i,j,k-1)) + omx1.at(i,j,k) * V2x + omy1.at(i,j,k) * V2y + omz1.at(i,j,k) * V2z + (1/Re) * ((omy2.at(i+1,j,k) - 2*omy2.at(i,j,k) + omy2.at(i-1,j,k))/(dx*dx) + (omy2.at(i,j+1,k) - 2*omy2.at(i,j,k) + omy2.at(i,j-1,k))/(dy*dy) + (omy2.at(i,j,k+1) - 2*omy2.at(i,j,k) + omy2.at(i,j,k-1))/(dz*dz));
+    omy2.set(i,j,k, -omy1.at(i,j,k) + (rhs * dt));
 
-  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omz2.at(i+1,j,k) - omz2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omz2.at(i,j+1,k) - omz2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omz2.at(i,j,k+1) - omz2.at(i,j,k-1)) + omx1.at(i,j,k) * W2x + omy1.at(i,j,k) * W2y + omz1.at(i,j,k) * W2z + (1/Re) * ((omz2.at(i+1,j,k) - 2*omz2.at(i,j,k) + omz2.at(i-1,j,k))/(dx*dx) + (omz2.at(i,j+1,k) - 2*omz2.at(i,j,k) + omz2.at(i,j-1,k))/(dy*dy) + (omz2.at(i,j,k+1) - 2*omz2.at(i,j,k) + omz2.at(i,j,k-1))/(dz*dz));
-  omz2.set(i,j,k, -omz1.at(i,j,k) + (rhs * dt));
+    rhs = -U1.at(i,j,k)*(1/(2*dx))*(omz2.at(i+1,j,k) - omz2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omz2.at(i,j+1,k) - omz2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omz2.at(i,j,k+1) - omz2.at(i,j,k-1)) + omx1.at(i,j,k) * W2x + omy1.at(i,j,k) * W2y + omz1.at(i,j,k) * W2z + (1/Re) * ((omz2.at(i+1,j,k) - 2*omz2.at(i,j,k) + omz2.at(i-1,j,k))/(dx*dx) + (omz2.at(i,j+1,k) - 2*omz2.at(i,j,k) + omz2.at(i,j-1,k))/(dy*dy) + (omz2.at(i,j,k+1) - 2*omz2.at(i,j,k) + omz2.at(i,j,k-1))/(dz*dz));
+    omz2.set(i,j,k, -omz1.at(i,j,k) + (rhs * dt));
+    break;
+  case 2:
+    //segundas ecuaciones psi (dependen de psi, v y omega)
+    /*rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
+    phx2.set(i,j,k, rhs/2.0);
 
-  //segundas ecuaciones psi (dependen de psi, v y omega)
-  rhs = phx2.at(i+1,j,k) + phx2.at(i-1,j,k) + (dx*dx) * ( (phx2.at(i,j+1,k)-2*phx2.at(i,j,k) + phx2.at(i,j-1,k))/(dy*dy)  +  (phx2.at(i,j,k+1)-2*phx2.at(i,j,k) + phx2.at(i,j,k-1))/(dz*dz) + omx1.at(i,j,k));
-  phx2.set(i,j,k, rhs/2.0);
+    rhs = phy2.at(i+1,j,k) + phy2.at(i-1,j,k) + (dx*dx) * ( (phy2.at(i,j+1,k)-2*phy2.at(i,j,k) + phy2.at(i,j-1,k))/(dy*dy)  +  (phy2.at(i,j,k+1)-2*phy2.at(i,j,k) + phy2.at(i,j,k-1))/(dz*dz) + omy1.at(i,j,k));
+    phy2.set(i,j,k, rhs/2.0);
 
-  rhs = phy2.at(i+1,j,k) + phy2.at(i-1,j,k) + (dx*dx) * ( (phy2.at(i,j+1,k)-2*phy2.at(i,j,k) + phy2.at(i,j-1,k))/(dy*dy)  +  (phy2.at(i,j,k+1)-2*phy2.at(i,j,k) + phy2.at(i,j,k-1))/(dz*dz) + omy1.at(i,j,k));
-  phy2.set(i,j,k, rhs/2.0);
+    rhs = phz2.at(i+1,j,k) + phz2.at(i-1,j,k) + (dx*dx) * ( (phz2.at(i,j+1,k)-2*phz2.at(i,j,k) + phz2.at(i,j-1,k))/(dy*dy)  +  (phz2.at(i,j,k+1)-2*phz2.at(i,j,k) + phz2.at(i,j,k-1))/(dz*dz) + omz1.at(i,j,k));
+    phz2.set(i,j,k, rhs/2.0);*/
 
-  rhs = phz2.at(i+1,j,k) + phz2.at(i-1,j,k) + (dx*dx) * ( (phz2.at(i,j+1,k)-2*phz2.at(i,j,k) + phz2.at(i,j-1,k))/(dy*dy)  +  (phz2.at(i,j,k+1)-2*phz2.at(i,j,k) + phz2.at(i,j,k-1))/(dz*dz) + omz1.at(i,j,k));
-  phz2.set(i,j,k, rhs/2.0);
+    //variante en el despeje de las segundas ecuaciones de psi
+    aux = (dy * dz * (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx * dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx * dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+    phx2.set(i,j,k,aux);
 
-  U2.set(i,j,k, (phz2.at(i,j+1,k) - phz2.at(i,j-1,k))/(2*dy) - (phy2.at(i,j,k+1) - phy2.at(i,j,k-1))/(2*dz));
-  V2.set(i,j,k, (phx2.at(i,j,k+1) - phx2.at(i,j,k-1))/(2*dz) - (phz2.at(i+1,j,k) - phz2.at(i-1,j,k))/(2*dx));
-  W2.set(i,j,k, (phy2.at(i+1,j,k) - phy2.at(i-1,j,k))/(2*dx) - (phx2.at(i,j+1,k) - phx2.at(i,j-1,k))/(2*dy));
+    aux = (dy * dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx * dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx * dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+    phy2.set(i,j,k,aux);
 
+    aux = (dy * dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx * dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx * dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dz + 2*dx*dz + 2*dx*dy);
+    phz2.set(i,j,k,aux);
+
+    break;
+  case 3:
+    U2.set(i,j,k, (phz2.at(i,j+1,k) - phz2.at(i,j-1,k))/(2*dy) - (phy2.at(i,j,k+1) - phy2.at(i,j,k-1))/(2*dz));
+    V2.set(i,j,k, (phx2.at(i,j,k+1) - phx2.at(i,j,k-1))/(2*dz) - (phz2.at(i+1,j,k) - phz2.at(i-1,j,k))/(2*dx));
+    W2.set(i,j,k, (phy2.at(i+1,j,k) - phy2.at(i-1,j,k))/(2*dx) - (phx2.at(i,j+1,k) - phx2.at(i,j-1,k))/(2*dy));
+    break;
+  default: cout << "Poner bien los parametros por favor" << endl;
+  }
 
 
   //if(10 < i && 20 > i && 10 < j && 20 > j && 10 < k && 20 > k){
