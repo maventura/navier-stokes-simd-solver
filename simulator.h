@@ -73,6 +73,7 @@ private:
   void chorinProjection(int i, int j, int k);
   void vorticityVectorPotencial(int i, int j, int k);
   void calcSpeeds(int x, int y, int z);
+  void setVorticityVectorPotencialBorders(int i, int j, int k);
 };
 
 simulator::simulator(){
@@ -246,19 +247,17 @@ void simulator::process(){
 
 
     for (int iter = 0; iter < 15; ++iter) { //TODO:hacer de las cantidad de iteraciones un parametro externo
-      step++;
-
       for (int i = 0; i < nX; ++i) {
         for (int j = 0; j < nY; ++j) {
           for (int k = 0; k < nZ; ++k) {
-            calcTerms(i,j,k);
             //if(i*j*k == 0 || i == nX-1 || j == nY-1 || k == nZ-1) {
-            if(i*j*k == 0 || j == nY-1 || k == nZ-1) { //in i speed must be != 0.
-              setVorticityVectorPotencialBorders();
+            if(i*j*k == 0 ) {
+              setVorticityVectorPotencialBorders(i,j,k);
             }else{
-              vorticityVectorPotencial(i,j,k);
+              if(j != nY-1 && i != nX-1 && k != nZ-1)
+                vorticityVectorPotencial(i,j,k);
+              //TODO: esto no esta produciendo nada
             }
-            //testEquation(i,j,k);
           }
         }
       }
@@ -722,26 +721,26 @@ void simulator::calcSpeeds(int x, int y, int z) {
    }
 
 
-   void simulator::setVorticityVectorPotencialBorders(i,j,k){
+   void simulator::setVorticityVectorPotencialBorders(int i, int j, int k){
      //Condiciones de borde.
      if (j==0)
      {
-           psix.set(i,j,k, 0);
+           psix2.set(i,j,k, 0);
            //Se agrega nueva condicion con la derivada normal en dos puntos.
-           psiy.set(i,j,k,  (4*psiy2.at(i,j+1,k) - psiy2.at(i,j+2,k))/3);
-           psiz.set(i,j,k, 0);
+           psiy2.set(i,j,k,  (4*psiy2.at(i,j+1,k) - psiy2.at(i,j+2,k))/3);
+           psiz2.set(i,j,k, 0);
 
-           U.set(i,j,k, 0);
-           V.set(i,j,k, 0);
-           W.set(i,j,k, 0);
+           U2.set(i,j,k, 0);
+           V2.set(i,j,k, 0);
+           W2.set(i,j,k, 0);
            //Se abusa de que la velocidad en el punto es 0.
-           omx2.set(i,j,k,  (W.at(i,j+1,k))/h);
+           omx2.set(i,j,k,  (W2.at(i,j+1,k))/h);
            omy2.set(i,j,k, 0);
-           omz2.set(i,j,k,  -(U.at(i,j+1,k))/h);
+           omz2.set(i,j,k,  -(U2.at(i,j+1,k))/h);
 
      }
      else
-     if (j==nY)
+     if (j==nY-1)
      {
         //Anodo.
            psix2.set(i,j,k, 0);
@@ -749,13 +748,13 @@ void simulator::calcSpeeds(int x, int y, int z) {
            psiy2.set(i,j,k,  (4*psiy2.at(i,j-1,k) - psiy2.at(i,j-2,k))/3);
            psiz2.set(i,j,k, 0);
 
-           U.set(i,j,k, 0);
-           V.set(i,j,k, 0);
-           W.set(i,j,k, 0);
+           U2.set(i,j,k, 0);
+           V2.set(i,j,k, 0);
+           W2.set(i,j,k, 0);
            //Se abusa de que la velocidad en el punto es 0.
-           omx2.set(i,j,k,  (-W.at(i,j-1,k))/h);
+           omx2.set(i,j,k,  (-W2.at(i,j-1,k))/h);
            omy2.set(i,j,k, 0);
-           omz2.set(i,j,k,  (U.at(i,j-1,k))/h);
+           omz2.set(i,j,k,  (U2.at(i,j-1,k))/h);
 
      }
      else
@@ -768,17 +767,17 @@ void simulator::calcSpeeds(int x, int y, int z) {
            psiz2.set(i,j,k, 0);
            //10/06/2002: Se agrega fijar las velocidades de
            //este punto en 0.
-           U.set(i,j,k, 0);
-           V.set(i,j,k, 0);
-           W.set(i,j,k, 0);
+           U2.set(i,j,k, 0);
+           V2.set(i,j,k, 0);
+           W2.set(i,j,k, 0);
            //Se abusa de que la velocidad en el punto es 0.
-           omx2.at(i,j,k)=0;
-           omy2.at(i,j,k)=(-W.at(i+1,j,k))/h);
-           omz2.at(i,j,k)=(V.at(i+1,j,k))/h);
+           omx2.set(i,j,k, 0);
+           omy2.set(i,j,k, (-W2.at(i+1,j,k))/h);
+           omz2.set(i,j,k, (V2.at(i+1,j,k))/h);
 
      }
      else
-     if (i==nX)
+     if (i==nX-1)
      {
         //Pared Lateral.
            //Se agrega nueva condicion con la derivada normal en dos puntos.
@@ -787,13 +786,13 @@ void simulator::calcSpeeds(int x, int y, int z) {
            psiz2.set(i,j,k, 0);
            //10/06/2002: Se agrega fijar las velocidades de
            //este punto en 0.
-           U.set(i,j,k, 0);
-           V.set(i,j,k, 0);
-           W.set(i,j,k, 0);
+           U2.set(i,j,k, 0);
+           V2.set(i,j,k, 0);
+           W2.set(i,j,k, 0);
            //Se abusa de que la velocidad en el punto es 0.
            omx2.set(i,j,k, 0);
-           omy2.set(i,j,k,  ( W.at(i-1,j,k))/h);
-           omz2.set(i,j,k,  (-V.at(i-1,j,k))/h);
+           omy2.set(i,j,k, ( W2.at(i-1,j,k))/h);
+           omz2.set(i,j,k, (-V2.at(i-1,j,k))/h);
 
      }
      else
@@ -802,21 +801,20 @@ void simulator::calcSpeeds(int x, int y, int z) {
         //Piso.
            psix2.set(i,j,k, 0);
            psiy2.set(i,j,k, 0);
-           //Se agrega nueva condici�n con la derivada normal en dos puntos.
+           //Se agrega nueva condicion con la derivada normal en dos puntos.
            psiz2.set(i,j,k,  (4*psiz2.at(i,j,k+1) - psiz2.at(i,j,k+2))/3);
-           //10/06/2002: Se agrega fijar las velocidades de
-           //este punto en 0.
-           U.set(i,j,k, 0);
-           V.set(i,j,k, 0);
-           W.set(i,j,k, 0);
+
+           U2.set(i,j,k, 0);
+           V2.set(i,j,k, 0);
+           W2.set(i,j,k, 0);
            //Se abusa de que la velocidad en el punto es 0.
-           omx2.set(i,j,k,  (-V.at(i,j,k+1))/h);
-           omy2.set(i,j,k,  ( U.at(i,j,k+1))/h);
+           omx2.set(i,j,k, (-V2.at(i,j,k+1))/h);
+           omy2.set(i,j,k, (U2.at(i,j,k+1))/h);
            omz2.set(i,j,k, 0);
 
      }
      else
-     if (k==nZ)
+     if (k==nZ-1)
      {
         //Techo.
            psix2.set(i,j,k, 0);
@@ -824,12 +822,12 @@ void simulator::calcSpeeds(int x, int y, int z) {
            //Se agrega nueva condicion con la derivada normal en dos puntos.
            psiz2.set(i,j,k,  (4*psiz2.at(i,j,k-1) - psiz2.at(i,j,k-2))/3);
 
-           U.set(i,j,k, 0);
-           V.set(i,j,k, 0);
-           W.set(i,j,k, 0);
+           U2.set(i,j,k, 0);
+           V2.set(i,j,k, 0);
+           W2.set(i,j,k, 0);
            //Se abusa de que la velocidad en el punto es 0.
-           omx2.set(i,j,k,  ( V.at(i,j,k-1))/h);
-           omy2.set(i,j,k,  (-U.at(i,j,k-1))/h);
+           omx2.set(i,j,k, (V2.at(i,j,k-1))/h);
+           omy2.set(i,j,k, (-U2.at(i,j,k-1))/h);
            omz2.set(i,j,k, 0);
 
      }

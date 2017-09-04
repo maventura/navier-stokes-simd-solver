@@ -8,6 +8,7 @@ main : main.cpp mat3.h simulator.h io.h
 
 clean:
 	rm -f main
+	rm ./out/*
 
 help: 
 	@echo 'For principal cpp executable, run make.'
