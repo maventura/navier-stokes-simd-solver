@@ -15,7 +15,7 @@ public:
 private:
   double xMax,  yMax,  zMax,  tMax;
   double nu, rho, C_d;
-  double dx,  dy,  dz,  dt;
+  double dx,  dy,  dz,  dt, h;
   int nX, nY, nZ, nT, step;
 
   double al, fixedPointError, minFixedPointIters;
@@ -46,9 +46,9 @@ private:
   mat3 omx1, omy1, omz1;
   mat3 omx2, omy2, omz2;
 
-  mat3 phx0, phy0, phz0;
-  mat3 phx1, phy1, phz1;
-  mat3 phx2, phy2, phz2;
+  mat3 psix0, psiy0, psiz0;
+  mat3 psix1, psiy1, psiz1;
+  mat3 psix2, psiy2, psiz2;
 
   mat3 U_aux_0, V_aux_0, W_aux_0;
   mat3 U_aux_1, V_aux_1, W_aux_1;
@@ -72,12 +72,13 @@ private:
   void originalEquation(int i, int j, int k);
   void chorinProjection(int i, int j, int k);
   void vorticityVectorPotencial(int i, int j, int k);
+  void calcSpeeds(int x, int y, int z);
 };
 
 simulator::simulator(){
 
   readParameters("parameters.txt");
-
+  h = dx; //for square grids.
   nX = round(xMax / dx) + 1;
   nY = round(yMax / dy) + 1;
   nZ = round(yMax / dy) + 1;
@@ -99,15 +100,15 @@ simulator::simulator(){
   W2.confAndInit(nX, nY, nZ, 0);
   P2.confAndInit(nX, nY, nZ, 1);
 
-  phx0.confAndInit(nX, nY, nZ, 0);
-  phx1.confAndInit(nX, nY, nZ, 0);
-  phx2.confAndInit(nX, nY, nZ, 0);
-  phy0.confAndInit(nX, nY, nZ, 0);
-  phy1.confAndInit(nX, nY, nZ, 0);
-  phy2.confAndInit(nX, nY, nZ, 0);
-  phz0.confAndInit(nX, nY, nZ, 0);
-  phz1.confAndInit(nX, nY, nZ, 0);
-  phz2.confAndInit(nX, nY, nZ, 0);
+  psix0.confAndInit(nX, nY, nZ, 0);
+  psix1.confAndInit(nX, nY, nZ, 0);
+  psix2.confAndInit(nX, nY, nZ, 0);
+  psiy0.confAndInit(nX, nY, nZ, 0);
+  psiy1.confAndInit(nX, nY, nZ, 0);
+  psiy2.confAndInit(nX, nY, nZ, 0);
+  psiz0.confAndInit(nX, nY, nZ, 0);
+  psiz1.confAndInit(nX, nY, nZ, 0);
+  psiz2.confAndInit(nX, nY, nZ, 0);
 
   omx0.confAndInit(nX, nY, nZ, 0);
   omx1.confAndInit(nX, nY, nZ, 0);
@@ -165,15 +166,10 @@ void simulator::setBorderConditions(){
   for (int i = 0; i < nX; ++i) {
     for (int k = 0; k < nZ; ++k) {
 
-      //Set CAvity flow conditions.
+      //Set Cavity flow conditions.
       U0.set(i, nY - 1, k, 0.01);
       U1.set(i, nY - 1, k, 0.01);
       U2.set(i, nY - 1, k, 0.01);
-
-      U0.set(i, nY - 2, k, 0.01);
-      U1.set(i, nY - 2, k, 0.01);
-      U2.set(i, nY - 2, k, 0.01);
-
 
       //Update pressure conditions.
       P0.set(i,nY-2,k, P0.at(i,nY-1,k));
@@ -223,36 +219,6 @@ void simulator::setBorderConditions(){
       }
     }
   }
-
-  /*Dejar los psi en cero es lo mismo que hacer esta cosa... arranca bien siendo cero y dan los mismos resutados
-  por ahora esto es desperdicio de tiempo en calclulos
-
-  for (int it = 0; it < 10; it++) {
-    for (int i = 1; i < nX-1; ++i) {
-      for (int j = 1; j < nY-1; ++j) {
-        for (int k = 1; k < nZ-1; ++k) {
-          //segundas ecuaciones psi (dependen de psi, v y omega)
-          double aux;
-          aux = (dy*dy*dz*dz* (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx*dx * dz*dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx*dx * dy*dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
-          phx2.set(i,j,k,aux);
-
-          aux = (dy*dy*dz*dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx*dx * dz*dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx*dx * dy*dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omy1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
-          phy2.set(i,j,k,aux);
-
-          aux = (dy*dy*dz*dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx*dx * dz*dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx*dx * dy*dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omz1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
-          phz2.set(i,j,k,aux);
-        }
-      }
-    }
-  }
-  phx1.copyAll(phx2);
-  phx0.copyAll(phx2);
-
-  phy1.copyAll(phy2);
-  phy0.copyAll(phy2);
-
-  phz1.copyAll(phz2);
-  phz0.copyAll(phz2);*/
 }
 
 
@@ -261,8 +227,11 @@ void simulator::process(){
   for (t = 0; t < tMax; t = t + dt) {
     cerr << 100*t/tMax << "%" << endl;
     step++;
-
-    /*U_name << "./out/U_" << step << ".vtk";
+    ostringstream U_name;
+    ostringstream V_name;
+    ostringstream W_name;
+    ostringstream P_name;
+    U_name << "./out/U_" << step << ".vtk";
     ostringstream V0_name;
     V_name << "./out/V_" << step << ".vtk";
     ostringstream W0_name;
@@ -273,61 +242,37 @@ void simulator::process(){
     saveVtk(V2,V_name.str());
     saveVtk(W2,W_name.str());
     //saveVtk(P0,P_name.str());
-    */
 
 
-    for (int iter = 0; iter < 15; ++iter) { //hacer de las cantidad de iteraciones un parametro externo
+
+    for (int iter = 0; iter < 15; ++iter) { //TODO:hacer de las cantidad de iteraciones un parametro externo
       step++;
-      ostringstream U_name;
-      ostringstream V_name;
-      ostringstream W_name;
-      ostringstream P_name;
-      U_name << "./out/U_" << step << ".vtk";
-      ostringstream V0_name;
-      V_name << "./out/V_" << step << ".vtk";
-      ostringstream W0_name;
-      W_name << "./out/W_" << step << ".vtk";
-      ostringstream P0_name;
-      P_name << "./out/P_" << step << ".vtk";
-      saveVtk(U2,U_name.str());
-      saveVtk(V2,V_name.str());
-      saveVtk(W2,W_name.str());
 
-      for (int i = 1; i < nX-1; ++i) {
-        for (int j = 1; j < nY-1; ++j) {
-          for (int k = 1; k < nZ-1; ++k) {
-
+      for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+          for (int k = 0; k < nZ; ++k) {
             calcTerms(i,j,k);
-
-            vorticityVectorPotencial(i,j,k);
+            //if(i*j*k == 0 || i == nX-1 || j == nY-1 || k == nZ-1) {
+            if(i*j*k == 0 || j == nY-1 || k == nZ-1) { //in i speed must be != 0.
+              setVorticityVectorPotencialBorders();
+            }else{
+              vorticityVectorPotencial(i,j,k);
+            }
+            //testEquation(i,j,k);
           }
         }
       }
     }
 
-    //TODO:las matrices "0", o sea en tiempo n-1 se usarian si hacemos cosas con tiempo centrado, para nada mas, podriamos borrar
-    /*U0.copyAll(U1);
-    V0.copyAll(V1);
-    W0.copyAll(W1);
-    P0.copyAll(P1);
-
-    phx0.copyAll(phx1);
-    phy0.copyAll(phy1);
-    phz0.copyAll(phz1);
-
-    omx0.copyAll(omx1);
-    omy0.copyAll(omy1);
-    omz0.copyAll(omz1);*/
 
     //TODO: actualizar las velocidades acá también genera transiciones bruscas entre t y t+1
     U1.copyAll(U2);
     V1.copyAll(V2);
     W1.copyAll(W2);
-    //P1.copyAll(P2); //no la usamos en este metodo
 
-    phx1.copyAll(phx2);
-    phy1.copyAll(phy2);
-    phz1.copyAll(phz2);
+    psix1.copyAll(psix2);
+    psiy1.copyAll(psiy2);
+    psiz1.copyAll(psiz2);
 
     omx1.copyAll(omx2);
     omy1.copyAll(omy2);
@@ -341,42 +286,123 @@ void simulator::process(){
 
 
 void simulator::vorticityVectorPotencial(int i, int j, int k){
+  double h = dx;
+  double q = dt/(2*h);
+  double r = dt/(Re*h*h);
+  double wt = 0.8;
+  double aux_omx2 = omx2.at(i,j,k);
+  double aux_omy2 = omy2.at(i,j,k);
+  double aux_omz2 = omz2.at(i,j,k);
+  double aux_psix2 = psix2.at(i,j,k);
+  double aux_psiy2 = psiy2.at(i,j,k);
+  double aux_psiz2 = psiz2.at(i,j,k);
 
-  //@Mocksos(2008)
-  double rhs;
-  double aux;
+  //Eje x.
+  //calcular_V2(punto, mask, h, V2, psi);
+  double delta=(1 - q*U2.at(i+1,j,k) + q*U2.at(i-1,j,k) + 6*r);
+  double p1 = (-q*U2.at(i+1,j,k) + r)/delta;
+  double p2 = (-q*V2.at(i,j+1,k) + r)/delta;
+  double p3 = (q*U2.at(i-1,j,k) + r)/delta;
+  double p4 = (q*V2.at(i,j-1,k) + r)/delta;
+  double p5 = (q*W2.at(i,j,k+1) + r)/delta;
+  double p6 = (q*W2.at(i,j,k-1) + r)/delta;
 
-  //primeras ecuaciones omega (dependen de omega y v)
-  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omx2.at(i+1,j,k) - omx2.at(i-1,j,k)) - V1.at(i,j,k)*(1/(2*dy))*(omx2.at(i,j+1,k) - omx2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omx2.at(i,j,k+1) - omx2.at(i,j,k-1)) + omx1.at(i,j,k) * U2x + omy1.at(i,j,k) * U2y + omz1.at(i,j,k) * U2z + (1/Re) * ((omx2.at(i+1,j,k) - 2*omx2.at(i,j,k) + omx2.at(i-1,j,k))/(dx*dx) + (omx2.at(i,j+1,k) - 2*omx2.at(i,j,k) + omx2.at(i,j-1,k))/(dy*dy) + (omx2.at(i,j,k+1) - 2*omx2.at(i,j,k) + omx2.at(i,j,k-1))/(dz*dz));
+  double ax1 = q*omy2.at(i,j,k)*U2.at(i,j+1,k);
+  double ax2 = -q*omy2.at(i,j,k)*U2.at(i,j-1,k);
+  double ax3 = q*omz2.at(i,j,k)*U2.at(i,j,k+1);
+  double ax4 = -q*omz2.at(i,j,k)*U2.at(i,j,k-1);
 
-  omx2.set(i,j,k, -omx1.at(i,j,k) +(rhs * dt));
+  omx2.set(i,j,k, p1*omx2.at(i+1,j,k) + p2*omx2.at(i,j+1,k)
+                 + p3*omx2.at(i-1,j,k) + p4*omx2.at(i,j-1,k)
+                 + p5*omx2.at(i,j,k+1) + p6*omx2.at(i,j,k-1)
+                 + omx1.at(i,j,k)/delta
+                 + ax1/delta + ax2/delta + ax3/delta + ax4/delta);
 
-  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omy2.at(i+1,j,k) - omy2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omy2.at(i,j+1,k) - omy2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omy2.at(i,j,k+1) - omy2.at(i,j,k-1)) + omx1.at(i,j,k) * V2x + omy1.at(i,j,k) * V2y + omz1.at(i,j,k) * V2z + (1/Re) * ((omy2.at(i+1,j,k) - 2*omy2.at(i,j,k) + omy2.at(i-1,j,k))/(dx*dx) + (omy2.at(i,j+1,k) - 2*omy2.at(i,j,k) + omy2.at(i,j-1,k))/(dy*dy) + (omy2.at(i,j,k+1) - 2*omy2.at(i,j,k) + omy2.at(i,j,k-1))/(dz*dz));
-  omy2.set(i,j,k, -omy1.at(i,j,k) + (rhs * dt));
+  omx2.set(i,j,k, (1.0 - wt)*aux_omx2 + wt*omx2.at(i,j,k));
 
-  rhs = -U1.at(i,j,k)*(1/(2*dx))*(omz2.at(i+1,j,k) - omz2.at(i-1,j,k)) -  V1.at(i,j,k)*(1/(2*dy))*(omz2.at(i,j+1,k) - omz2.at(i,j-1,k)) - W1.at(i,j,k)*(1/(2*dz))*(omz2.at(i,j,k+1) - omz2.at(i,j,k-1)) + omx1.at(i,j,k) * W2x + omy1.at(i,j,k) * W2y + omz1.at(i,j,k) * W2z + (1/Re) * ((omz2.at(i+1,j,k) - 2*omz2.at(i,j,k) + omz2.at(i-1,j,k))/(dx*dx) + (omz2.at(i,j+1,k) - 2*omz2.at(i,j,k) + omz2.at(i,j-1,k))/(dy*dy) + (omz2.at(i,j,k+1) - 2*omz2.at(i,j,k) + omz2.at(i,j,k-1))/(dz*dz));
-  omz2.set(i,j,k, -omz1.at(i,j,k) + (rhs * dt));
+  //Eliptica eje x.
+  //p1=p2=p3=p4=p5=p6=1/6.0;
+
+  psix2.set(i,j,k, (psix2.at(i+1,j,k) + psix2.at(i,j+1,k)
+     + psix2.at(i-1,j,k) + psix2.at(i,j-1,k)
+     + psix2.at(i,j,k+1) + psix2.at(i,j,k-1)
+     + h*h*omx2.at(i,j,k))/6.0);
+  psix2.set(i,j,k,(1.0 - wt)*aux_psix2 + wt*psix2.at(i,j,k));
+
+  //Eje y.
+  //calcular_V2(punto, mask, h, V2, psi);
+  delta = (1 - q*V2.at(i,j+1,k) + q*V2.at(i,j-1,k) + 6*r);
+  p1 = -q*U2.at(i+1,j,k) + r;
+  p2 = -q*V2.at(i,j+1,k) + r;
+  p3 = q*U2.at(i-1,j,k) + r;
+  p4 = q*V2.at(i,j-1,k) + r;
+  p5 = q*W2.at(i,j,k+1) + r;
+  p6 = q*W2.at(i,j,k-1) + r;
+  p1 = p1/delta;
+  p2 = p2/delta;
+  p3 = p3/delta;
+  p4 = p4/delta;
+  p5 = p5/delta;
+  p6 = p6/delta;
+
+  ax1 = q*omx2.at(i,j,k)*V2.at(i+1,j,k);
+  ax2 = -q*omx2.at(i,j,k)*V2.at(i-1,j,k);
+  ax3 = q*omz2.at(i,j,k)*V2.at(i,j,k+1);
+  ax4 = -q*omz2.at(i,j,k)*V2.at(i,j,k-1);
+
+  omy2.set(i,j,k, p1*omy2.at(i+1,j,k) + p2*omy2.at(i,j+1,k)
+                 + p3*omy2.at(i-1,j,k) + p4*omy2.at(i,j-1,k)
+                 + p5*omy2.at(i,j,k+1) + p6*omy2.at(i,j,k-1)
+                 + omy1.at(i,j,k)/delta
+                 + ax1/delta + ax2/delta + ax3/delta + ax4/delta);
+
+  omy2.set(i,j,k, (1.0 - wt)*aux_omy2 + wt*omy2.at(i,j,k));
+
+  //Eliptica eje y.
+  psiy2.set(i,j,k, (psiy2.at(i+1,j,k) + psiy2.at(i,j+1,k)
+     + psiy2.at(i-1,j,k) + psiy2.at(i,j-1,k)
+     + psiy2.at(i,j,k+1) + psiy2.at(i,j,k-1)
+     + h*h*omy2.at(i,j,k))/6.0);
+  psiy2.set(i,j,k, (1.0 - wt)*aux_psiy2 + wt*psiy2.at(i,j,k));
+
+  //Eje z.
+  //calcular_V2(punto, mask, h, V2, psi);
+  delta=(1 - q*W2.at(i,j,k+1) + q*W2.at(i,j,k-1) + 6*r);
+  p1 = -q*U2.at(i+1,j,k) + r;
+  p2 = -q*V2.at(i,j+1,k) + r;
+  p3 = q*U2.at(i-1,j,k) + r;
+  p4 = q*V2.at(i,j-1,k) + r;
+  p5 = q*W2.at(i,j,k+1) + r;
+  p6 = q*W2.at(i,j,k-1) + r;
+  p1 = p1/delta;
+  p2 = p2/delta;
+  p3 = p3/delta;
+  p4 = p4/delta;
+  p5 = p5/delta;
+  p6 = p6/delta;
+
+  ax1 = q*omx2.at(i,j,k)*W2.at(i+1,j,k);
+  ax2 = -q*omx2.at(i,j,k)*W2.at(i-1,j,k);
+  ax3 = q*omy2.at(i,j,k)*W2.at(i,j+1,k);
+  ax4 = -q*omy2.at(i,j,k)*W2.at(i,j-1,k);
+
+  omz2.set(i,j,k, p1*omz2.at(i+1,j,k) + p2*omz2.at(i,j+1,k)
+     + p3*omz2.at(i-1,j,k) + p4*omz2.at(i,j-1,k)
+     + p5*omz2.at(i,j,k+1) + p6*omz2.at(i,j,k-1)
+     + omz1.at(i,j,k)/delta
+     + ax1/delta + ax2/delta + ax3/delta + ax4/delta);
+
+  omz2.set(i,j,k, (1.0 - wt)*aux_omz2 + wt*omz2.at(i,j,k));
+
+  //Eliptica eje z.
+  //p1=p2=p3=p4=p5=p6=1/6.0;
+  psiz2.set(i,j,k, (psiz2.at(i+1,j,k) + psiz2.at(i,j+1,k)
+     + psiz2.at(i-1,j,k) + psiz2.at(i,j-1,k)
+     + psiz2.at(i,j,k+1) + psiz2.at(i,j,k-1)
+     + h*h * omz2.at(i,j,k))/6.0);
+  psiz2.set(i,j,k, (1.0 - wt)*aux_psiz2 + wt*psiz2.at(i,j,k));
 
 
-  //segundas ecuaciones psi (dependen de psi, v y omega)
-  aux = (dy*dy*dz*dz* (phx2.at(i+1,j,k)+phx2.at(i-1,j,k)) + dx*dx * dz*dz * (phx2.at(i,j+1,k)+phx2.at(i,j-1,k)) + dx*dx * dy*dy * (phx2.at(i,j,k+1)+phx2.at(i,j,k-1)) + omx1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
-  phx2.set(i,j,k,aux);
-
-  aux = (dy*dy*dz*dz * (phy2.at(i+1,j,k)+phy2.at(i-1,j,k)) + dx*dx * dz*dz * (phy2.at(i,j+1,k)+phy2.at(i,j-1,k)) + dx*dx * dy*dy * (phy2.at(i,j,k+1)+phy2.at(i,j,k-1)) + omy1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
-  phy2.set(i,j,k,aux);
-
-  aux = (dy*dy*dz*dz * (phz2.at(i+1,j,k)+phz2.at(i-1,j,k)) + dx*dx * dz*dz * (phz2.at(i,j+1,k)+phz2.at(i,j-1,k)) + dx*dx * dy*dy * (phz2.at(i,j,k+1)+phz2.at(i,j,k-1)) + omz1.at(i,j,k)) / (2*dy*dy*dz*dz + 2*dx*dx*dz*dz + 2*dx*dx*dy*dy);
-  phz2.set(i,j,k,aux);
-
-
-  U2.set(i,j,k, (phz2.at(i,j+1,k) - phz2.at(i,j-1,k))/(2*dy) - (phy2.at(i,j,k+1) - phy2.at(i,j,k-1))/(2*dz));
-  V2.set(i,j,k, (phx2.at(i,j,k+1) - phx2.at(i,j,k-1))/(2*dz) - (phz2.at(i+1,j,k) - phz2.at(i-1,j,k))/(2*dx));
-  W2.set(i,j,k, (phy2.at(i+1,j,k) - phy2.at(i-1,j,k))/(2*dx) - (phx2.at(i,j+1,k) - phx2.at(i,j-1,k))/(2*dy));
-  
-
-  //if(10 < i && 20 > i && 10 < j && 20 > j && 10 < k && 20 > k){
-  //  omx2.set(i,j,k,1);
-  //}
 }
 
 
@@ -434,15 +460,13 @@ void simulator::chorinProjection(int i, int j, int k){
 void simulator::testEquation(int i, int j, int k){
   //simple diffusion for testing.
   U2.set(i,j,k,(U1.at(i,j,k)+U1.at(i+1,j,k)+U1.at(i,j+1,k)+U1.at(i,j,k+1)+U1.at(i-1,j,k)+U1.at(i,j-1,k) +U1.at(i,j,k-1))/7.0 );
-  if(i == 10 && j == 10 && k == 10) U2.set(i,j,k, 50);
+  V2.set(i,j,k,(V1.at(i,j,k)+V1.at(i+1,j,k)+V1.at(i,j+1,k)+V1.at(i,j,k+1)+V1.at(i-1,j,k)+V1.at(i,j-1,k) +V1.at(i,j,k-1))/7.0 );
+  W2.set(i,j,k,(W1.at(i,j,k)+W1.at(i+1,j,k)+W1.at(i,j+1,k)+W1.at(i,j,k+1)+W1.at(i-1,j,k)+W1.at(i,j-1,k) +W1.at(i,j,k-1))/7.0 );
 
-  //double diff = sqrt( pow(U3.at(i,j,k) - oldU, 2) + pow(V3.at(i,j,k) - oldV, 2) + pow(W3.at(i,j,k) - oldW, 2 ) );
-  // if (diff < 0.01) {
-  //     break;
-  // } else if (step > 50) {
-  //     cerr << "WARNING: unstable." << endl;
-  //     break;
-  // }
+  if(i == 10 && j == 10 && k == 10) U2.set(i,j,k, 0.1);
+  if(i == 10 && j == 10 && k == 10) V2.set(i,j,k, 0.1);
+  if(i == 10 && j == 10 && k == 10) W2.set(i,j,k, 0.1);
+
 }
 
 
@@ -457,10 +481,6 @@ void simulator::barbaSpacialBackwardEq(int i, int j, int k){
   double A = (1/dt)*(U1x + V1y + W1z) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
   double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
 
-  //if(isnan(newP)){
-  //  cerr << "Error: Nan found. Returning." << endl;
-  //  return;
-  //}
 
   U2.set(i,j,k, newU);
   V2.set(i,j,k, newV);
@@ -479,11 +499,6 @@ void simulator::barbaSpacialCenteredEq(int i, int j, int k){
 
   double A = (1/dt)*(U1x + V1y + W1z) - (U1x*U1x + V1y*V1y + W1z*W1z + 2*U1y*V1x + 2*U1z*W1x + 2*W1y*V1z);
   double newP = P2.at(i+1,j,k)+P2.at(i-1,j,k) - dx*dx*rho*A;
-
-  // if(isnan(newP)){
-  //   cerr << "Error: Nan found. Returning." << endl;
-  //   return;
-  // }
 
   U2.set(i,j,k, newU);
   V2.set(i,j,k, newV);
@@ -696,6 +711,130 @@ void simulator::centralPressure(int i, int j, int k){
     P1.set(i,j,k,3);
   }
 }
+
+void simulator::calcSpeeds(int x, int y, int z) {
+        U2.set(x,y,z, (psiz2.at(x,y+1,z) - psiz2.at(x,y-1,z))/2/h +
+            (-psiy2.at(x,y,z+1) + psiy2.at(x,y,z-1))/2/h);
+        V2.set(x,y,z, (psix2.at(x,y,z+1) - psix2.at(x,y,z-1))/2/h -
+            (psiz2.at(x+1,y,z) - psiz2.at(x-1,y,z))/2/h);
+        W2.set(x,y,z, (psiy2.at(x+1,y,z) - psiy2.at(x-1,y,z))/2/h -
+            (psix2.at(x,y+1,z) - psix2.at(x,y-1,z))/2/h);
+   }
+
+
+   void simulator::setVorticityVectorPotencialBorders(i,j,k){
+     //Condiciones de borde.
+     if (j==0)
+     {
+           psix.set(i,j,k, 0);
+           //Se agrega nueva condicion con la derivada normal en dos puntos.
+           psiy.set(i,j,k,  (4*psiy2.at(i,j+1,k) - psiy2.at(i,j+2,k))/3);
+           psiz.set(i,j,k, 0);
+
+           U.set(i,j,k, 0);
+           V.set(i,j,k, 0);
+           W.set(i,j,k, 0);
+           //Se abusa de que la velocidad en el punto es 0.
+           omx2.set(i,j,k,  (W.at(i,j+1,k))/h);
+           omy2.set(i,j,k, 0);
+           omz2.set(i,j,k,  -(U.at(i,j+1,k))/h);
+
+     }
+     else
+     if (j==nY)
+     {
+        //Anodo.
+           psix2.set(i,j,k, 0);
+           //Se agrega nueva condicion con la derivada normal en dos puntos.
+           psiy2.set(i,j,k,  (4*psiy2.at(i,j-1,k) - psiy2.at(i,j-2,k))/3);
+           psiz2.set(i,j,k, 0);
+
+           U.set(i,j,k, 0);
+           V.set(i,j,k, 0);
+           W.set(i,j,k, 0);
+           //Se abusa de que la velocidad en el punto es 0.
+           omx2.set(i,j,k,  (-W.at(i,j-1,k))/h);
+           omy2.set(i,j,k, 0);
+           omz2.set(i,j,k,  (U.at(i,j-1,k))/h);
+
+     }
+     else
+     if (i==0)
+     {
+        //Pared Lateral.
+           //Se agrega nueva condici�n con la derivada normal en dos puntos.
+           psix2.set(i,j,k,  (4*psix2.at(i+1,j,k) - psix2.at(i+2,j,k))/3);
+           psiy2.set(i,j,k, 0);
+           psiz2.set(i,j,k, 0);
+           //10/06/2002: Se agrega fijar las velocidades de
+           //este punto en 0.
+           U.set(i,j,k, 0);
+           V.set(i,j,k, 0);
+           W.set(i,j,k, 0);
+           //Se abusa de que la velocidad en el punto es 0.
+           omx2.at(i,j,k)=0;
+           omy2.at(i,j,k)=(-W.at(i+1,j,k))/h);
+           omz2.at(i,j,k)=(V.at(i+1,j,k))/h);
+
+     }
+     else
+     if (i==nX)
+     {
+        //Pared Lateral.
+           //Se agrega nueva condicion con la derivada normal en dos puntos.
+           psix2.set(i,j,k,  (4*psix2.at(i-1,j,k) - psix2.at(i-2,j,k))/3);
+           psiy2.set(i,j,k, 0);
+           psiz2.set(i,j,k, 0);
+           //10/06/2002: Se agrega fijar las velocidades de
+           //este punto en 0.
+           U.set(i,j,k, 0);
+           V.set(i,j,k, 0);
+           W.set(i,j,k, 0);
+           //Se abusa de que la velocidad en el punto es 0.
+           omx2.set(i,j,k, 0);
+           omy2.set(i,j,k,  ( W.at(i-1,j,k))/h);
+           omz2.set(i,j,k,  (-V.at(i-1,j,k))/h);
+
+     }
+     else
+     if (k==0)
+     {
+        //Piso.
+           psix2.set(i,j,k, 0);
+           psiy2.set(i,j,k, 0);
+           //Se agrega nueva condici�n con la derivada normal en dos puntos.
+           psiz2.set(i,j,k,  (4*psiz2.at(i,j,k+1) - psiz2.at(i,j,k+2))/3);
+           //10/06/2002: Se agrega fijar las velocidades de
+           //este punto en 0.
+           U.set(i,j,k, 0);
+           V.set(i,j,k, 0);
+           W.set(i,j,k, 0);
+           //Se abusa de que la velocidad en el punto es 0.
+           omx2.set(i,j,k,  (-V.at(i,j,k+1))/h);
+           omy2.set(i,j,k,  ( U.at(i,j,k+1))/h);
+           omz2.set(i,j,k, 0);
+
+     }
+     else
+     if (k==nZ)
+     {
+        //Techo.
+           psix2.set(i,j,k, 0);
+           psiy2.set(i,j,k, 0);
+           //Se agrega nueva condicion con la derivada normal en dos puntos.
+           psiz2.set(i,j,k,  (4*psiz2.at(i,j,k-1) - psiz2.at(i,j,k-2))/3);
+
+           U.set(i,j,k, 0);
+           V.set(i,j,k, 0);
+           W.set(i,j,k, 0);
+           //Se abusa de que la velocidad en el punto es 0.
+           omx2.set(i,j,k,  ( V.at(i,j,k-1))/h);
+           omy2.set(i,j,k,  (-U.at(i,j,k-1))/h);
+           omz2.set(i,j,k, 0);
+
+     }
+
+   }
 
 
 #endif
