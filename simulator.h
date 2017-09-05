@@ -239,12 +239,33 @@ void simulator::process(){
     W_name << "./out/W_" << step << ".vtk";
     ostringstream P0_name;
     P_name << "./out/P_" << step << ".vtk";
+
+    ostringstream psix0_name;
+    psix0_name << "./out/psix0_" << step << ".vtk";
+    ostringstream omx0_name;
+    omx0_name << "./out/omx0_" << step << ".vtk";
+
+    ostringstream psiy0_name;
+    psiy0_name << "./out/psiy0_" << step << ".vtk";
+    ostringstream omy0_name;
+    omy0_name << "./out/omy0_" << step << ".vtk";
+
+    ostringstream psiz0_name;
+    psiz0_name << "./out/psiz0_" << step << ".vtk";
+    ostringstream omz0_name;
+    omz0_name << "./out/omz0_" << step << ".vtk";
+
     saveVtk(U2,U_name.str());
     saveVtk(V2,V_name.str());
     saveVtk(W2,W_name.str());
-    //saveVtk(P0,P_name.str());
 
+    saveVtk(psix0,psix0_name.str());
+    saveVtk(psiy0,psiy0_name.str());
+    saveVtk(psiz0,psiz0_name.str());
 
+    saveVtk(omx0,omx0_name.str());
+    saveVtk(omy0,omy0_name.str());
+    saveVtk(omz0,omz0_name.str());
 
     for (int iter = 0; iter < 15; ++iter) { //TODO:hacer de las cantidad de iteraciones un parametro externo
       for (int i = 0; i < nX; ++i) {
