@@ -74,6 +74,8 @@ private:
   void vorticityVectorPotencial(int i, int j, int k);
   void calcSpeeds(int x, int y, int z);
   void setVorticityVectorPotencialBorders(int i, int j, int k);
+  void calcular_V(int i,int j,int k);
+
 };
 
 simulator::simulator(){
@@ -318,7 +320,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
   double aux_psiz2 = psiz2.at(i,j,k);
 
   //Eje x.
-  //calcular_V2(punto, mask, h, V2, psi);
+  calcular_V(i,j,k);
   double delta=(1 - q*U2.at(i+1,j,k) + q*U2.at(i-1,j,k) + 6*r);
   double p1 = (-q*U2.at(i+1,j,k) + r)/delta;
   double p2 = (-q*V2.at(i,j+1,k) + r)/delta;
@@ -342,7 +344,6 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
 
   //Eliptica eje x.
   //p1=p2=p3=p4=p5=p6=1/6.0;
-
   psix2.set(i,j,k, (psix2.at(i+1,j,k) + psix2.at(i,j+1,k)
      + psix2.at(i-1,j,k) + psix2.at(i,j-1,k)
      + psix2.at(i,j,k+1) + psix2.at(i,j,k-1)
@@ -350,7 +351,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
   psix2.set(i,j,k,(1.0 - wt)*aux_psix2 + wt*psix2.at(i,j,k));
 
   //Eje y.
-  //calcular_V2(punto, mask, h, V2, psi);
+  calcular_V(i,j,k);
   delta = (1 - q*V2.at(i,j+1,k) + q*V2.at(i,j-1,k) + 6*r);
   p1 = -q*U2.at(i+1,j,k) + r;
   p2 = -q*V2.at(i,j+1,k) + r;
@@ -386,7 +387,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k){
   psiy2.set(i,j,k, (1.0 - wt)*aux_psiy2 + wt*psiy2.at(i,j,k));
 
   //Eje z.
-  //calcular_V2(punto, mask, h, V2, psi);
+  calcular_V(i,j,k);
   delta=(1 - q*W2.at(i,j,k+1) + q*W2.at(i,j,k-1) + 6*r);
   p1 = -q*U2.at(i+1,j,k) + r;
   p2 = -q*V2.at(i,j+1,k) + r;
@@ -853,6 +854,16 @@ void simulator::calcSpeeds(int x, int y, int z) {
 
      }
 
+   }
+
+   void simulator::calcular_V(int i,int j,int k)
+   {
+           U2.set(i,j,k, (psiz2.at(i,j+1,k) - psiz2.at(i,j-1,k))/2/h +
+               (-psiy2.at(i,j,k+1) + psiy2.at(i,j,k-1))/2/h);
+           V2.set(i,j,k, (psix2.at(i,j,k+1) - psix2.at(i,j,k-1))/2/h -
+               (psiz2.at(i+1,j,k) - psiz2.at(i-1,j,k))/2/h);
+           W2.set(i,j,k, (psiy2.at(i+1,j,k) - psiy2.at(i-1,j,k))/2/h -
+               (psix2.at(i,j+1,k) - psix2.at(i,j-1,k))/2/h);
    }
 
 
