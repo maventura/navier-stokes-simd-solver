@@ -53,6 +53,8 @@ class simulator {
 
     void calcTerms(int i, int j, int k);
     void saveVtk(mat3 &state, string file_name);
+    void saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name);
+
 
     void setBorderConditions();
     void readParameters(string file_name);
@@ -214,17 +216,24 @@ void simulator::process() {
         ostringstream omz0_name;
         omz0_name << "./out/omz0_" << step << ".vtk";
 
-        saveVtk(U2, U_name.str());
-        saveVtk(V2, V_name.str());
-        saveVtk(W2, W_name.str());
 
-        saveVtk(psix0, psix0_name.str());
-        saveVtk(psiy0, psiy0_name.str());
-        saveVtk(psiz0, psiz0_name.str());
+        ostringstream streamName;
+        streamName << "./out/stream_" << step << ".vtk";
 
-        saveVtk(omx0, omx0_name.str());
-        saveVtk(omy0, omy0_name.str());
-        saveVtk(omz0, omz0_name.str());
+
+      //  saveVtk(U2, U_name.str());
+       // saveVtk(V2, V_name.str());
+       // saveVtk(W2, W_name.str());
+
+       // saveVtk(psix0, psix0_name.str());
+       // saveVtk(psiy0, psiy0_name.str());
+       // saveVtk(psiz0, psiz0_name.str());
+
+       // saveVtk(omx0, omx0_name.str());
+       // saveVtk(omy0, omy0_name.str());
+        //saveVtk(omz0, omz0_name.str());
+
+        saveStreamVtk(U2, V2, W2, streamName.str());
 
         for (int iter = 0; iter < maxIters; ++iter) {
             for (int i = 0; i < nX; ++i) {
@@ -400,6 +409,89 @@ void simulator::simpleDiffusion(int i, int j, int k) {
     if (i == 10 && j == 10 && k == 10) W2.set(i, j, k, 0.1);
 
 }
+
+void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
+    // Save a 3-D scalar array in VTK format.
+    io out(file_name, io::type_write);
+    out.write("# vtk DataFile Version 2.0");
+    out.newLine();
+    out.write("Comment goes here");
+    out.newLine();
+    out.write("ASCII");
+    out.newLine();
+    out.newLine();
+
+    out.write("DATASET RECTILINEAR_GRID");
+    out.newLine();
+    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
+    out.newLine();
+    out.newLine();
+
+out.write("X_COORDINATES " + to_string(nX) + " float");
+    out.newLine();
+//for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
+//    out.newLine();
+
+out.write("Y_COORDINATES " + to_string(nY) + " float");
+    out.newLine();
+//for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
+//    out.newLine();
+
+out.write("Z_COORDINATES " + to_string(nZ) + " float");
+    out.newLine();
+//for (int i = 0; i < nZ; ++i) out.write(to_string(i) + " ");
+//    out.newLine();
+
+out.write("POINT_DATA " + to_string(nX*nY*nZ));
+    out.newLine();
+
+out.write("SCALARS Xvelocity float 1");
+out.newLine();
+out.write("LOOKUP_TABLE default");
+out.newLine();
+for (int i = 0; i < nX*nY*nZ; ++i)
+{
+    out.write(to_string(i) + ".0");
+    out.newLine();
+}
+
+
+out.write("SCALARS Yvelocity float 1");
+out.newLine();
+out.write("LOOKUP_TABLE default");
+out.newLine();
+for (int i = 0; i < nX*nY*nZ; ++i)
+{
+    out.write(to_string(i) + ".0");
+    out.newLine();
+}
+
+
+out.write("SCALARS Zvelocity float 1");
+out.newLine();
+out.write("LOOKUP_TABLE default");
+out.newLine();
+for (int i = 0; i < nX*nY*nZ; ++i)
+{
+    out.write(to_string(i) + ".0");
+    out.newLine();
+}
+
+out.write("VECTORS VecVelocity float");
+
+
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            for (int k = 0; k < nZ; ++k) {
+                out.write(to_string(m1.at(i, j, k)) + " " + to_string(m2.at(i, j, k))  + " " + to_string(m3.at(i, j, k)));
+                out.newLine();
+            }
+        }
+    }
+    out.close();
+}
+
+
 
 void simulator::saveVtk(mat3 &m, string file_name) {
     // Save a 3-D scalar array in VTK format.
