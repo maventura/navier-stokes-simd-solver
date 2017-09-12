@@ -229,10 +229,12 @@ void simulator::process() {
         ostringstream stream_name;
         stream_name << "./out/stream_" << step << ".vtk";
 
-
+        if(step%50 == 0){
         ostringstream color_name;
         color_name << "./out/color_" << step << ".vtk";
+        saveVtk(color, color_name.str());
 
+}
         //  saveVtk(U2, U_name.str());
         // saveVtk(V2, V_name.str());
         // saveVtk(W2, W_name.str());
@@ -245,7 +247,6 @@ void simulator::process() {
         // saveVtk(omy0, omy0_name.str());
         //saveVtk(omz0, omz0_name.str());
 
-        saveVtk(color, color_name.str());
 
         //saveStreamVtk(U2, V2, W2, stream_name.str());
 
@@ -698,7 +699,7 @@ void simulator::centralColor() {
                 double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
 
 
-                if (r < 3.0) {
+                if (r < 5.0) {
                     color.set(i, j, k, 3);
 
                 }
@@ -715,12 +716,12 @@ void simulator::runColorTest(int i, int j, int k) {
 
     double c = 0;
     c += color.at(i, j, k);
-    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k)*100;
-    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k)*100;
-    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k)*100;
-    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k)*100;
-    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1)*100;
-    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1)*100;
+    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k)*300;
+    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k)*300;
+    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k)*300;
+    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k)*300;
+    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1)*300;
+    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1)*300;
     color.set(i, j, k, c);
 }
 
