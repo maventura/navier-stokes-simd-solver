@@ -22,7 +22,7 @@ class simulator {
     double pi = atan(1) * 4;
 
     double W1y, V1z, W2y, V2z, U1z,
-    W1x, U2z, W2x, V1x, U1y, V2x, U2y;
+           W1x, U2z, W2x, V1x, U1y, V2x, U2y;
 
     int stepsUntilPrint, printPercentageSteps, maxSteps;
     bool printPercentage;
@@ -44,7 +44,8 @@ class simulator {
     mat3 U_aux_1, V_aux_1, W_aux_1;
     mat3 U_aux_2, V_aux_2, W_aux_2;
 
-    
+    mat3 color;
+
 
     double Re, Fx, Fy, Fz;
 
@@ -63,6 +64,9 @@ class simulator {
     void vorticityVectorPotencial(int i, int j, int k);
     void setVorticityVectorPotencialBorders(int i, int j, int k);
     void calcular_V(int i, int j, int k);
+
+    void centralColor();
+    void runColorTest(int i, int j, int k);
 
 };
 
@@ -120,6 +124,9 @@ simulator::simulator() {
     U_aux_2.confAndInit(nX, nY, nZ, 0);
     V_aux_2.confAndInit(nX, nY, nZ, 0);
     W_aux_2.confAndInit(nX, nY, nZ, 0);
+
+
+    color.confAndInit(nX, nY, nZ, 0);
 
     setBorderConditions();
 }
@@ -187,7 +194,9 @@ void simulator::setBorderConditions() {
 
 void simulator::process() {
     step = 0;
+    centralColor();
     for (t = 0; t < tMax; t = t + dt) {
+
         cerr << 100 * t / tMax << "%" << endl;
         step++;
         ostringstream U_name;
@@ -217,29 +226,35 @@ void simulator::process() {
         omz0_name << "./out/omz0_" << step << ".vtk";
 
 
-        ostringstream streamName;
-        streamName << "./out/stream_" << step << ".vtk";
+        ostringstream stream_name;
+        stream_name << "./out/stream_" << step << ".vtk";
 
 
-      //  saveVtk(U2, U_name.str());
-       // saveVtk(V2, V_name.str());
-       // saveVtk(W2, W_name.str());
+        ostringstream color_name;
+        color_name << "./out/color_" << step << ".vtk";
 
-       // saveVtk(psix0, psix0_name.str());
-       // saveVtk(psiy0, psiy0_name.str());
-       // saveVtk(psiz0, psiz0_name.str());
+        //  saveVtk(U2, U_name.str());
+        // saveVtk(V2, V_name.str());
+        // saveVtk(W2, W_name.str());
 
-       // saveVtk(omx0, omx0_name.str());
-       // saveVtk(omy0, omy0_name.str());
+        // saveVtk(psix0, psix0_name.str());
+        // saveVtk(psiy0, psiy0_name.str());
+         //saveVtk(psiz0, psiz0_name.str());
+
+        // saveVtk(omx0, omx0_name.str());
+        // saveVtk(omy0, omy0_name.str());
         //saveVtk(omz0, omz0_name.str());
 
-        saveStreamVtk(U2, V2, W2, streamName.str());
+        saveVtk(color, color_name.str());
+
+        //saveStreamVtk(U2, V2, W2, stream_name.str());
 
         for (int iter = 0; iter < maxIters; ++iter) {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
-                  //if(j == nY-1) continue;
+                    //if(j == nY-1) continue;
                     for (int k = 0; k < nZ; ++k) {
+                        runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if (inside) vorticityVectorPotencial(i, j, k);
@@ -248,37 +263,37 @@ void simulator::process() {
             }
         }
 
-    //TODO: actualizar las velocidades acá también genera transiciones bruscas entre t y t+1
-    U1.copyAll(U2);
-    V1.copyAll(V2);
-    W1.copyAll(W2);
+        //TODO: actualizar las velocidades acá también genera transiciones bruscas entre t y t+1
+        U1.copyAll(U2);
+        V1.copyAll(V2);
+        W1.copyAll(W2);
 
-    psix1.copyAll(psix2);
-    psiy1.copyAll(psiy2);
-    psiz1.copyAll(psiz2);
+        psix1.copyAll(psix2);
+        psiy1.copyAll(psiy2);
+        psiz1.copyAll(psiz2);
 
-    omx1.copyAll(omx2);
-    omy1.copyAll(omy2);
-    omz1.copyAll(omz2);
+        omx1.copyAll(omx2);
+        omy1.copyAll(omy2);
+        omz1.copyAll(omz2);
 
-    //TODO:mas bien reseña, establecer a las px_2 en cero no esta bueno, genera resultados con transiciones menos suaves.
-  }
-cerr << "Message: Processing finished correctly" << endl << flush;
+        //TODO:mas bien reseña, establecer a las px_2 en cero no esta bueno, genera resultados con transiciones menos suaves.
+    }
+    cerr << "Message: Processing finished correctly" << endl << flush;
 }
 
 void simulator::vorticityVectorPotencial(int i, int j, int k) {
-/*
-    for (int f = 0; f < nX; ++f) {
-        for (int q = 0; q < nZ; ++q) {
+    /*
+        for (int f = 0; f < nX; ++f) {
+            for (int q = 0; q < nZ; ++q) {
 
-            //Set Cavfty flow condftfons.
-            U0.set(f, nY - 1, q, -0.01);
-            U1.set(f, nY - 1, q, -0.01);
-            U2.set(f, nY - 1, q, -0.01);
+                //Set Cavfty flow condftfons.
+                U0.set(f, nY - 1, q, -0.01);
+                U1.set(f, nY - 1, q, -0.01);
+                U2.set(f, nY - 1, q, -0.01);
+            }
         }
-    }
 
-*/
+    */
     double h = dx;
     double q = dt / (2 * h);
     double r = dt / (Re * h * h);
@@ -427,57 +442,54 @@ void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
     out.newLine();
     out.newLine();
 
-out.write("X_COORDINATES " + to_string(nX) + " float");
+    out.write("X_COORDINATES " + to_string(nX) + " float");
     out.newLine();
 //for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
 //    out.newLine();
 
-out.write("Y_COORDINATES " + to_string(nY) + " float");
+    out.write("Y_COORDINATES " + to_string(nY) + " float");
     out.newLine();
 //for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
 //    out.newLine();
 
-out.write("Z_COORDINATES " + to_string(nZ) + " float");
+    out.write("Z_COORDINATES " + to_string(nZ) + " float");
     out.newLine();
 //for (int i = 0; i < nZ; ++i) out.write(to_string(i) + " ");
 //    out.newLine();
 
-out.write("POINT_DATA " + to_string(nX*nY*nZ));
+    out.write("POINT_DATA " + to_string(nX * nY * nZ));
     out.newLine();
 
-out.write("SCALARS Xvelocity float 1");
-out.newLine();
-out.write("LOOKUP_TABLE default");
-out.newLine();
-for (int i = 0; i < nX*nY*nZ; ++i)
-{
-    out.write(to_string(i) + ".0");
+    out.write("SCALARS Xvelocity float 1");
     out.newLine();
-}
-
-
-out.write("SCALARS Yvelocity float 1");
-out.newLine();
-out.write("LOOKUP_TABLE default");
-out.newLine();
-for (int i = 0; i < nX*nY*nZ; ++i)
-{
-    out.write(to_string(i) + ".0");
+    out.write("LOOKUP_TABLE default");
     out.newLine();
-}
+    for (int i = 0; i < nX * nY * nZ; ++i) {
+        out.write(to_string(i) + ".0");
+        out.newLine();
+    }
 
 
-out.write("SCALARS Zvelocity float 1");
-out.newLine();
-out.write("LOOKUP_TABLE default");
-out.newLine();
-for (int i = 0; i < nX*nY*nZ; ++i)
-{
-    out.write(to_string(i) + ".0");
+    out.write("SCALARS Yvelocity float 1");
     out.newLine();
-}
+    out.write("LOOKUP_TABLE default");
+    out.newLine();
+    for (int i = 0; i < nX * nY * nZ; ++i) {
+        out.write(to_string(i) + ".0");
+        out.newLine();
+    }
 
-out.write("VECTORS VecVelocity float");
+
+    out.write("SCALARS Zvelocity float 1");
+    out.newLine();
+    out.write("LOOKUP_TABLE default");
+    out.newLine();
+    for (int i = 0; i < nX * nY * nZ; ++i) {
+        out.write(to_string(i) + ".0");
+        out.newLine();
+    }
+
+    out.write("VECTORS VecVelocity float");
 
 
     for (int i = 0; i < nX; ++i) {
@@ -653,24 +665,64 @@ void simulator::calcular_V(int i, int j, int k) {
            (psix2.at(i, j + 1, k) - psix2.at(i, j - 1, k)) / 2 / h);
 }
 
-void simulator::calcTerms(int i, int j, int k){
+void simulator::calcTerms(int i, int j, int k) {
 
-  U1y = (U1.at(i,j + 1,k) - U1.at(i,j - 1,k)) / (2 * dy);
-  U2y = (U2.at(i,j + 1,k) - U2.at(i,j - 1,k)) / (2 * dy);
-  U1z = (U1.at(i,j,k + 1) - U1.at(i,j,k - 1)) / (2 * dz);
-  U2z = (U2.at(i,j,k + 1) - U2.at(i,j,k - 1)) / (2 * dz);
+    U1y = (U1.at(i, j + 1, k) - U1.at(i, j - 1, k)) / (2 * dy);
+    U2y = (U2.at(i, j + 1, k) - U2.at(i, j - 1, k)) / (2 * dy);
+    U1z = (U1.at(i, j, k + 1) - U1.at(i, j, k - 1)) / (2 * dz);
+    U2z = (U2.at(i, j, k + 1) - U2.at(i, j, k - 1)) / (2 * dz);
 
-  V1x = (V1.at(i + 1,j,k) - V1.at(i - 1,j,k)) / (2 * dx);
-  V2x = (V2.at(i + 1,j,k) - V2.at(i - 1,j,k)) / (2 * dx);
+    V1x = (V1.at(i + 1, j, k) - V1.at(i - 1, j, k)) / (2 * dx);
+    V2x = (V2.at(i + 1, j, k) - V2.at(i - 1, j, k)) / (2 * dx);
 
-  V1z = (V1.at(i,j,k + 1) - V1.at(i,j,k - 1)) / (2 * dz);
-  V2z = (V2.at(i,j,k + 1) - V2.at(i,j,k - 1)) / (2 * dz);
+    V1z = (V1.at(i, j, k + 1) - V1.at(i, j, k - 1)) / (2 * dz);
+    V2z = (V2.at(i, j, k + 1) - V2.at(i, j, k - 1)) / (2 * dz);
 
-  W1x = (W1.at(i + 1,j,k) - W1.at(i - 1,j,k)) / (2 * dx);
-  W2x = (W2.at(i + 1,j,k) - W2.at(i - 1,j,k)) / (2 * dx);
-  W1y = (W1.at(i,j + 1,k) - W1.at(i,j - 1,k)) / (2 * dy);
-  W2y = (W2.at(i,j + 1,k) - W2.at(i,j - 1,k)) / (2 * dy);
+    W1x = (W1.at(i + 1, j, k) - W1.at(i - 1, j, k)) / (2 * dx);
+    W2x = (W2.at(i + 1, j, k) - W2.at(i - 1, j, k)) / (2 * dx);
+    W1y = (W1.at(i, j + 1, k) - W1.at(i, j - 1, k)) / (2 * dy);
+    W2y = (W2.at(i, j + 1, k) - W2.at(i, j - 1, k)) / (2 * dy);
 
 }
+
+
+
+void simulator::centralColor() {
+
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            for (int k = 0; k < nZ; ++k) {
+                double xc = nX / 2;
+                double yc = nY / 2;
+                double zc = nZ / 2;
+                double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
+
+
+                if (r < 3.0) {
+                    color.set(i, j, k, 3);
+
+                }
+            }
+        }
+    }
+
+}
+
+
+void simulator::runColorTest(int i, int j, int k) {
+    bool border = (j >= nY - 1  || i >= nX - 1  || k >= nZ - 1 || i * j * k == 0);
+    if (border) return;
+
+    double c = 0;
+    c += color.at(i, j, k);
+    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k)*100;
+    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k)*100;
+    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k)*100;
+    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k)*100;
+    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1)*100;
+    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1)*100;
+    color.set(i, j, k, c);
+}
+
 
 #endif
