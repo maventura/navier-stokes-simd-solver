@@ -1,12 +1,12 @@
 xMax 5.0
 yMax 5.0
 zMax 5.0
-tMax 0.5
+tMax 0.05
 nu 0.1
 rho 1
 dx 0.05
 dy 0.05
 dz 0.05
-dt 0.005
+dt 0.0005
 al 0.5
 maxIters 5

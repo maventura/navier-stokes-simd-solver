@@ -173,7 +173,6 @@ void simulator::setBorderConditions() {
             U2.set(i, nY - 1, k, 0.01);
         }
     }
-    centralSpeed();
 
     //Vorticity conditions:
     for (int i = 1; i < nX - 1; ++i) {
@@ -254,7 +253,6 @@ void simulator::process() {
         //saveStreamVtk(U2, V2, W2, stream_name.str());
 
         for (int iter = 0; iter < maxIters; ++iter) {
-          centralSpeed();
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
                     //if(j == nY-1) continue;
@@ -719,11 +717,11 @@ void simulator::centralSpeed() {
                 double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
 
 
-                if (r < 3.5) {
-                  double max = 5;
-                    U2.set(i, j, k, minDouble(5/r,5));
-                    U1.set(i, j, k, minDouble(5/r,5));
-                    U0.set(i, j, k, minDouble(5/r,5));
+                if (r < 2.5) {
+                  double max = 0.01;
+                    U2.set(i, j, k, minDouble(max/r,max));
+                    U1.set(i, j, k, minDouble(max/r,max));
+                    U0.set(i, j, k, minDouble(max/r,max));
 
                 }
             }
