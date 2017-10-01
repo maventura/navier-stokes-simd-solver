@@ -51,7 +51,7 @@ class simulator {
 
     double Re, Fx, Fy, Fz;
 
-    void centralSpeed(int i, int j, int k);
+    void centralSpeed();
     void centralPressure(int i, int j, int k);
 
     void calcTerms(int i, int j, int k);
@@ -68,6 +68,7 @@ class simulator {
     void calcular_V(int i, int j, int k);
 
     void centralColor();
+    void gridColor();
     void runColorTest(int i, int j, int k);
 
 };
@@ -196,9 +197,9 @@ void simulator::setBorderConditions() {
 
 void simulator::process() {
     step = 0;
-    centralColor();
+    //centralColor();
+    gridColor();
     for (t = 0; t < tMax; t = t + dt) {
-
         cerr << 100 * t / tMax << "%" << endl;
         step++;
         ostringstream U_name;
@@ -231,9 +232,12 @@ void simulator::process() {
         ostringstream stream_name;
         stream_name << "./out/stream_" << step << ".vtk";
 
-
+      //  if(step%5 == 0){
         ostringstream color_name;
         color_name << "./out/color_" << step << ".vtk";
+        saveVtk(color, color_name.str());
+        //}
+
 
         //  saveVtk(U2, U_name.str());
         // saveVtk(V2, V_name.str());
@@ -247,7 +251,6 @@ void simulator::process() {
         // saveVtk(omy0, omy0_name.str());
         //saveVtk(omz0, omz0_name.str());
 
-        saveVtk(color, color_name.str());
 
         //saveStreamVtk(U2, V2, W2, stream_name.str());
 
@@ -556,17 +559,6 @@ void simulator::saveVtk(mat3 &m, string file_name) {
     out.close();
 }
 
-void simulator::centralSpeed(int i, int j, int k) {
-    double xc = nX / 2;
-    double yc = nY / 2;
-    double zc = nZ / 2;
-    double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
-    if (r < 0.8 && t < tMax / 3) {
-        U2.set(i, j, k, 3);
-        V2.set(i, j, k, 0);
-        W2.set(i, j, k, 0);
-    }
-}
 
 void simulator::setVorticityVectorPotencialBorders(int i, int j, int k) {
 //Condiciones de borde.
@@ -694,7 +686,10 @@ void simulator::calcTerms(int i, int j, int k) {
 
 }
 
-
+double minDouble(double a, double b){
+  if(a > b)return b;
+  return a;
+}
 
 void simulator::centralColor() {
 
@@ -707,8 +702,9 @@ void simulator::centralColor() {
                 double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
 
 
-                if (r < 3.0) {
-                    color.set(i, j, k, 3);
+                if (r < 3.5) {
+                  double max = 5;
+                    color.set(i, j, k, minDouble(5/r,5));
 
                 }
             }
@@ -718,18 +714,101 @@ void simulator::centralColor() {
 }
 
 
+
+void simulator::centralSpeed() {
+
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            for (int k = 0; k < nZ; ++k) {
+                double xc = nX / 2;
+                double yc = nY / 2;
+                double zc = nZ / 2;
+                double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
+
+
+                if (r < 2.5) {
+                  double max = 0.01;
+                    U2.set(i, j, k, minDouble(max/r,max));
+                    U1.set(i, j, k, minDouble(max/r,max));
+                    U0.set(i, j, k, minDouble(max/r,max));
+
+                }
+            }
+        }
+    }
+
+}
+
+
+
+
+void simulator::gridColor() {
+
+    for (int i = 3; i < nX-2; ++i) {
+        for (int j = 3; j < nY-2; ++j) {
+
+            for (int k = 3; k < nZ-2; ++k) {
+              if(k%20==0 && j%20==0 && i%20==0) {
+                  color.set(i, j, k, 5);
+                  color.set(i+1, j, k, 5);
+                  color.set(i-1, j, k, 5);
+                  color.set(i, j+1, k, 5);
+                  color.set(i, j-1, k, 5);
+                  color.set(i, j, k+1, 5);
+                  color.set(i, j, k-1, 5);
+
+                  color.set(i, j+1, k, 5);
+                  color.set(i+1, j+1, k, 5);
+                  color.set(i-1, j+1, k, 5);
+                  color.set(i, j+1, k+1, 5);
+                  color.set(i, j+1, k-1, 5);
+
+                  color.set(i, j-1, k, 5);
+                  color.set(i+1, j-1, k, 5);
+                  color.set(i-1, j-1, k, 5);
+                  color.set(i, j-1, k+1, 5);
+                  color.set(i, j-1, k-1, 5);
+
+
+                  color.set(i+1, j, k+1, 5);
+                  color.set(i-1, j, k+1, 5);
+                  color.set(i, j+1, k+1, 5);
+                  color.set(i, j-1, k+1, 5);
+
+                  color.set(i+1, j, k-1, 5);
+                  color.set(i-1, j, k-1, 5);
+                  color.set(i, j+1, k-1, 5);
+                  color.set(i, j-1, k-1, 5);
+
+                  color.set(i+1, j+1, k, 5);
+                  color.set(i+1, j-1, k, 5);
+                  color.set(i+1, j, k+1, 5);
+                  color.set(i+1, j, k-1, 5);
+
+                  color.set(i-1, j+1, k, 5);
+                  color.set(i-1, j-1, k, 5);
+                  color.set(i-1, j, k+1, 5);
+                  color.set(i-1, j, k-1, 5);
+
+                }
+            }
+        }
+    }
+
+}
+
 void simulator::runColorTest(int i, int j, int k) {
     bool border = (j >= nY - 1  || i >= nX - 1  || k >= nZ - 1 || i * j * k == 0);
     if (border) return;
 
     double c = 0;
     c += color.at(i, j, k);
-    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k)*100;
-    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k)*100;
-    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k)*100;
-    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k)*100;
-    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1)*100;
-    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1)*100;
+    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k)*2000;
+    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k)*2000;
+    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k)*2000;
+    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k)*2000;
+    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1)*2000;
+    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1)*2000;
     color.set(i, j, k, c);
 }
 
