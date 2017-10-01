@@ -6,6 +6,8 @@
 #include <cmath>
 #include "io.h"
 
+extern "C" {int vvp_asm(double *data, int pos);}
+
 class simulator {
 
   public:
@@ -257,7 +259,14 @@ void simulator::process() {
                         runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
-                        if (inside) vorticityVectorPotencial(i, j, k);
+                        U1.setAll(1);
+                        vvp_asm(U1.data, nX * nY * k + i * nY + j);
+
+
+                        U1.print();
+                        cout << U1.at(0,0,0) << endl;
+
+
                     }
                 }
             }

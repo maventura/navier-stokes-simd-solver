@@ -2,11 +2,15 @@
 #define MAT3_H
 
 #include <iostream>
+#include <bitset>
+
 using namespace std;
 
 class mat3 {
 
 public:
+    double *data;
+
     mat3();
     ~mat3();
     mat3(int i_max_, int j_max_, int k_max_);
@@ -28,7 +32,6 @@ public:
 
 
     private:
-    double * data;
     int i_max_;
     int j_max_;
     int k_max_;
@@ -123,7 +126,8 @@ public:
         for(int k = 0; k < k_max_; k++) {
             for (int i = 0; i < i_max_; i++) {
                 for (int j = 0; j < j_max_; j++) {
-                    cout << data[i_max_ * j_max_ * k + i * j_max_ + j] << " ";
+                    double num = data[i_max_ * j_max_ * k + i * j_max_ + j];
+                    cout << num << " ";
                 }
                 cout << endl;
             }
