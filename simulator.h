@@ -232,7 +232,7 @@ void simulator::process() {
         ostringstream stream_name;
         stream_name << "./out/stream_" << step << ".vtk";
 
-      //  if(step%5 == 0){
+        //  if(step%5 == 0){
         ostringstream color_name;
         color_name << "./out/color_" << step << ".vtk";
         saveVtk(color, color_name.str());
@@ -245,7 +245,7 @@ void simulator::process() {
 
         // saveVtk(psix0, psix0_name.str());
         // saveVtk(psiy0, psiy0_name.str());
-         //saveVtk(psiz0, psiz0_name.str());
+        //saveVtk(psiz0, psiz0_name.str());
 
         // saveVtk(omx0, omx0_name.str());
         // saveVtk(omy0, omy0_name.str());
@@ -266,8 +266,8 @@ void simulator::process() {
                         vvp_asm(U1.data, nX * nY * k + i * nY + j);
 
 
-                        U1.print();
-                        cout << U1.at(0,0,0) << endl;
+                        //U1.print();
+                        //cout << U1.at(0,0,0) << endl;
 
 
                     }
@@ -304,8 +304,8 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                 U2.set(f, nY - 1, q, -0.01);
             }
         }
-
     */
+
     double h = dx;
     double q = dt / (2 * h);
     double r = dt / (Re * h * h);
@@ -320,23 +320,45 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     //Eje x.
     calcular_V(i, j, k);
     double delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
-    double p1 = (-q * U2.at(i + 1, j, k) + r) / delta;
-    double p2 = (-q * V2.at(i, j + 1, k) + r) / delta;
-    double p3 = (q * U2.at(i - 1, j, k) + r) / delta;
-    double p4 = (q * V2.at(i, j - 1, k) + r) / delta;
-    double p5 = (q * W2.at(i, j, k + 1) + r) / delta;
-    double p6 = (q * W2.at(i, j, k - 1) + r) / delta;
+                                            //mov xmm14, delta
+                                            //xor xmm1, xmm1
+                                            //xmm0 // r (FIJO)
+    double p1 = (-U2.at(i + 1, j, k) + r);  //xmm1 //res/acum p_i/omx2(i, j, k)
+    double p2 = (-V2.at(i, j + 1, k) + r);  //mov xmm2, p_i
+                                            //add xmm2, xmm0(r)
+    double p3 = (U2.at(i - 1, j, k) + r);   //mov xmm3, om_i
+    double p4 = (V2.at(i, j - 1, k) + r);   //mul xmm2, xmm3
+    double p5 = (W2.at(i, j, k + 1) + r);   //add xmm1, xmm2
+    double p6 = (W2.at(i, j, k - 1) + r);   //"c" = xmm internal index.
+                                            //no tocar xmm1
 
-    double ax1 = q * omy2.at(i, j, k) * U2.at(i, j + 1, k);
-    double ax2 = -q * omy2.at(i, j, k) * U2.at(i, j - 1, k);
-    double ax3 = q * omz2.at(i, j, k) * U2.at(i, j, k + 1);
-    double ax4 = -q * omz2.at(i, j, k) * U2.at(i, j, k - 1);
+                                                        //xor xmm2, xmm2 // axs/acum ax_i/res
+    double ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); //mov xmm3, omy3
+                                                        //mov xmm4, U2
+                                                        //mul xmm3, xmm4
+                                                        //add xmm2, xmm3
+    double ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);//same
+    double ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);//same
+    double ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);//same
 
-    omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)
-             + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)
-             + p5 * omx2.at(i, j, k + 1) + p6 * omx2.at(i, j, k - 1)
-             + omx1.at(i, j, k) / delta
-             + ax1 / delta + ax2 / delta + ax3 / delta + ax4 / delta);
+    double axs = ax1 + ax2 + ax3 + ax4;
+
+    omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)//xmm1
+             + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)//xmm1
+             + p5 * omx2.at(i, j, k + 1) + p6 * omx2.at(i, j, k - 1)//xmm1
+             + (1.0 / q)*omx1.at(i, j, k)   //mov xmm15, 1/q (FIJO)
+                                            //mov xmm3, omx1
+                                            //mul xmm3, xmm15
+             + axs);//xmm2
+
+    //add xmm1, xmm2
+    //add xmm1, xmm3    //  xmm1 = set. (xmm2/3 libres)
+    //div xmm1, xmm15   //  /= delta
+    //div xmm1, xmm14   //  *=(1/q)
+
+    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta));
+    //mov [omx2], xmm1
+
 
     omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
 
@@ -351,29 +373,25 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     //Eje y.
     calcular_V(i, j, k);
     delta = (1 - q * V2.at(i, j + 1, k) + q * V2.at(i, j - 1, k) + 6 * r);
-    p1 = -q * U2.at(i + 1, j, k) + r;
-    p2 = -q * V2.at(i, j + 1, k) + r;
-    p3 = q * U2.at(i - 1, j, k) + r;
-    p4 = q * V2.at(i, j - 1, k) + r;
-    p5 = q * W2.at(i, j, k + 1) + r;
-    p6 = q * W2.at(i, j, k - 1) + r;
-    p1 = p1 / delta;
-    p2 = p2 / delta;
-    p3 = p3 / delta;
-    p4 = p4 / delta;
-    p5 = p5 / delta;
-    p6 = p6 / delta;
+    p1 = -U2.at(i + 1, j, k) + r;
+    p2 = -V2.at(i, j + 1, k) + r;
+    p3 = U2.at(i - 1, j, k) + r;
+    p4 = V2.at(i, j - 1, k) + r;
+    p5 = W2.at(i, j, k + 1) + r;
+    p6 = W2.at(i, j, k - 1) + r;
 
-    ax1 = q * omx2.at(i, j, k) * V2.at(i + 1, j, k);
-    ax2 = -q * omx2.at(i, j, k) * V2.at(i - 1, j, k);
-    ax3 = q * omz2.at(i, j, k) * V2.at(i, j, k + 1);
-    ax4 = -q * omz2.at(i, j, k) * V2.at(i, j, k - 1);
+    ax1 = omx2.at(i, j, k) * V2.at(i + 1, j, k);
+    ax2 = -omx2.at(i, j, k) * V2.at(i - 1, j, k);
+    ax3 = omz2.at(i, j, k) * V2.at(i, j, k + 1);
+    ax4 = -omz2.at(i, j, k) * V2.at(i, j, k - 1);
 
-    omy2.set(i, j, k, p1 * omy2.at(i + 1, j, k) + p2 * omy2.at(i, j + 1, k)
-             + p3 * omy2.at(i - 1, j, k) + p4 * omy2.at(i, j - 1, k)
-             + p5 * omy2.at(i, j, k + 1) + p6 * omy2.at(i, j, k - 1)
-             + omy1.at(i, j, k) / delta
-             + ax1 / delta + ax2 / delta + ax3 / delta + ax4 / delta);
+    omy2.set(i, j, k, (p1) * omy2.at(i + 1, j, k) + (p2) * omy2.at(i, j + 1, k)
+             + (p3) * omy2.at(i - 1, j, k) + (p4) * omy2.at(i, j - 1, k)
+             + (p5) * omy2.at(i, j, k + 1) + (p6) * omy2.at(i, j, k - 1)
+             + (1.0 / q)*omy1.at(i, j, k)
+             + ax1  + ax2  + ax3  + ax4 );
+
+    omy2.set(i, j, k, omy2.at(i, j, k) * (q / delta));
 
     omy2.set(i, j, k, (1.0 - wt)*aux_omy2 + wt * omy2.at(i, j, k));
 
@@ -387,29 +405,24 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     //Eje z.
     calcular_V(i, j, k);
     delta = (1 - q * W2.at(i, j, k + 1) + q * W2.at(i, j, k - 1) + 6 * r);
-    p1 = -q * U2.at(i + 1, j, k) + r;
-    p2 = -q * V2.at(i, j + 1, k) + r;
-    p3 = q * U2.at(i - 1, j, k) + r;
-    p4 = q * V2.at(i, j - 1, k) + r;
-    p5 = q * W2.at(i, j, k + 1) + r;
-    p6 = q * W2.at(i, j, k - 1) + r;
-    p1 = p1 / delta;
-    p2 = p2 / delta;
-    p3 = p3 / delta;
-    p4 = p4 / delta;
-    p5 = p5 / delta;
-    p6 = p6 / delta;
+    p1 = -U2.at(i + 1, j, k) + r;
+    p2 = -V2.at(i, j + 1, k) + r;
+    p3 = U2.at(i - 1, j, k) + r;
+    p4 = V2.at(i, j - 1, k) + r;
+    p5 = W2.at(i, j, k + 1) + r;
+    p6 = W2.at(i, j, k - 1) + r;
 
-    ax1 = q * omx2.at(i, j, k) * W2.at(i + 1, j, k);
-    ax2 = -q * omx2.at(i, j, k) * W2.at(i - 1, j, k);
-    ax3 = q * omy2.at(i, j, k) * W2.at(i, j + 1, k);
-    ax4 = -q * omy2.at(i, j, k) * W2.at(i, j - 1, k);
+    ax1 = omx2.at(i, j, k) * W2.at(i + 1, j, k);
+    ax2 = -omx2.at(i, j, k) * W2.at(i - 1, j, k);
+    ax3 = omy2.at(i, j, k) * W2.at(i, j + 1, k);
+    ax4 = -omy2.at(i, j, k) * W2.at(i, j - 1, k);
 
     omz2.set(i, j, k, p1 * omz2.at(i + 1, j, k) + p2 * omz2.at(i, j + 1, k)
              + p3 * omz2.at(i - 1, j, k) + p4 * omz2.at(i, j - 1, k)
              + p5 * omz2.at(i, j, k + 1) + p6 * omz2.at(i, j, k - 1)
-             + omz1.at(i, j, k) / delta
-             + ax1 / delta + ax2 / delta + ax3 / delta + ax4 / delta);
+             + (1.0 / q)*omz1.at(i, j, k)
+             + ax1 + ax2 + ax3 + ax4);
+    omz2.set(i, j, k, omz2.at(i, j, k) * (q / delta));
 
     omz2.set(i, j, k, (1.0 - wt)*aux_omz2 + wt * omz2.at(i, j, k));
 
@@ -686,9 +699,9 @@ void simulator::calcTerms(int i, int j, int k) {
 
 }
 
-double minDouble(double a, double b){
-  if(a > b)return b;
-  return a;
+double minDouble(double a, double b) {
+    if (a > b)return b;
+    return a;
 }
 
 void simulator::centralColor() {
@@ -703,8 +716,8 @@ void simulator::centralColor() {
 
 
                 if (r < 3.5) {
-                  double max = 5;
-                    color.set(i, j, k, minDouble(5/r,5));
+                    double max = 5;
+                    color.set(i, j, k, minDouble(5 / r, 5));
 
                 }
             }
@@ -727,10 +740,10 @@ void simulator::centralSpeed() {
 
 
                 if (r < 2.5) {
-                  double max = 0.01;
-                    U2.set(i, j, k, minDouble(max/r,max));
-                    U1.set(i, j, k, minDouble(max/r,max));
-                    U0.set(i, j, k, minDouble(max/r,max));
+                    double max = 0.01;
+                    U2.set(i, j, k, minDouble(max / r, max));
+                    U1.set(i, j, k, minDouble(max / r, max));
+                    U0.set(i, j, k, minDouble(max / r, max));
 
                 }
             }
@@ -744,51 +757,51 @@ void simulator::centralSpeed() {
 
 void simulator::gridColor() {
 
-    for (int i = 3; i < nX-2; ++i) {
-        for (int j = 3; j < nY-2; ++j) {
+    for (int i = 3; i < nX - 2; ++i) {
+        for (int j = 3; j < nY - 2; ++j) {
 
-            for (int k = 3; k < nZ-2; ++k) {
-              if(k%20==0 && j%20==0 && i%20==0) {
-                  color.set(i, j, k, 5);
-                  color.set(i+1, j, k, 5);
-                  color.set(i-1, j, k, 5);
-                  color.set(i, j+1, k, 5);
-                  color.set(i, j-1, k, 5);
-                  color.set(i, j, k+1, 5);
-                  color.set(i, j, k-1, 5);
+            for (int k = 3; k < nZ - 2; ++k) {
+                if (k % 20 == 0 && j % 20 == 0 && i % 20 == 0) {
+                    color.set(i, j, k, 5);
+                    color.set(i + 1, j, k, 5);
+                    color.set(i - 1, j, k, 5);
+                    color.set(i, j + 1, k, 5);
+                    color.set(i, j - 1, k, 5);
+                    color.set(i, j, k + 1, 5);
+                    color.set(i, j, k - 1, 5);
 
-                  color.set(i, j+1, k, 5);
-                  color.set(i+1, j+1, k, 5);
-                  color.set(i-1, j+1, k, 5);
-                  color.set(i, j+1, k+1, 5);
-                  color.set(i, j+1, k-1, 5);
+                    color.set(i, j + 1, k, 5);
+                    color.set(i + 1, j + 1, k, 5);
+                    color.set(i - 1, j + 1, k, 5);
+                    color.set(i, j + 1, k + 1, 5);
+                    color.set(i, j + 1, k - 1, 5);
 
-                  color.set(i, j-1, k, 5);
-                  color.set(i+1, j-1, k, 5);
-                  color.set(i-1, j-1, k, 5);
-                  color.set(i, j-1, k+1, 5);
-                  color.set(i, j-1, k-1, 5);
+                    color.set(i, j - 1, k, 5);
+                    color.set(i + 1, j - 1, k, 5);
+                    color.set(i - 1, j - 1, k, 5);
+                    color.set(i, j - 1, k + 1, 5);
+                    color.set(i, j - 1, k - 1, 5);
 
 
-                  color.set(i+1, j, k+1, 5);
-                  color.set(i-1, j, k+1, 5);
-                  color.set(i, j+1, k+1, 5);
-                  color.set(i, j-1, k+1, 5);
+                    color.set(i + 1, j, k + 1, 5);
+                    color.set(i - 1, j, k + 1, 5);
+                    color.set(i, j + 1, k + 1, 5);
+                    color.set(i, j - 1, k + 1, 5);
 
-                  color.set(i+1, j, k-1, 5);
-                  color.set(i-1, j, k-1, 5);
-                  color.set(i, j+1, k-1, 5);
-                  color.set(i, j-1, k-1, 5);
+                    color.set(i + 1, j, k - 1, 5);
+                    color.set(i - 1, j, k - 1, 5);
+                    color.set(i, j + 1, k - 1, 5);
+                    color.set(i, j - 1, k - 1, 5);
 
-                  color.set(i+1, j+1, k, 5);
-                  color.set(i+1, j-1, k, 5);
-                  color.set(i+1, j, k+1, 5);
-                  color.set(i+1, j, k-1, 5);
+                    color.set(i + 1, j + 1, k, 5);
+                    color.set(i + 1, j - 1, k, 5);
+                    color.set(i + 1, j, k + 1, 5);
+                    color.set(i + 1, j, k - 1, 5);
 
-                  color.set(i-1, j+1, k, 5);
-                  color.set(i-1, j-1, k, 5);
-                  color.set(i-1, j, k+1, 5);
-                  color.set(i-1, j, k-1, 5);
+                    color.set(i - 1, j + 1, k, 5);
+                    color.set(i - 1, j - 1, k, 5);
+                    color.set(i - 1, j, k + 1, 5);
+                    color.set(i - 1, j, k - 1, 5);
 
                 }
             }
@@ -803,12 +816,12 @@ void simulator::runColorTest(int i, int j, int k) {
 
     double c = 0;
     c += color.at(i, j, k);
-    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k)*2000;
-    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k)*2000;
-    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k)*2000;
-    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k)*2000;
-    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1)*2000;
-    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1)*2000;
+    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k) * 2000;
+    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k) * 2000;
+    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k) * 2000;
+    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k) * 2000;
+    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1) * 2000;
+    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1) * 2000;
     color.set(i, j, k, c);
 }
 
