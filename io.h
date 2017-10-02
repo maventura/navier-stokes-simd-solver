@@ -11,12 +11,12 @@ public:
   io(string file_name, string type);
   ~io();
   void write(string s);
-  void writeDouble(double d);
+  void writeFloat(float d);
   void writeInt(int i);
 
   bool readLine(string &s);
   bool readWord(string &s);
-  bool readDouble(double &n);
+  bool readFloat(float &n);
   bool readInt(int &n);
   bool readBool(bool &n);
 
@@ -69,7 +69,7 @@ void io::write(string s){
   out << s;
 }
 
-void io::writeDouble(double d){
+void io::writeFloat(float d){
   if(type_ == type_read){
     cerr << "Error: Trying to write to read only io" << endl;
     return;
@@ -112,7 +112,7 @@ bool io::readWord(string &s){
   }
 }
 
-bool io::readDouble(double &d){
+bool io::readFloat(float &d){
   if(type_ == type_write){
     cerr << "Warning: Trying to set write only file as read onlty." << endl;
     return false;

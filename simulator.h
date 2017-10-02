@@ -6,7 +6,7 @@
 #include <cmath>
 #include "io.h"
 
-extern "C" {int vvp_asm(double *data, int pos);}
+extern "C" {int vvp_asm(float *data, int pos);}
 
 class simulator {
 
@@ -15,20 +15,20 @@ class simulator {
     void process();
 
   private:
-    double xMax,  yMax,  zMax,  tMax;
-    double nu, rho, C_d;
-    double dx,  dy,  dz,  dt, h;
+    float xMax,  yMax,  zMax,  tMax;
+    float nu, rho, C_d;
+    float dx,  dy,  dz,  dt, h;
     int nX, nY, nZ, nT, step, maxIters;
 
-    double al, fixedPointError, minFixedPointIters;
-    double pi = atan(1) * 4;
+    float al, fixedPointError, minFixedPointIters;
+    float pi = atan(1) * 4;
 
-    double W1y, V1z, W2y, V2z, U1z,
+    float W1y, V1z, W2y, V2z, U1z,
            W1x, U2z, W2x, V1x, U1y, V2x, U2y;
 
     int stepsUntilPrint, printPercentageSteps, maxSteps;
     bool printPercentage;
-    double t;
+    float t;
 
     mat3 U0, V0, W0, P0;
     mat3 U1, V1, W1, P1;
@@ -49,7 +49,7 @@ class simulator {
     mat3 color;
 
 
-    double Re, Fx, Fy, Fz;
+    float Re, Fx, Fy, Fz;
 
     void centralSpeed();
     void centralPressure(int i, int j, int k);
@@ -139,21 +139,21 @@ void simulator::readParameters(string file_name) {
     string tag;
     while (file.readWord(tag)) {
 
-        if (tag == "xMax") file.readDouble(xMax);
-        if (tag == "yMax") file.readDouble(yMax);
-        if (tag == "zMax") file.readDouble(zMax);
-        if (tag == "tMax") file.readDouble(tMax);
-        if (tag == "nu") file.readDouble(nu);
-        if (tag == "rho") file.readDouble(rho);
-        if (tag == "dx") file.readDouble(dx);
-        if (tag == "dy") file.readDouble(dy);
-        if (tag == "dz") file.readDouble(dz);
-        if (tag == "dt") file.readDouble(dt);
-        if (tag == "al") file.readDouble(al);
-        if (tag == "fixedPointError") file.readDouble(fixedPointError);
-        if (tag == "minFixedPointIters") file.readDouble(minFixedPointIters);
+        if (tag == "xMax") file.readFloat(xMax);
+        if (tag == "yMax") file.readFloat(yMax);
+        if (tag == "zMax") file.readFloat(zMax);
+        if (tag == "tMax") file.readFloat(tMax);
+        if (tag == "nu") file.readFloat(nu);
+        if (tag == "rho") file.readFloat(rho);
+        if (tag == "dx") file.readFloat(dx);
+        if (tag == "dy") file.readFloat(dy);
+        if (tag == "dz") file.readFloat(dz);
+        if (tag == "dt") file.readFloat(dt);
+        if (tag == "al") file.readFloat(al);
+        if (tag == "fixedPointError") file.readFloat(fixedPointError);
+        if (tag == "minFixedPointIters") file.readFloat(minFixedPointIters);
         if (tag == "printPercentageSteps") file.readInt(printPercentageSteps);
-        if (tag == "C_d") file.readDouble(C_d);
+        if (tag == "C_d") file.readFloat(C_d);
         if (tag == "maxSteps") file.readInt(maxSteps);
         if (tag == "stepsUntilPrint") file.readInt(stepsUntilPrint);
         if (tag == "printPercentage") file.readBool(printPercentage);
@@ -239,9 +239,9 @@ void simulator::process() {
         //}
 
 
-        //  saveVtk(U2, U_name.str());
-        // saveVtk(V2, V_name.str());
-        // saveVtk(W2, W_name.str());
+        saveVtk(U2, U_name.str());
+        saveVtk(V2, V_name.str());
+        saveVtk(W2, W_name.str());
 
         // saveVtk(psix0, psix0_name.str());
         // saveVtk(psiy0, psiy0_name.str());
@@ -262,14 +262,9 @@ void simulator::process() {
                         runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
-                        U1.setAll(1);
-                        vvp_asm(U1.data, nX * nY * k + i * nY + j);
-
-
-                        //U1.print();
-                        //cout << U1.at(0,0,0) << endl;
-
-
+                        //vvp_asm(U1.data, k_max_ * j_max_ * i + j * k_max_ + k, r, h);
+                        //k += 3;
+                        vorticityVectorPotencial(i,j,k);
                     }
                 }
             }
@@ -298,7 +293,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
         for (int f = 0; f < nX; ++f) {
             for (int q = 0; q < nZ; ++q) {
 
-                //Set Cavfty flow condftfons.
+                //Set Cavity flow conditions.
                 U0.set(f, nY - 1, q, -0.01);
                 U1.set(f, nY - 1, q, -0.01);
                 U2.set(f, nY - 1, q, -0.01);
@@ -306,42 +301,43 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
         }
     */
 
-    double h = dx;
-    double q = dt / (2 * h);
-    double r = dt / (Re * h * h);
-    double wt = 0.8;
-    double aux_omx2 = omx2.at(i, j, k);
-    double aux_omy2 = omy2.at(i, j, k);
-    double aux_omz2 = omz2.at(i, j, k);
-    double aux_psix2 = psix2.at(i, j, k);
-    double aux_psiy2 = psiy2.at(i, j, k);
-    double aux_psiz2 = psiz2.at(i, j, k);
+    float h = dx; //TODO: supongo el considera matriz cuadrada
+    float q = dt / (2 * h);
+    float r = dt / (Re * h * h);
+    float wt = 0.8;
+
+    float aux_omx2 = omx2.at(i, j, k);
+    float aux_omy2 = omy2.at(i, j, k);
+    float aux_omz2 = omz2.at(i, j, k);
+    float aux_psix2 = psix2.at(i, j, k);
+    float aux_psiy2 = psiy2.at(i, j, k);
+    float aux_psiz2 = psiz2.at(i, j, k);
 
     //Eje x.
     calcular_V(i, j, k);
-    double delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
+    float delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
                                             //mov xmm14, delta
                                             //xor xmm1, xmm1
                                             //xmm0 // r (FIJO)
-    double p1 = (-U2.at(i + 1, j, k) + r);  //xmm1 //res/acum p_i/omx2(i, j, k)
-    double p2 = (-V2.at(i, j + 1, k) + r);  //mov xmm2, p_i
+    float p1 = (-U2.at(i + 1, j, k) + r);  //xmm1 //res/acum p_i/omx2(i, j, k)
+    float p2 = (-V2.at(i, j + 1, k) + r);  //mov xmm2, p_i
                                             //add xmm2, xmm0(r)
-    double p3 = (U2.at(i - 1, j, k) + r);   //mov xmm3, om_i
-    double p4 = (V2.at(i, j - 1, k) + r);   //mul xmm2, xmm3
-    double p5 = (W2.at(i, j, k + 1) + r);   //add xmm1, xmm2
-    double p6 = (W2.at(i, j, k - 1) + r);   //"c" = xmm internal index.
+    float p3 = (U2.at(i - 1, j, k) + r);   //mov xmm3, om_i
+    float p4 = (V2.at(i, j - 1, k) + r);   //mul xmm2, xmm3
+    float p5 = (W2.at(i, j, k + 1) + r);   //add xmm1, xmm2
+    float p6 = (W2.at(i, j, k - 1) + r);   //"c" = xmm internal index.
                                             //no tocar xmm1
 
                                                         //xor xmm2, xmm2 // axs/acum ax_i/res
-    double ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); //mov xmm3, omy3
+    float ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); //mov xmm3, omy3
                                                         //mov xmm4, U2
                                                         //mul xmm3, xmm4
                                                         //add xmm2, xmm3
-    double ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);//same
-    double ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);//same
-    double ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);//same
+    float ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);//same
+    float ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);//same
+    float ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);//same
 
-    double axs = ax1 + ax2 + ax3 + ax4;
+    float axs = ax1 + ax2 + ax3 + ax4;
 
     omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)//xmm1
              + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)//xmm1
@@ -351,24 +347,48 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                                             //mul xmm3, xmm15
              + axs);//xmm2
 
-    //add xmm1, xmm2
-    //add xmm1, xmm3    //  xmm1 = set. (xmm2/3 libres)
-    //div xmm1, xmm15   //  /= delta
-    //div xmm1, xmm14   //  *=(1/q)
+    
+    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); //add xmm1, xmm2
+                                                        //add xmm1, xmm3    //  xmm1 = set. (xmm2/3 libres)
+                                                        //div xmm1, xmm15   //  /= delta
+                                                        //div xmm1, xmm14   //  *=(1/q)
 
-    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta));
-    //mov [omx2], xmm1
+        omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));//mov xmm13, wt (=0.8 FIJO)
+                                                                      //mul xmm1, xmm13
+                                                                      //mov xmm2, 0x0001
+                                                                      //sub xmm2, xmm13
+                                                                      //mov xmm3, omx2(i,j,k)
+                                                                      //mul xmm3, xmm2
+                                                                      //add xmm1, xmm3 
 
+                                                            //mov [omx2], xmm1
 
-    omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
 
     //Eliptica eje x.
-    //p1=p2=p3=p4=p5=p6=1/6.0;
-    psix2.set(i, j, k, (psix2.at(i + 1, j, k) + psix2.at(i, j + 1, k)
-                        + psix2.at(i - 1, j, k) + psix2.at(i, j - 1, k)
-                        + psix2.at(i, j, k + 1) + psix2.at(i, j, k - 1)
-                        + h * h * omx2.at(i, j, k)) / 6.0);
-    psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));
+    //p1=p2=p3=p4=p5=p6=1/6.0;                                    
+    psix2.set(i, j, k, (psix2.at(i + 1, j, k) + psix2.at(i, j + 1, k)   //mov xmm1, psix2 (levanto uno, una vez)
+                        + psix2.at(i - 1, j, k) + psix2.at(i, j - 1, k) //mov xmm2, pxix2 (levanto otro, aca itera)
+                        + psix2.at(i, j, k + 1) + psix2.at(i, j, k - 1) //add xmm1, xmm2 (sumo y vuelvo arriba)
+                        + h * h * omx2.at(i, j, k)) / 6.0);             // mov xmm12, h (DEPENDE PARAMS DE ENTRADA, pero nunca cambia)
+
+                                                                        //mov xmm2, xmm12
+                                                                        //mul xmm2, xmmm12
+                                                                        //mov xmm3, omx2
+                                                                        //mul xmm2, xmm3
+                                                                        //div xmm2, xmm11 (=6.0)
+                                                                        //add xmm1, xmm2
+
+    psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));  //mul xmm1, xmm13
+                                                                      //mov xmm2, 0x0001
+                                                                      //sub xmm2, xmm13
+                                                                      //mov xmm3, psix2(i,j,k)
+                                                                      //mul xmm3, xmm2
+                                                                      //add xmm1, xmm3 
+
+                                                                     //mov [psix2], xmm1
+
+
+
 
     //Eje y.
     calcular_V(i, j, k);
@@ -563,7 +583,7 @@ void simulator::saveVtk(mat3 &m, string file_name) {
     for (int i = 0; i < nX; ++i) {
         for (int j = 0; j < nY; ++j) {
             for (int k = 0; k < nZ; ++k) {
-                out.writeDouble(m.at(i, j, k));
+                out.writeFloat(m.at(i, j, k));
                 out.write(" ");
             }
             out.newLine();
@@ -699,7 +719,7 @@ void simulator::calcTerms(int i, int j, int k) {
 
 }
 
-double minDouble(double a, double b) {
+float minFloat(float a, float b) {
     if (a > b)return b;
     return a;
 }
@@ -709,15 +729,15 @@ void simulator::centralColor() {
     for (int i = 0; i < nX; ++i) {
         for (int j = 0; j < nY; ++j) {
             for (int k = 0; k < nZ; ++k) {
-                double xc = nX / 2;
-                double yc = nY / 2;
-                double zc = nZ / 2;
-                double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
+                float xc = nX / 2;
+                float yc = nY / 2;
+                float zc = nZ / 2;
+                float r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
 
 
                 if (r < 3.5) {
-                    double max = 5;
-                    color.set(i, j, k, minDouble(5 / r, 5));
+                    float max = 5;
+                    color.set(i, j, k, minFloat(5 / r, 5));
 
                 }
             }
@@ -733,17 +753,17 @@ void simulator::centralSpeed() {
     for (int i = 0; i < nX; ++i) {
         for (int j = 0; j < nY; ++j) {
             for (int k = 0; k < nZ; ++k) {
-                double xc = nX / 2;
-                double yc = nY / 2;
-                double zc = nZ / 2;
-                double r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
+                float xc = nX / 2;
+                float yc = nY / 2;
+                float zc = nZ / 2;
+                float r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc) + (k - zc) * (k - zc));
 
 
                 if (r < 2.5) {
-                    double max = 0.01;
-                    U2.set(i, j, k, minDouble(max / r, max));
-                    U1.set(i, j, k, minDouble(max / r, max));
-                    U0.set(i, j, k, minDouble(max / r, max));
+                    float max = 0.01;
+                    U2.set(i, j, k, minFloat(max / r, max));
+                    U1.set(i, j, k, minFloat(max / r, max));
+                    U0.set(i, j, k, minFloat(max / r, max));
 
                 }
             }
@@ -814,14 +834,14 @@ void simulator::runColorTest(int i, int j, int k) {
     bool border = (j >= nY - 1  || i >= nX - 1  || k >= nZ - 1 || i * j * k == 0);
     if (border) return;
 
-    double c = 0;
+    float c = 0;
     c += color.at(i, j, k);
-    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k) * 2000;
-    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k) * 2000;
-    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k) * 2000;
-    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k) * 2000;
-    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1) * 2000;
-    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1) * 2000;
+    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k) * 12000;
+    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k) * 12000;
+    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k) * 12000;
+    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k) * 12000;
+    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1) * 12000;
+    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1) * 12000;
     color.set(i, j, k, c);
 }
 
