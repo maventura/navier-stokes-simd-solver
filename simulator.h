@@ -267,7 +267,7 @@ void simulator::process() {
                         if(inside){ //TODO!! watafac paso aca
                             float r = dt / (Re * h * h);
                             float q = dt / (2 * h);
-                            vvp_asm(U1.data, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
+                            vvp_asm(U2.data, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
                         }
                         //k += 3;
                         //vorticityVectorPotencial(i,j,k)
@@ -327,7 +327,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                                             //xmm0 // r (FIJO)
     float p1 = (-U2.at(i + 1, j, k) + r);  //xmm1 //res/acum p_i/omx2(i, j, k)
     float p2 = (-V2.at(i, j + 1, k) + r);  //mov xmm2, p_i
-                                            //add xmm2, xmm0(r)
+    //todo:asimetrico,por que?             //add xmm2, xmm0(r)
     float p3 = (U2.at(i - 1, j, k) + r);   //mov xmm3, om_i
     float p4 = (V2.at(i, j - 1, k) + r);   //mul xmm2, xmm3
     float p5 = (W2.at(i, j, k + 1) + r);   //add xmm1, xmm2
