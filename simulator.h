@@ -6,8 +6,8 @@
 #include <cmath>
 #include "io.h"
 
-extern "C" {int vvp_asm(float *data, int pos);}
-
+extern "C" {int vvp_asm(float *data, int pos, float r, int h, float q, int offsetI, int offsetJ);}
+                        
 class simulator {
 
   public:
@@ -195,6 +195,8 @@ void simulator::setBorderConditions() {
 }
 
 
+void nada(){}
+
 void simulator::process() {
     step = 0;
     //centralColor();
@@ -262,9 +264,13 @@ void simulator::process() {
                         runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
-                        //vvp_asm(U1.data, k_max_ * j_max_ * i + j * k_max_ + k, r, h);
+                        if(inside){ //TODO!! watafac paso aca
+                            float r = dt / (Re * h * h);
+                            float q = dt / (2 * h);
+                            vvp_asm(U1.data, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
+                        }
                         //k += 3;
-                        vorticityVectorPotencial(i,j,k);
+                        //vorticityVectorPotencial(i,j,k)
                     }
                 }
             }
@@ -353,15 +359,15 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                                                         //div xmm1, xmm15   //  /= delta
                                                         //div xmm1, xmm14   //  *=(1/q)
 
-        omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));//mov xmm13, wt (=0.8 FIJO)
-                                                                      //mul xmm1, xmm13
-                                                                      //mov xmm2, 0x0001
-                                                                      //sub xmm2, xmm13
-                                                                      //mov xmm3, omx2(i,j,k)
-                                                                      //mul xmm3, xmm2
-                                                                      //add xmm1, xmm3 
-
-                                                            //mov [omx2], xmm1
+        omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
+        //mov xmm13, wt (=0.8 FIJO)
+        //mul xmm1, xmm13
+        //mov xmm2, 0x0001
+        //sub xmm2, xmm13
+        //mov xmm3, omx2(i,j,k)
+        //mul xmm3, xmm2
+        //add xmm1, xmm3 
+        //mov [omx2], xmm1
 
 
     //Eliptica eje x.
@@ -370,24 +376,19 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                         + psix2.at(i - 1, j, k) + psix2.at(i, j - 1, k) //mov xmm2, pxix2 (levanto otro, aca itera)
                         + psix2.at(i, j, k + 1) + psix2.at(i, j, k - 1) //add xmm1, xmm2 (sumo y vuelvo arriba)
                         + h * h * omx2.at(i, j, k)) / 6.0);             // mov xmm12, h (DEPENDE PARAMS DE ENTRADA, pero nunca cambia)
-
-                                                                        //mov xmm2, xmm12
-                                                                        //mul xmm2, xmmm12
-                                                                        //mov xmm3, omx2
-                                                                        //mul xmm2, xmm3
-                                                                        //div xmm2, xmm11 (=6.0)
-                                                                        //add xmm1, xmm2
+                                                //mov xmm2, xmm12
+                                                //mul xmm2, xmmm12
+                                                //mov xmm3, omx2
+                                                //mul xmm2, xmm3
+                                                //div xmm2, xmm11 (=6.0)
+                                                //add xmm1, xmm2
 
     psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));  //mul xmm1, xmm13
-                                                                      //mov xmm2, 0x0001
-                                                                      //sub xmm2, xmm13
-                                                                      //mov xmm3, psix2(i,j,k)
-                                                                      //mul xmm3, xmm2
-                                                                      //add xmm1, xmm3 
-
-                                                                     //mov [psix2], xmm1
-
-
+    //mov xmm2, 0x0001
+    //sub xmm2, xmm13
+    //mul xmm3, xmm2
+    //add xmm1, xmm3 
+    //mov [psix2], xmm1
 
 
     //Eje y.

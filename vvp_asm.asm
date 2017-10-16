@@ -1,41 +1,79 @@
 [BITS 64]
 
+extern printf
 global vvp_asm
 
-%define dos 0x4000000000000000
+
+section .data
+copy_float_value_mask: DB 0x0, 0x1, 0x2, 0x3,0x0, 0x1, 0x2, 0x3,0x0, 0x1, 0x2, 0x3,0x0, 0x1, 0x2, 0x3
+eltest: DB 0x05
+wt: DD 0.8
+uno: DD 1.0, 1.0, 1.0, 1.0
 
 section .text
+%define dos 0x4000000000000000
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 vvp_asm:	
 
 	push rbp
 	mov rbp, rsp
-  push r15  ;estos son los 5 registros a preservar... si es que los pisamos
-  push r14
-  push r13
-  push r12
-  push rbx
-  sub rsp, 8  ;la pila debe estar alineada a 16 bits
+	push r15  ;estos son los 5 registros a preservar... si es que los pisamos
+	push r14
+	push r13
+	push r12
+	push rbx
+	sub rsp, 8  ;la pila debe estar alineada a 16 bits
 
-  ;int vvp_asm(
-    ;float *data,     rdi
-    ;int pos          rsi
+
+  ;int vvp_asm  (
+    ;float* data,     rdi
+    ;int    pos       rsi
+    ;float  r		  xmm0
+    ;float  dx		  xmm1
+    ;float  q		  xmm2
+    ;int 	offset i  rdx
+    ;int    offset j  rcx
   ;)
 
-
-
-
 	;en xmm0 esta el offset
-	;en  rdi el puntero a la matriz
 
-	; movd xmm15, 0.8
-	; mov xmm10, ; r = dt / (Re * h * h)
+	xorps xmm10, xmm10
+	movdqu xmm10, xmm0
+	movdqu xmm0, [copy_float_value_mask]  ; r esta 4 veces en xmm10
+	pshufb xmm10, xmm0
+
+	xorps xmm12, xmm12
+	movdqu xmm12, xmm1
+	movdqu xmm1, [copy_float_value_mask]  ; h o dx esta 4 veces en xmm11
+	pshufb xmm12, xmm1
+
+	xorps xmm11, xmm11
+	movdqu xmm11, xmm2
+	movdqu xmm2, [copy_float_value_mask]  ; q esta 4 veces en xmm11
+	pshufb xmm11, xmm2
+
+	xorps xmm13, xmm13
+	movdqu xmm13, [wt]
+	movdqu xmm1, [copy_float_value_mask]  ; wt o 0.8 esta 4 veces en xmm13
+	pshufb xmm13, xmm1
+
+
+	;calculo de delta: (1 + q * [U2.at(i - 1, j, k) - U2.at(i + 1, j, k)] + 6 * r)
+	mov rax, rsi
+	sub rax, rcx ; aca tenemos pos para i-1, j, k
+	movdqu xmm1, [rdi + rax * 4]
+	mov rax, rsi
+	add rax, rcx ; aca tenemos pos para i+1, j, k
+	movdqu xmm2, [rdi + rax * 4]
+
+	subps xmm1, xmm2
+	mulps xmm1, xmm11
+	addps xmm1, [uno]
 
 
 	; mov xmm14, delta
 	; xor xmm1, xmm1
- ;    ;xmm10,  r (FIJO) pasar a xmm15
 	; ;xmm1 //res/acum p_i/omx2(i, j, k)    	double p1 = (-U2.at(i + 1, j, k) + r);  
 	; xor xmm2, xmm2    																					
 	; sub xmm2, p_i ;(las primeras dos veces)    	double p2 = (-V2.at(i, j + 1, k) + r)	
@@ -96,7 +134,8 @@ vvp_asm:
 	; mul xmm2, xmmm12
 	; mov xmm3, omx2
 	; mul xmm2, xmm3
-	; div xmm2, xmm11 (=6.0)
+	; mov xmmverde, 6.0 4 veces
+	; div xmm2, xmmverde 
 	; add xmm1, xmm2
 
  ;    psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));  //mul xmm1, xmm13
@@ -137,3 +176,5 @@ pop r14
 pop r15
 pop rbp
 ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
