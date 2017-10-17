@@ -6,7 +6,7 @@
 #include <cmath>
 #include "io.h"
 
-extern "C" {int vvp_asm(float *data, int pos, float r, int h, float q, int offsetI, int offsetJ);}
+extern "C" {int vvp_asm(float *mats[], int pos, float r, int h, float q, int offsetI, int offsetJ);}
                         
 class simulator {
 
@@ -64,6 +64,8 @@ class simulator {
 
     void simpleDiffusion(int i, int j, int k);
     void vorticityVectorPotencial(int i, int j, int k);
+    void vorticityVectorPotencialAsm(int i, int j, int k);
+
     void setVorticityVectorPotencialBorders(int i, int j, int k);
     void calcular_V(int i, int j, int k);
 
@@ -265,9 +267,8 @@ void simulator::process() {
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
-                            float r = dt / (Re * h * h);
-                            float q = dt / (2 * h);
-                            vvp_asm(U2.data, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
+
+                            vorticityVectorPotencialAsm(i,j,k);
                         }
                         //k += 3;
                         //vorticityVectorPotencial(i,j,k)
@@ -293,6 +294,32 @@ void simulator::process() {
     }
     cerr << "Message: Processing finished correctly" << endl << flush;
 }
+
+
+
+
+void simulator::vorticityVectorPotencialAsm(int i, int j, int k) {
+/*
+    mat_arr *mats;
+    mats->U2 = U2.data;
+    mats->V2 = V2.data;
+    mats->W2 = W2.data;
+    mats->omx2 = omx2.data;
+    mats->omy2 = omy2.data;
+    mats->omz2 = omz2.data;
+    mats->psix2 = psix2.data;
+    mats->psiy2 = psiy2.data;
+    mats->psiz2 = psiz2.data;
+*/
+    float h = dx;
+    float r = dt / (Re * h * h);
+    float q = dt / (2 * h);
+    int index = nZ * nY * i + j * nZ + k;
+    float *mats[] = {U2.data, V2.data, W2.data, omx2.data, omy2.data, omz2.data, psix2.data, psiy2.data, psiz2.data};
+    vvp_asm(mats, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
+}    
+
+
 
 void simulator::vorticityVectorPotencial(int i, int j, int k) {
     /*
@@ -327,7 +354,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                                             //xmm0 // r (FIJO)
     float p1 = (-U2.at(i + 1, j, k) + r);  //xmm1 //res/acum p_i/omx2(i, j, k)
     float p2 = (-V2.at(i, j + 1, k) + r);  //mov xmm2, p_i
-    //todo:asimetrico,por que?             //add xmm2, xmm0(r)
+                                           //add xmm2, xmm0(r)
     float p3 = (U2.at(i - 1, j, k) + r);   //mov xmm3, om_i
     float p4 = (V2.at(i, j - 1, k) + r);   //mul xmm2, xmm3
     float p5 = (W2.at(i, j, k + 1) + r);   //add xmm1, xmm2
