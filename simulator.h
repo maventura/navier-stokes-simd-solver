@@ -315,7 +315,7 @@ void simulator::vorticityVectorPotencialAsm(int i, int j, int k) {
     float r = dt / (Re * h * h);
     float q = dt / (2 * h);
     int index = nZ * nY * i + j * nZ + k;
-    float *mats[] = {U2.data, V2.data, W2.data, omx2.data, omy2.data, omz2.data, psix2.data, psiy2.data, psiz2.data};
+    float *mats[] = {U2.data, V2.data, W2.data, omx2.data, omy2.data, omz2.data, psix2.data, psiy2.data, psiz2.data, omx1.data, omy1.data, omz1.data};
     vvp_asm(mats, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
 }    
 
@@ -349,52 +349,32 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     //Eje x.
     calcular_V(i, j, k);
     float delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
-                                            //mov xmm14, delta
-                                            //xor xmm1, xmm1
-                                            //xmm0 // r (FIJO)
-    float p1 = (-U2.at(i + 1, j, k) + r);  //xmm1 //res/acum p_i/omx2(i, j, k)
-    float p2 = (-V2.at(i, j + 1, k) + r);  //mov xmm2, p_i
-                                           //add xmm2, xmm0(r)
-    float p3 = (U2.at(i - 1, j, k) + r);   //mov xmm3, om_i
-    float p4 = (V2.at(i, j - 1, k) + r);   //mul xmm2, xmm3
-    float p5 = (W2.at(i, j, k + 1) + r);   //add xmm1, xmm2
-    float p6 = (W2.at(i, j, k - 1) + r);   //"c" = xmm internal index.
-                                            //no tocar xmm1
+                                            
+    float p1 = (-U2.at(i + 1, j, k) + r); 
+    float p2 = (-V2.at(i, j + 1, k) + r);  
+    float p3 = (U2.at(i - 1, j, k) + r);  
+    float p4 = (V2.at(i, j - 1, k) + r);  
+    float p5 = (W2.at(i, j, k + 1) + r);  
+    float p6 = (W2.at(i, j, k - 1) + r);  
+                                           
 
-                                                        //xor xmm2, xmm2 // axs/acum ax_i/res
-    float ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); //mov xmm3, omy3
-                                                        //mov xmm4, U2
-                                                        //mul xmm3, xmm4
-                                                        //add xmm2, xmm3
-    float ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);//same
-    float ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);//same
-    float ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);//same
+                                                        
+    float ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); 
+    float ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);
+    float ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);
+    float ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);
 
     float axs = ax1 + ax2 + ax3 + ax4;
 
-    omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)//xmm1
-             + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)//xmm1
-             + p5 * omx2.at(i, j, k + 1) + p6 * omx2.at(i, j, k - 1)//xmm1
-             + (1.0 / q)*omx1.at(i, j, k)   //mov xmm15, 1/q (FIJO)
-                                            //mov xmm3, omx1
-                                            //mul xmm3, xmm15
-             + axs);//xmm2
+    omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)
+             + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)
+             + p5 * omx2.at(i, j, k + 1) + p6 * omx2.at(i, j, k - 1)
+             + (1.0 / q)*omx1.at(i, j, k)                           
+             + axs);
 
     
-    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); //add xmm1, xmm2
-                                                        //add xmm1, xmm3    //  xmm1 = set. (xmm2/3 libres)
-                                                        //div xmm1, xmm15   //  /= delta
-                                                        //div xmm1, xmm14   //  *=(1/q)
-
-        omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
-        //mov xmm13, wt (=0.8 FIJO)
-        //mul xmm1, xmm13
-        //mov xmm2, 0x0001
-        //sub xmm2, xmm13
-        //mov xmm3, omx2(i,j,k)
-        //mul xmm3, xmm2
-        //add xmm1, xmm3 
-        //mov [omx2], xmm1
+    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); 
+    omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
 
 
     //Eliptica eje x.
