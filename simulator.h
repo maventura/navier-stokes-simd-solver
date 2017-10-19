@@ -58,7 +58,7 @@ class simulator {
     void saveVtk(mat3 &state, string file_name);
     void saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name);
 
-
+    void setCavityFlowSpeeds();
     void setBorderConditions();
     void readParameters(string file_name);
 
@@ -166,9 +166,8 @@ void simulator::readParameters(string file_name) {
 }
 
 
-void simulator::setBorderConditions() {
-    //TODO: Add if(cavityFlow) here and in the parameters.
-    for (int i = 0; i < nX; ++i) {
+void simulator::setCavityFlowSpeeds(){
+        for (int i = 0; i < nX; ++i) {
         for (int k = 0; k < nZ; ++k) {
 
             //Set Cavity flow conditions.
@@ -177,6 +176,11 @@ void simulator::setBorderConditions() {
             U2.set(i, nY - 1, k, 0.01);
         }
     }
+
+}
+void simulator::setBorderConditions() {
+    //TODO: Add if(cavityFlow) here and in the parameters.
+    setCavityFlowSpeeds();
 
     //Vorticity conditions:
     for (int i = 1; i < nX - 1; ++i) {
@@ -197,13 +201,12 @@ void simulator::setBorderConditions() {
 }
 
 
-void nada(){}
-
 void simulator::process() {
     step = 0;
     //centralColor();
     gridColor();
     for (t = 0; t < tMax; t = t + dt) {
+        setCavityFlowSpeeds();
         cerr << 100 * t / tMax << "%" << endl;
         step++;
         ostringstream U_name;
@@ -268,10 +271,11 @@ void simulator::process() {
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
 
-                            vorticityVectorPotencialAsm(i,j,k);
+                            //vorticityVectorPotencialAsm(i,j,k);
+                            //k += 3;
+                            vorticityVectorPotencial(i,j,k);
                         }
-                        //k += 3;
-                        //vorticityVectorPotencial(i,j,k)
+
                     }
                 }
             }
@@ -785,51 +789,54 @@ void simulator::centralSpeed() {
 
 void simulator::gridColor() {
 
-    for (int i = 3; i < nX - 2; ++i) {
-        for (int j = 3; j < nY - 2; ++j) {
+    for (int i = 2; i < nX - 2; ++i) {
+        for (int j = 2; j < nY - 2; ++j) {
 
-            for (int k = 3; k < nZ - 2; ++k) {
-                if (k % 20 == 0 && j % 20 == 0 && i % 20 == 0) {
-                    color.set(i, j, k, 5);
-                    color.set(i + 1, j, k, 5);
-                    color.set(i - 1, j, k, 5);
-                    color.set(i, j + 1, k, 5);
-                    color.set(i, j - 1, k, 5);
-                    color.set(i, j, k + 1, 5);
-                    color.set(i, j, k - 1, 5);
+            for (int k = 2; k < nZ - 2; ++k) {
+                if (k % 10 == 3 && j % 10 == 3 && i % 10 == 3) {
+                    //we want the first element non on the border to be painted
+                    //so that edge behabiour is observable from the first step.
+                    float color_intensity = 100;
+                    color.set(i, j, k, color_intensity);
+                    color.set(i + 1, j, k, color_intensity);
+                    color.set(i - 1, j, k, color_intensity);
+                    color.set(i, j + 1, k, color_intensity);
+                    color.set(i, j - 1, k, color_intensity);
+                    color.set(i, j, k + 1, color_intensity);
+                    color.set(i, j, k - 1, color_intensity);
 
-                    color.set(i, j + 1, k, 5);
-                    color.set(i + 1, j + 1, k, 5);
-                    color.set(i - 1, j + 1, k, 5);
-                    color.set(i, j + 1, k + 1, 5);
-                    color.set(i, j + 1, k - 1, 5);
+                    color.set(i, j + 1, k, color_intensity);
+                    color.set(i + 1, j + 1, k, color_intensity);
+                    color.set(i - 1, j + 1, k, color_intensity);
+                    color.set(i, j + 1, k + 1, color_intensity);
+                    color.set(i, j + 1, k - 1, color_intensity);
 
-                    color.set(i, j - 1, k, 5);
-                    color.set(i + 1, j - 1, k, 5);
-                    color.set(i - 1, j - 1, k, 5);
-                    color.set(i, j - 1, k + 1, 5);
-                    color.set(i, j - 1, k - 1, 5);
+                    color.set(i, j - 1, k, color_intensity);
+                    color.set(i + 1, j - 1, k, color_intensity);
+                    color.set(i - 1, j - 1, k, color_intensity);
+                    color.set(i, j - 1, k + 1, color_intensity);
+                    color.set(i, j - 1, k - 1, color_intensity);
 
 
-                    color.set(i + 1, j, k + 1, 5);
-                    color.set(i - 1, j, k + 1, 5);
-                    color.set(i, j + 1, k + 1, 5);
-                    color.set(i, j - 1, k + 1, 5);
+                    color.set(i + 1, j, k + 1, color_intensity);
+                    color.set(i - 1, j, k + 1, color_intensity);
+                    color.set(i, j + 1, k + 1, color_intensity);
+                    color.set(i, j - 1, k + 1, color_intensity);
 
-                    color.set(i + 1, j, k - 1, 5);
-                    color.set(i - 1, j, k - 1, 5);
-                    color.set(i, j + 1, k - 1, 5);
-                    color.set(i, j - 1, k - 1, 5);
+                    color.set(i + 1, j, k - 1, color_intensity);
+                    color.set(i - 1, j, k - 1, color_intensity);
+                    color.set(i, j + 1, k - 1, color_intensity);
+                    color.set(i, j - 1, k - 1, color_intensity);
 
-                    color.set(i + 1, j + 1, k, 5);
-                    color.set(i + 1, j - 1, k, 5);
-                    color.set(i + 1, j, k + 1, 5);
-                    color.set(i + 1, j, k - 1, 5);
+                    color.set(i + 1, j + 1, k, color_intensity);
+                    color.set(i + 1, j - 1, k, color_intensity);
+                    color.set(i + 1, j, k + 1, color_intensity);
+                    color.set(i + 1, j, k - 1, color_intensity);
 
-                    color.set(i - 1, j + 1, k, 5);
-                    color.set(i - 1, j - 1, k, 5);
-                    color.set(i - 1, j, k + 1, 5);
-                    color.set(i - 1, j, k - 1, 5);
+                    color.set(i - 1, j + 1, k, color_intensity);
+                    color.set(i - 1, j - 1, k, color_intensity);
+                    color.set(i - 1, j, k + 1, color_intensity);
+                    color.set(i - 1, j, k - 1, color_intensity);
 
                 }
             }
@@ -841,15 +848,20 @@ void simulator::gridColor() {
 void simulator::runColorTest(int i, int j, int k) {
     bool border = (j >= nY - 1  || i >= nX - 1  || k >= nZ - 1 || i * j * k == 0);
     if (border) return;
+    float multiplier = 10000;
+
 
     float c = 0;
+    
     c += color.at(i, j, k);
-    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k) * 12000;
-    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k) * 12000;
-    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k) * 12000;
-    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k) * 12000;
-    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1) * 12000;
-    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1) * 12000;
+
+
+    c += color.at(i - 1, j, k) * U2.at(i - 1, j, k) * multiplier;
+    c += -color.at(i + 1, j, k) * U2.at(i + 1, j, k) * multiplier;
+    c += color.at(i, j - 1, k) * V2.at(i, j - 1, k) * multiplier;
+    c += -color.at(i, j + 1, k) * V2.at(i, j + 1, k) * multiplier;
+    c += color.at(i, j, k - 1) * W2.at(i, j, k - 1) * multiplier;
+    c += -color.at(i, j, k + 1) * W2.at(i, j, k + 1) * multiplier;
     color.set(i, j, k, c);
 }
 
