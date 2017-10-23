@@ -265,13 +265,14 @@ void simulator::process() {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
                     //if(j == nY-1) continue;
-                    for (int k = 0; k < nZ; ++k) {
+                    for (int k = 0; k < nZ-4; ++k) {
                         runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
-
-                            //vorticityVectorPotencialAsm(i,j,k);
+                            cout << "i= " << i << "j= " << j << "k= " << k << endl;
+                            cout << "puntero a psi" << psix2.data << endl;
+                            vorticityVectorPotencialAsm(i,j,k);
                             //k += 3;
                             vorticityVectorPotencial(i,j,k);
                         }
@@ -351,7 +352,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     float aux_psiz2 = psiz2.at(i, j, k);
 
     //Eje x.
-    calcular_V(i, j, k);
+    //calcular_V(i, j, k);
     float delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
                                             
     float p1 = (-U2.at(i + 1, j, k) + r); 
@@ -360,8 +361,6 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     float p4 = (V2.at(i, j - 1, k) + r);  
     float p5 = (W2.at(i, j, k + 1) + r);  
     float p6 = (W2.at(i, j, k - 1) + r);  
-                                           
-
                                                         
     float ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); 
     float ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);
@@ -370,47 +369,30 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
 
     float axs = ax1 + ax2 + ax3 + ax4;
 
-    omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)
+    /*omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)
              + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)
              + p5 * omx2.at(i, j, k + 1) + p6 * omx2.at(i, j, k - 1)
              + (1.0 / q)*omx1.at(i, j, k)                           
-             + axs);
+             + axs);*/
 
     
-    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); 
-    omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
+    //omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); 
+    //omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
 
 
     //Eliptica eje x.
     //p1=p2=p3=p4=p5=p6=1/6.0;                                    
-    psix2.set(i, j, k, (psix2.at(i + 1, j, k) + psix2.at(i, j + 1, k)   //mov xmm1, psix2 (levanto uno, una vez)
-                        + psix2.at(i - 1, j, k) + psix2.at(i, j - 1, k) //mov xmm2, pxix2 (levanto otro, aca itera)
-                        + psix2.at(i, j, k + 1) + psix2.at(i, j, k - 1) //add xmm1, xmm2 (sumo y vuelvo arriba)
-                        + h * h * omx2.at(i, j, k)) / 6.0);             // mov xmm12, h (DEPENDE PARAMS DE ENTRADA, pero nunca cambia)
-                                                //mov xmm2, xmm12
-                                                //mul xmm2, xmmm12
-                                                //mov xmm3, omx2
-                                                //mul xmm2, xmm3
-                                                //div xmm2, xmm11 (=6.0)
-                                                //add xmm1, xmm2
-
-    psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));  //mul xmm1, xmm13
-    //mov xmm2, 0x0001
-    //sub xmm2, xmm13
-    //mul xmm3, xmm2
-    //add xmm1, xmm3 
-    //mov [psix2], xmm1
+    /*psix2.set(i, j, k, (psix2.at(i + 1, j, k) + psix2.at(i, j + 1, k)
+                        + psix2.at(i - 1, j, k) + psix2.at(i, j - 1, k)
+                        + psix2.at(i, j, k + 1) + psix2.at(i, j, k - 1) 
+                        + h * h * omx2.at(i, j, k)) / 6.0);*/
+    //psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));
+ 
 
 
     //Eje y.
     calcular_V(i, j, k);
     delta = (1 - q * V2.at(i, j + 1, k) + q * V2.at(i, j - 1, k) + 6 * r);
-    p1 = -U2.at(i + 1, j, k) + r;
-    p2 = -V2.at(i, j + 1, k) + r;
-    p3 = U2.at(i - 1, j, k) + r;
-    p4 = V2.at(i, j - 1, k) + r;
-    p5 = W2.at(i, j, k + 1) + r;
-    p6 = W2.at(i, j, k - 1) + r;
 
     ax1 = omx2.at(i, j, k) * V2.at(i + 1, j, k);
     ax2 = -omx2.at(i, j, k) * V2.at(i - 1, j, k);
@@ -703,12 +685,12 @@ void simulator::setVorticityVectorPotencialBorders(int i, int j, int k) {
 }
 
 void simulator::calcular_V(int i, int j, int k) {
-    U2.set(i, j, k, (psiz2.at(i, j + 1, k) - psiz2.at(i, j - 1, k)) / 2 / h -
-           (psiy2.at(i, j, k + 1) - psiy2.at(i, j, k - 1)) / 2 / h);
-    V2.set(i, j, k, (psix2.at(i, j, k + 1) - psix2.at(i, j, k - 1)) / 2 / h -
-           (psiz2.at(i + 1, j, k) - psiz2.at(i - 1, j, k)) / 2 / h);
-    W2.set(i, j, k, (psiy2.at(i + 1, j, k) - psiy2.at(i - 1, j, k)) / 2 / h -
-           (psix2.at(i, j + 1, k) - psix2.at(i, j - 1, k)) / 2 / h);
+    U2.set(i, j, k,(psiz2.at(i, j + 1, k) - psiz2.at(i, j - 1, k)
+            - psiy2.at(i, j, k + 1) + psiy2.at(i, j, k - 1) ) / 2 / h );
+    V2.set(i, j, k, (psix2.at(i, j, k + 1) - psix2.at(i, j, k - 1) -
+           psiz2.at(i + 1, j, k) + psiz2.at(i - 1, j, k)) / 2 / h);
+    W2.set(i, j, k, (psiy2.at(i + 1, j, k) - psiy2.at(i - 1, j, k) -
+           psix2.at(i, j + 1, k) + psix2.at(i, j - 1, k)) / 2 / h);
 }
 
 void simulator::calcTerms(int i, int j, int k) {
