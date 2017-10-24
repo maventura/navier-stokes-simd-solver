@@ -1,7 +1,7 @@
-xMax 3.0
-yMax 3.0
-zMax 3.0
-tMax 0.01
+xMax 4.0
+yMax 4.0
+zMax 4.0
+tMax 2.0
 nu 0.1
 rho 1
 dx 0.05

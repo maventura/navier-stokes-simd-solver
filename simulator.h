@@ -268,10 +268,10 @@ void simulator::process() {
                     //if(j == nY-1) continue;
                     for (int k = 0; k < nZ-4; ++k) {
                         runColorTest(i, j, k);
-                        setVorticityVectorPotencialBorders(i, j, k);
+                        //setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
-                            vorticityVectorPotencialAsm(i,j,k);
+                            //vorticityVectorPotencialAsm(i,j,k);
                             //k += 3;
                             vorticityVectorPotencial(i,j,k);
                         }
@@ -387,8 +387,6 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                         + h * h * omx2.at(i, j, k)) / 6.0);*/
     //psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));
  
-
-
     //Eje y.
     calcular_V(i, j, k);
     delta = (1 - q * V2.at(i, j + 1, k) + q * V2.at(i, j - 1, k) + 6 * r);
@@ -829,7 +827,7 @@ void simulator::gridColor() {
 void simulator::runColorTest(int i, int j, int k) {
     bool border = (j >= nY - 1  || i >= nX - 1  || k >= nZ - 1 || i * j * k == 0);
     if (border) return;
-    float multiplier = 10000;
+    float multiplier = 20000;
 
 
     float c = 0;
