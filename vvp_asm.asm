@@ -266,29 +266,38 @@ vvp_asm:
  
 	mov r14, pos_
 	add r14, offset_j_
-	addps xmm0, [r15 + r14*4];+ psix2.at(i, j + 1, k)
+	movdqu xmm3,  [r15 + r14*4]
+	addps xmm0, xmm3;+ psix2.at(i, j + 1, k)
 
-	;mov r14, pos_
-	;sub r14, offset_i_
-	;addps xmm0, [r15 + r14*4] ;+ psix2.at(i - 1, j, k) ;;;;;;;;;;;ACA EXPLOTA
+	mov r14, pos_
+	sub r14, offset_i_
+	movdqu xmm3, [r15 + r14*4]
+	addps xmm0, xmm3 ;+ psix2.at(i - 1, j, k)
+	;TODO: addps breaks if not aligned to 16.
+	;decide if either replacing with two step addps or aligning the data
+	;;is the best option.
 
 	mov r14, pos_
 	sub r14, offset_j_
-	addps xmm0, [r15 + r14*4];+ psix2.at(i, j - 1, k)
+	movdqu xmm3, [r15 + r14*4]
+	addps xmm0, xmm3 ;+ psix2.at(i, j - 1, k)
 
 	mov r14, pos_
 	add r14, offset_k_
-	addps xmm0, [r15 + r14*4];+ psix2.at(i, j, k + 1)
+	movdqu xmm3, [r15 + r14*4] 
+	addps xmm0, xmm3;+ psix2.at(i, j, k + 1)
 
 	mov r14, pos_
 	sub r14, offset_k_
-	addps xmm0, [r15 + r14*4] ;+ psix2.at(i, j, k - 1)
+	movdqu xmm3, [r15 + r14*4]
+	addps xmm0,  xmm3;+ psix2.at(i, j, k - 1)
 
 	mov r15, [mat_arr_ + offset_omx2_]
 	movdqu xmm1, [r15 + pos_ *4]
 	mulps xmm1, h_
 	mulps xmm1, h_
-	divps xmm1, [seis]
+	movdqu xmm3, [seis]
+	divps xmm1, xmm3
 	addps xmm0, xmm1
 	mulps xmm0, wt_
 

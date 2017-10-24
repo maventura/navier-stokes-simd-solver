@@ -261,6 +261,7 @@ void simulator::process() {
 
         //saveStreamVtk(U2, V2, W2, stream_name.str());
 
+
         for (int iter = 0; iter < maxIters; ++iter) {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
@@ -270,8 +271,6 @@ void simulator::process() {
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
-                            cout << "i= " << i << "j= " << j << "k= " << k << endl;
-                            cout << "puntero a psi" << psix2.data << endl;
                             vorticityVectorPotencialAsm(i,j,k);
                             //k += 3;
                             vorticityVectorPotencial(i,j,k);
