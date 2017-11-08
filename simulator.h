@@ -271,9 +271,9 @@ void simulator::process() {
                         //setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
-                            //vorticityVectorPotencialAsm(i,j,k);
+                            vorticityVectorPotencialAsm(i,j,k);
                             //k += 3;
-                            vorticityVectorPotencial(i,j,k);
+                            //vorticityVectorPotencial(i,j,k);
                         }
 
                     }
@@ -300,10 +300,8 @@ void simulator::process() {
 }
 
 
-
-
 void simulator::vorticityVectorPotencialAsm(int i, int j, int k) {
-/*
+    /*
     mat_arr *mats;
     mats->U2 = U2.data;
     mats->V2 = V2.data;
@@ -314,7 +312,7 @@ void simulator::vorticityVectorPotencialAsm(int i, int j, int k) {
     mats->psix2 = psix2.data;
     mats->psiy2 = psiy2.data;
     mats->psiz2 = psiz2.data;
-*/
+    */
     float h = dx;
     float r = dt / (Re * h * h);
     float q = dt / (2 * h);
@@ -322,7 +320,6 @@ void simulator::vorticityVectorPotencialAsm(int i, int j, int k) {
     float *mats[] = {U2.data, V2.data, W2.data, omx2.data, omy2.data, omz2.data, psix2.data, psiy2.data, psiz2.data, omx1.data, omy1.data, omz1.data};
     vvp_asm(mats, nZ * nY * i + j * nZ + k, r, h, q, nY * nZ, nZ);
 }    
-
 
 
 void simulator::vorticityVectorPotencial(int i, int j, int k) {
@@ -338,7 +335,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
         }
     */
 
-    float h = dx; //TODO: supongo el considera matriz cuadrada
+    float h = dx; //TODO: ver que pasa con h si no es cuadrada la matriz o que
     float q = dt / (2 * h);
     float r = dt / (Re * h * h);
     float wt = 0.8;
@@ -351,9 +348,8 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     float aux_psiz2 = psiz2.at(i, j, k);
 
     //Eje x.
-    //calcular_V(i, j, k);
+    calcular_V(i, j, k);
     float delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
-                                            
     float p1 = (-U2.at(i + 1, j, k) + r); 
     float p2 = (-V2.at(i, j + 1, k) + r);  
     float p3 = (U2.at(i - 1, j, k) + r);  
@@ -368,27 +364,32 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
 
     float axs = ax1 + ax2 + ax3 + ax4;
 
-    /*omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)
+    omx2.set(i, j, k, p1 * omx2.at(i + 1, j, k) + p2 * omx2.at(i, j + 1, k)
              + p3 * omx2.at(i - 1, j, k) + p4 * omx2.at(i, j - 1, k)
              + p5 * omx2.at(i, j, k + 1) + p6 * omx2.at(i, j, k - 1)
              + (1.0 / q)*omx1.at(i, j, k)                           
-             + axs);*/
-
-    
-    //omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); 
-    //omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
+             + axs);
+    omx2.set(i, j, k, omx2.at(i, j, k) * (q / delta)); 
+    omx2.set(i, j, k, (1.0 - wt)*aux_omx2 + wt * omx2.at(i, j, k));
 
 
     //Eliptica eje x.
     //p1=p2=p3=p4=p5=p6=1/6.0;                                    
-    /*psix2.set(i, j, k, (psix2.at(i + 1, j, k) + psix2.at(i, j + 1, k)
+    psix2.set(i, j, k, (psix2.at(i + 1, j, k) + psix2.at(i, j + 1, k)
                         + psix2.at(i - 1, j, k) + psix2.at(i, j - 1, k)
                         + psix2.at(i, j, k + 1) + psix2.at(i, j, k - 1) 
-                        + h * h * omx2.at(i, j, k)) / 6.0);*/
-    //psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));
+                        + h * h * omx2.at(i, j, k)) / 6.0);
+    psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));
  
     //Eje y.
     calcular_V(i, j, k);
+    p1 = -U2.at(i + 1, j, k) + r;
+    p2 = -V2.at(i, j + 1, k) + r;
+    p3 = U2.at(i - 1, j, k) + r;
+    p4 = V2.at(i, j - 1, k) + r;
+    p5 = W2.at(i, j, k + 1) + r;
+    p6 = W2.at(i, j, k - 1) + r;
+
     delta = (1 - q * V2.at(i, j + 1, k) + q * V2.at(i, j - 1, k) + 6 * r);
 
     ax1 = omx2.at(i, j, k) * V2.at(i + 1, j, k);
@@ -401,9 +402,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
              + (p5) * omy2.at(i, j, k + 1) + (p6) * omy2.at(i, j, k - 1)
              + (1.0 / q)*omy1.at(i, j, k)
              + ax1  + ax2  + ax3  + ax4 );
-
     omy2.set(i, j, k, omy2.at(i, j, k) * (q / delta));
-
     omy2.set(i, j, k, (1.0 - wt)*aux_omy2 + wt * omy2.at(i, j, k));
 
     //Eliptica eje y.
@@ -480,18 +479,18 @@ void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
 
     out.write("X_COORDINATES " + to_string(nX) + " float");
     out.newLine();
-//for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
-//    out.newLine();
+    //for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
+    //    out.newLine();
 
     out.write("Y_COORDINATES " + to_string(nY) + " float");
     out.newLine();
-//for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
-//    out.newLine();
+    //for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
+    //    out.newLine();
 
     out.write("Z_COORDINATES " + to_string(nZ) + " float");
     out.newLine();
-//for (int i = 0; i < nZ; ++i) out.write(to_string(i) + " ");
-//    out.newLine();
+    //for (int i = 0; i < nZ; ++i) out.write(to_string(i) + " ");
+    //    out.newLine();
 
     out.write("POINT_DATA " + to_string(nX * nY * nZ));
     out.newLine();
@@ -736,7 +735,6 @@ void simulator::centralColor() {
     }
 
 }
-
 
 
 void simulator::centralSpeed() {

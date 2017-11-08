@@ -82,6 +82,9 @@ vvp_asm:
 	movdqu xmm0, [copy_float_value_mask]
 	pshufb wt_, xmm0
 
+	; --------------------Calculo de eje x----------------------------------
+
+	;call calcular_v 
 
 	;calculo de delta: (1 + q * [U2.at(i - 1, j, k) - U2.at(i + 1, j, k)] + 6 * r)
 	mov rax, pos_
@@ -91,106 +94,85 @@ vvp_asm:
 	mov rax, pos_
 	add rax, offset_i_ ; aca tenemos pos para i+1, j, k
 	movdqu xmm1, [r15 + rax * 4]
-
 	subps xmm0, xmm1
 	mulps xmm0, q_
 	movdqu xmm2, [uno]
 	addps xmm0, xmm2
-
 	movdqu xmm2, [seis]
 	mulps xmm2, r_
-
 	addps xmm0, xmm2 
 	movdqu delta_, xmm0
 
-	; --------------------Calculo de eje x----------------------------------
 	;from now on xmm0 acumulates the result
-
-	;call calcular_v 
-
 	xorps xmm0, xmm0
 	
-	;P1)
-	;double p1 = (-U2.at(i + 1, j, k) + r);
-	mov r15, [mat_arr_ + offset_U2_]	;r15 == U2
+	;p1 = (-U2.at(i + 1, j, k) + r)
+	mov r15, [mat_arr_ + offset_U2_]
 	mov rax, pos_
-	add rax, offset_i_					; rax = i+1,j,k
+	add rax, offset_i_
 	movdqu xmm2, [r15 + rax*4]
+	xorps xmm1, xmm1 ;TODO: XMM1 tiene que ser cero para hacer U2 negativo, era para eso no?
 	subps xmm1, xmm2
-
 	addps xmm1, r_
-
-	mov r14, [mat_arr_ + offset_omx2_]	;r14 = omx2
+	;p1 * omx2.at(i + 1, j, k)
+	mov r14, [mat_arr_ + offset_omx2_]
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm1, xmm2
-	addps xmm0, xmm1
+	addps xmm0, xmm1 
 
-	;P3)
-	;double p3 = (U2.at(i - 1, j, k) + r);   
-
-	;r15 == U2
+	;p3 = (U2.at(i - 1, j, k) + r)
 	mov rax, pos_
-	sub rax, offset_i_				; rax = i-1,j,k
+	sub rax, offset_i_
 	movdqu xmm1, [r15 + rax*4]
-
 	addps xmm1, r_
-
+	;p3 * omx2.at(i - 1, j, k)
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm1, xmm2
 	addps xmm0, xmm1
 
-	;P2)
-	;double p2 = (-V2.at(i, j + 1, k) + r)
-
-	mov r15, [mat_arr_ + offset_V2_]	;r15 == V2
+	;p2 = (-V2.at(i, j + 1, k) + r)
+	mov r15, [mat_arr_ + offset_V2_]
 	mov rax, pos_
-	add rax, offset_j_					; rax = i,j+1,k
+	add rax, offset_j_
 	movdqu xmm2, [r15 + rax*4]
+	xorps xmm1, xmm1 ; TODO: IDEM que antes, xmm1 debe ser cero
 	subps xmm1, xmm2
-
 	addps xmm1, r_
-
+	;p2 * omx2.at(i, j + 1, k)
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm1, xmm2
 	addps xmm0, xmm1
 
-	;P4)
-	;double p4 = (V2.at(i, j - 1, k) + r);
+	;p4 = (V2.at(i, j - 1, k) + r)
 	mov rax, pos_
-	sub rax, offset_j_					; rax = i, j - 1, k
+	sub rax, offset_j_
 	movdqu xmm1, [r15 + rax*4]
-	
 	addps xmm1, r_
-
+	;p4 * omx2.at(i, j - 1, k)
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm1, xmm2
 	addps xmm0, xmm1
 
-	;P5)
-	;double p5 = (W2.at(i, j, k + 1) + r);
-	mov r15, [mat_arr_ + offset_W2_]	;r15 == W2
+	;p5 = (W2.at(i, j, k + 1) + r)
+	mov r15, [mat_arr_ + offset_W2_]
 	mov rax, pos_
-	add rax, offset_k_					; rax = i, j, k + 1
+	add rax, offset_k_
 	movdqu xmm1, [r15 + rax*4]
-
 	addps xmm1, r_
- 
+	;p5 * omx2.at(i, j, k + 1)
  	movdqu xmm2, [r14 + rax*4]
 	mulps xmm1, xmm2
 	addps xmm0, xmm1
 
-	;P6)
-	;double p6 = (W2.at(i, j, k - 1) + r);
+	;p6 = (W2.at(i, j, k - 1) + r)
 	mov rax, pos_
 	sub rax, offset_k_
 	movdqu xmm1, [r15 + rax*4]
-
 	addps xmm1, r_
- 
+	;p6 * omx2.at(i, j, k - 1)
  	movdqu xmm2, [r14 + rax*4]
 	mulps xmm1, xmm2
 	addps xmm0, xmm1
-
 
 	;(1.0 / q)*omx1.at(i, j, k)
 	mov r15, [mat_arr_ + offset_omx1_]
@@ -198,11 +180,9 @@ vvp_asm:
 	divps xmm1, q_
 	addps xmm0, xmm1
 
-	;A1)
-	;float ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); 
+	;ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); 
 	mov r15, [mat_arr_ + offset_omy2_]
 	movdqu xmm1, [r15 + pos_*4]		;xmm1 referencia a omy2(i,j,k)
-
 	mov r14, [mat_arr_ + offset_U2_]
 	mov rax, pos_
 	add rax, offset_j_
@@ -210,34 +190,30 @@ vvp_asm:
 	mulps xmm2, xmm1
 	addps xmm0, xmm2
 
-    ;A2)
-    ;float ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);
+    ;ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);
 	mov rax, pos_
 	sub rax, offset_j_
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm2, xmm1
 	subps xmm0, xmm2
 
-	;A3)
-    ;float ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);
+	;ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);
     mov r15, [mat_arr_ + offset_omz2_]
 	movdqu xmm1, [r15 + pos_*4]		;xmm1 referencia a omz2(i,j,k)
-
 	mov rax, pos_
 	add rax, offset_k_
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm2, xmm1
 	addps xmm0, xmm2
 
-    ;A3)
-    ;float ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);
+    ;ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);
 	mov rax, pos_
 	sub rax, offset_k_
 	movdqu xmm2, [r14 + rax*4]
 	mulps xmm2, xmm1
 	subps xmm0, xmm2
 
-	;* (q / delta)
+	;* wt * (q / delta)
 	mulps xmm0, q_
 	divps xmm0, delta_
 	mulps xmm0, wt_
@@ -248,17 +224,16 @@ vvp_asm:
 	movdqu xmm2, [uno]
 	subps xmm2, wt_
 	mulps xmm1, xmm2
-	addps xmm0, xmm1 ;el resultado esta en xmm0
+	addps xmm0, xmm1
 
     mov r15, [mat_arr_ + offset_omx2_]
-
 	mov r14, pos_
 	shl r14, 2
 	add r15, r14
 	movdqu [r15], xmm0 ;hasta aca calculamos omx2(i,j,k)
 
 
-	;------------------------Eliptica eje x----------------------------
+;------------------------Eliptica eje x----------------------------
 	mov r15, [mat_arr_ + offset_psix2_]
 	mov r14, pos_
 	add r14, offset_i_
@@ -275,7 +250,7 @@ vvp_asm:
 	addps xmm0, xmm3 ;+ psix2.at(i - 1, j, k)
 	;TODO: addps breaks if not aligned to 16.
 	;decide if either replacing with two step addps or aligning the data
-	;;is the best option.
+	;is the best option.
 
 	mov r14, pos_
 	sub r14, offset_j_
@@ -314,205 +289,403 @@ vvp_asm:
 	movdqu [r15 + r14*4], xmm0
 
 
-
-
 ; --------------------Calculo de eje y----------------------------------
-	; ;from now on xmm0 acumulates the result
-	; xorps xmm0, xmm0
 	
-	; ;P1)
-	; ;double p1 = (-U2.at(i + 1, j, k) + r);
-	; mov r15, [mat_arr_ + offset_U2_]	;r15 == U2
-	; mov rax, pos_
-	; add rax, offset_i_					; rax = i+1,j,k
-	; movdqu xmm2, [r15 + rax*4]
-	; subps xmm1, xmm2
-
-	; addps xmm1, r_
-
-	; mov r14, [mat_arr_ + offset_omx2_]	;r14 = omx2
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
-
-	; ;P3)
-	; ;double p3 = (U2.at(i - 1, j, k) + r);   
-
-	; ;r15 == U2
-	; mov rax, pos_
-	; sub rax, offset_i_				; rax = i-1,j,k
-	; movdqu xmm1, [r15 + rax*4]
-
-	; addps xmm1, r_
-
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
-
-	; ;P2)
-	; ;double p2 = (-V2.at(i, j + 1, k) + r)
-
-	; mov r15, [mat_arr_ + offset_V2_]	;r15 == V2
-	; mov rax, pos_
-	; add rax, offset_j_					; rax = i,j+1,k
-	; movdqu xmm2, [r15 + rax*4]
-	; subps xmm1, xmm2
-
-	; addps xmm1, r_
-
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
-
-	; ;P4)
-	; ;double p4 = (V2.at(i, j - 1, k) + r);
-	; mov rax, pos_
-	; sub rax, offset_j_					; rax = i, j - 1, k
-	; movdqu xmm1, [r15 + rax*4]
+	;call calcular_v 
 	
-	; addps xmm1, r_
+	;Segundo calculo de delta: (1 + q * [V2.at(i, j - 1, k) - V2.at(i, j + 1, k)] + 6 * r)
+	mov rax, pos_
+	sub rax, offset_j_ ; aca tenemos pos para i, j-1, k
+	mov r15, [mat_arr_ + offset_V2_]
+	movdqu xmm0, [r15 + rax * 4]
+	mov rax, pos_
+	add rax, offset_j_ ; aca tenemos pos para i, j+1, k
+	movdqu xmm1, [r15 + rax * 4]
+	subps xmm0, xmm1
+	mulps xmm0, q_
+	movdqu xmm2, [uno]
+	addps xmm0, xmm2
+	movdqu xmm2, [seis]
+	mulps xmm2, r_
+	addps xmm0, xmm2 
+	movdqu delta_, xmm0
 
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
+	;from now on xmm0 acumulates the result
+	xorps xmm0, xmm0
 
-	; ;P5)
-	; ;double p5 = (W2.at(i, j, k + 1) + r);
-	; mov r15, [mat_arr_ + offset_W2_]	;r15 == W2
-	; mov rax, pos_
-	; add rax, offset_k_					; rax = i, j, k + 1
-	; movdqu xmm1, [r15 + rax*4]
+	;p1 = -U2.at(i + 1, j, k) + r
+	mov r15, [mat_arr_ + offset_U2_]
+	mov rax, pos_
+	add rax, offset_i_
+	movdqu xmm2, [r15 + rax*4]
+	xorps xmm1, xmm1
+	subps xmm1, xmm2
+	addps xmm1, r_
+	;p1 * omy2.at(i + 1, j, k)
+	mov r14, [mat_arr_ + offset_omy2_]
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
 
-	; addps xmm1, r_
+	;p3 = U2.at(i - 1, j, k) + r
+	mov rax, pos_
+	sub rax, offset_i_				; rax = i-1,j,k
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p3 * omy2.at(i - 1, j, k)
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p2 = -V2.at(i, j + 1, k) + r
+	mov r15, [mat_arr_ + offset_V2_]	;r15 == V2
+	mov rax, pos_
+	add rax, offset_j_					; rax = i,j+1,k
+	movdqu xmm2, [r15 + rax*4]
+	xorps xmm1, xmm1
+	subps xmm1, xmm2
+	addps xmm1, r_
+	;p2 * omy2.at(i, j + 1, k)
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p4 = V2.at(i, j - 1, k) + r
+	mov rax, pos_
+	sub rax, offset_j_					; rax = i, j - 1, k
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p4 * omy2.at(i, j - 1, k)
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p5 = W2.at(i, j, k + 1) + r
+	mov r15, [mat_arr_ + offset_W2_]	;r15 == W2
+	mov rax, pos_
+	add rax, offset_k_					; rax = i, j, k + 1
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p5 * omy2.at(i, j, k + 1)
+ 	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p6 = W2.at(i, j, k - 1) + r
+	mov rax, pos_
+	sub rax, offset_k_
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p6 * omy2.at(i, j, k - 1)
+ 	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
  
- ; 	movdqu xmm2, [r14 + rax*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
 
-	; ;P6)
-	; ;double p6 = (W2.at(i, j, k - 1) + r);
-	; mov rax, pos_
-	; sub rax, offset_k_
-	; movdqu xmm1, [r15 + rax*4]
+	;(1.0 / q)*omy1.at(i, j, k)
+	mov r15, [mat_arr_ + offset_omy1_]
+	movdqu xmm1, [r15 + pos_*4]
+	divps xmm1, q_
+	addps xmm0, xmm1
 
-	; addps xmm1, r_
+	;ax1 = omx2.at(i, j, k) * V2.at(i + 1, j, k) 
+	mov r15, [mat_arr_ + offset_omx2_]
+	movdqu xmm1, [r15 + pos_*4]
+	mov r14, [mat_arr_ + offset_V2_]
+	mov rax, pos_
+	add rax, offset_i_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	addps xmm0, xmm2
+
+    ;ax2 = -omx2.at(i, j, k) * V2.at(i - 1, j, k)
+	mov rax, pos_
+	sub rax, offset_i_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	subps xmm0, xmm2
+
+	;ax3 = omz2.at(i, j, k) * V2.at(i, j, k + 1)
+    mov r15, [mat_arr_ + offset_omz2_]
+	movdqu xmm1, [r15 + pos_*4]
+	mov rax, pos_
+	add rax, offset_k_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	addps xmm0, xmm2
+
+    ;ax4 = -omz2.at(i, j, k) * V2.at(i, j, k - 1)
+	mov rax, pos_
+	sub rax, offset_k_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	subps xmm0, xmm2
+
+	;* wt * (q / delta)
+	mulps xmm0, q_
+	divps xmm0, delta_
+	mulps xmm0, wt_
+
+	;(1.0 - wt)*omy2(i,j,k)_old 
+    mov r15, [mat_arr_ + offset_omy2_]
+	movdqu xmm1, [r15 + pos_*4]
+	movdqu xmm2, [uno]
+	subps xmm2, wt_
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+    mov r15, [mat_arr_ + offset_omy2_]
+	mov r14, pos_
+	shl r14, 2
+	add r15, r14
+	movdqu [r15], xmm0
+
+
+;------------------------Eliptica eje y----------------------------
+	mov r15, [mat_arr_ + offset_psiy2_]
+	mov r14, pos_
+	add r14, offset_i_
+	movdqu xmm0, [r15 + r14*4]
+
+	mov r14, pos_
+	add r14, offset_j_
+	addps xmm0, [r15 + r14*4]
+
+	mov r14, pos_
+	sub r14, offset_i_
+	addps xmm0, [r15 + r14*4]
+
+	mov r14, pos_
+	sub r14, offset_j_
+	addps xmm0, [r15 + r14*4]
+
+	mov r14, pos_
+	add r14, offset_k_
+	addps xmm0, [r15 + r14*4]
+
+	mov r14, pos_
+	sub r14, offset_k_
+	addps xmm0, [r15 + r14*4] 
+
+	mov r15, [mat_arr_ + offset_omy2_]
+	movdqu xmm1, [r15 + pos_ *4]
+	mulps xmm1, h_
+	mulps xmm1, h_
+	divps xmm1, [seis]
+	addps xmm0, xmm1
+	mulps xmm0, wt_
+
+	movdqu xmm1, [uno]
+	subps xmm1, wt_
+	mov r15, [mat_arr_ + offset_psiy2_]
+	movdqu xmm2, [r15 + pos_*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	mov r15, [mat_arr_ + offset_psiy2_]
+	mov r14, pos_
+	movdqu [r15 + r14*4], xmm0
+
+
+; --------------------Calculo de eje z----------------------------------
+	
+	;call calcular_v 
+	
+	;Tercer calculo de delta: (1 + q * [W2.at(i, j, k - 1) - W2.at(i, j, k + 1)] + 6 * r)
+	mov rax, pos_
+	sub rax, offset_k_
+	mov r15, [mat_arr_ + offset_W2_]
+	movdqu xmm0, [r15 + rax * 4]
+	mov rax, pos_
+	add rax, offset_k_
+	movdqu xmm1, [r15 + rax * 4]
+	subps xmm0, xmm1
+	mulps xmm0, q_
+	movdqu xmm2, [uno]
+	addps xmm0, xmm2
+	movdqu xmm2, [seis]
+	mulps xmm2, r_
+	addps xmm0, xmm2 
+	movdqu delta_, xmm0
+
+ 	;from now on xmm0 acumulates the result
+ 	xorps xmm0, xmm0
+
+	;p1 = -U2.at(i + 1, j, k) + r
+	mov r15, [mat_arr_ + offset_U2_]
+	mov rax, pos_
+	add rax, offset_i_
+	movdqu xmm2, [r15 + rax*4]
+	xorps xmm1, xmm1
+	subps xmm1, xmm2
+	addps xmm1, r_
+	;p1 * omz2.at(i + 1, j, k)
+	mov r14, [mat_arr_ + offset_omz2_]
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p3 = U2.at(i - 1, j, k) + r
+	mov rax, pos_
+	sub rax, offset_i_				; rax = i-1,j,k
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p3 * omz2.at(i - 1, j, k)
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p2 = -V2.at(i, j + 1, k) + r
+	mov r15, [mat_arr_ + offset_V2_]	;r15 == V2
+	mov rax, pos_
+	add rax, offset_j_					; rax = i,j+1,k
+	movdqu xmm2, [r15 + rax*4]
+	xorps xmm1, xmm1
+	subps xmm1, xmm2
+	addps xmm1, r_
+	;p2 * omz2.at(i, j + 1, k)
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p4 = V2.at(i, j - 1, k) + r
+	mov rax, pos_
+	sub rax, offset_j_					; rax = i, j - 1, k
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p4 * omz2.at(i, j - 1, k)
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p5 = W2.at(i, j, k + 1) + r
+	mov r15, [mat_arr_ + offset_W2_]	;r15 == W2
+	mov rax, pos_
+	add rax, offset_k_					; rax = i, j, k + 1
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p5 * omz2.at(i, j, k + 1)
+ 	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	;p6 = W2.at(i, j, k - 1) + r
+	mov rax, pos_
+	sub rax, offset_k_
+	movdqu xmm1, [r15 + rax*4]
+	addps xmm1, r_
+	;p6 * omz2.at(i, j, k - 1)
+ 	movdqu xmm2, [r14 + rax*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
  
- ; 	movdqu xmm2, [r14 + rax*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
+
+	;(1.0 / q)*omz1.at(i, j, k)
+	mov r15, [mat_arr_ + offset_omz1_]
+	movdqu xmm1, [r15 + pos_*4]
+	divps xmm1, q_
+	addps xmm0, xmm1
+
+	;ax1 = omx2.at(i, j, k) * W2.at(i + 1, j, k)
+	mov r15, [mat_arr_ + offset_omx2_]
+	movdqu xmm1, [r15 + pos_*4]
+	mov r14, [mat_arr_ + offset_W2_]
+	mov rax, pos_
+	add rax, offset_i_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	addps xmm0, xmm2
+
+	;ax2 = -omx2.at(i, j, k) * W2.at(i - 1, j, k)
+	mov rax, pos_
+	sub rax, offset_i_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	subps xmm0, xmm2
+
+	;ax3 = omy2.at(i, j, k) * W2.at(i, j + 1, k)
+	mov r15, [mat_arr_ + offset_omy2_]
+	movdqu xmm1, [r15 + pos_*4]
+	mov rax, pos_
+	add rax, offset_j_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	addps xmm0, xmm2
+
+	;ax4 = -omy2.at(i, j, k) * W2.at(i, j - 1, k)
+	mov rax, pos_
+	sub rax, offset_j_
+	movdqu xmm2, [r14 + rax*4]
+	mulps xmm2, xmm1
+	subps xmm0, xmm2
+
+	;* wt * (q / delta)
+	mulps xmm0, q_
+	divps xmm0, delta_
+	mulps xmm0, wt_
+
+	;(1.0 - wt)*omz2(i,j,k)_old 
+	mov r15, [mat_arr_ + offset_omz2_]
+	movdqu xmm1, [r15 + pos_*4]
+	movdqu xmm2, [uno]
+	subps xmm2, wt_
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
+
+	mov r15, [mat_arr_ + offset_omz2_]
+	mov r14, pos_
+	shl r14, 2
+	add r15, r14
+	movdqu [r15], xmm0
 
 
-	; ;(1.0 / q)*omx1.at(i, j, k)
-	; mov r15, [mat_arr_ + offset_omx1_]
-	; movdqu xmm1, [r15 + pos_*4]
-	; divps xmm1, q_
-	; addps xmm0, xmm1
+;------------------------Eliptica eje z----------------------------
 
-	; ;A1)
-	; ;float ax1 = omy2.at(i, j, k) * U2.at(i, j + 1, k); 
-	; mov r15, [mat_arr_ + offset_omy2_]
-	; movdqu xmm1, [r15 + pos_*4]		;xmm1 referencia a omy2(i,j,k)
+	mov r15, [mat_arr_ + offset_psiz2_]
+	mov r14, pos_
+	add r14, offset_i_
+	movdqu xmm0, [r15 + r14*4]
 
-	; mov r14, [mat_arr_ + offset_U2_]
-	; mov rax, pos_
-	; add rax, offset_j_
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm2, xmm1
-	; addps xmm0, xmm2
+	mov r14, pos_
+	add r14, offset_j_
+	addps xmm0, [r15 + r14*4]
 
- ;    ;A2)
- ;    ;float ax2 = -omy2.at(i, j, k) * U2.at(i, j - 1, k);
-	; mov rax, pos_
-	; sub rax, offset_j_
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm2, xmm1
-	; subps xmm0, xmm2
+	mov r14, pos_
+	sub r14, offset_i_
+	addps xmm0, [r15 + r14*4]
 
-	; ;A3)
- ;    ;float ax3 = omz2.at(i, j, k) * U2.at(i, j, k + 1);
- ;    mov r15, [mat_arr_ + offset_omz2_]
-	; movdqu xmm1, [r15 + pos_*4]		;xmm1 referencia a omz2(i,j,k)
+	mov r14, pos_
+	sub r14, offset_j_
+	addps xmm0, [r15 + r14*4]
 
-	; mov rax, pos_
-	; add rax, offset_k_
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm2, xmm1
-	; addps xmm0, xmm2
+	mov r14, pos_
+	add r14, offset_k_
+	addps xmm0, [r15 + r14*4]
 
- ;    ;A3)
- ;    ;float ax4 = -omz2.at(i, j, k) * U2.at(i, j, k - 1);
-	; mov rax, pos_
-	; sub rax, offset_k_
-	; movdqu xmm2, [r14 + rax*4]
-	; mulps xmm2, xmm1
-	; subps xmm0, xmm2
+	mov r14, pos_
+	sub r14, offset_k_
+	addps xmm0, [r15 + r14*4] 
 
-	; ;* (q / delta)
-	; mulps xmm0, q_
-	; divps xmm0, delta_
-	; mulps xmm0, wt_
+	mov r15, [mat_arr_ + offset_omz2_]
+	movdqu xmm1, [r15 + pos_ *4]
+	mulps xmm1, h_
+	mulps xmm1, h_
+	divps xmm1, [seis]
+	addps xmm0, xmm1
+	mulps xmm0, wt_
 
-	; ;(1.0 - wt)*omx2(i,j,k)_old 
- ;    mov r15, [mat_arr_ + offset_omx2_]
-	; movdqu xmm1, [r15 + pos_*4]
-	; movdqu xmm2, [uno]
-	; subps xmm2, wt_
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1 ;el resultado esta en xmm0
+	movdqu xmm1, [uno]
+	subps xmm1, wt_
+	mov r15, [mat_arr_ + offset_psiz2_]
+	movdqu xmm2, [r15 + pos_*4]
+	mulps xmm1, xmm2
+	addps xmm0, xmm1
 
- ;    mov r15, [mat_arr_ + offset_omx2_]
+	mov r15, [mat_arr_ + offset_psiz2_]
+	mov r14, pos_
+	movdqu [r15 + r14*4], xmm0
 
-	; mov r14, pos_
-	; shl r14, 2
-	; add r15, r14
-	; movdqu [r15], xmm0 ;hasta aca calculamos omx2(i,j,k)
-
-
-	; ;------------------------Eliptica eje x----------------------------
-	; mov r15, [mat_arr_ + offset_psix2_]
-	; mov r14, pos_
-	; add r14, offset_i_
-	; movdqu xmm0, [r15 + r14*4]
-
-	; mov r14, pos_
-	; add r14, offset_j_
-	; addps xmm0, [r15 + r14*4]
-
-	; mov r14, pos_
-	; sub r14, offset_i_
-	; addps xmm0, [r15 + r14*4]
-
-	; mov r14, pos_
-	; sub r14, offset_j_
-	; addps xmm0, [r15 + r14*4]
-
-	; mov r14, pos_
-	; add r14, offset_k_
-	; addps xmm0, [r15 + r14*4]
-
-	; mov r14, pos_
-	; sub r14, offset_k_
-	; addps xmm0, [r15 + r14*4] 
-
-	; mov r15, [mat_arr_ + offset_omx2_]
-	; movdqu xmm1, [r15 + pos_ *4]
-	; mulps xmm1, h_
-	; mulps xmm1, h_
-	; divps xmm1, [seis]
-	; addps xmm0, xmm1
-	; mulps xmm0, wt_
-
-	; movdqu xmm1, [uno]
-	; subps xmm1, wt_
-
-	; mov r15, [mat_arr_ + offset_psix2_]
-	; movdqu xmm2, [r15 + pos_*4]
-	; mulps xmm1, xmm2
-	; addps xmm0, xmm1
-
-	; mov r15, [mat_arr_ + offset_psix2_]
-	; mov r14, pos_
-	; movdqu [r15 + r14*4], xmm0
+	;call calcular_v 
 
 	mov rax, rdi
 
