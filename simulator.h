@@ -348,7 +348,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     float aux_psiz2 = psiz2.at(i, j, k);
 
     //Eje x.
-    calcular_V(i, j, k);
+    //calcular_V(i, j, k);
     float delta = (1 - q * U2.at(i + 1, j, k) + q * U2.at(i - 1, j, k) + 6 * r);
     float p1 = (-U2.at(i + 1, j, k) + r); 
     float p2 = (-V2.at(i, j + 1, k) + r);  
@@ -382,7 +382,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     psix2.set(i, j, k, (1.0 - wt)*aux_psix2 + wt * psix2.at(i, j, k));
  
     //Eje y.
-    calcular_V(i, j, k);
+    //calcular_V(i, j, k);
     p1 = -U2.at(i + 1, j, k) + r;
     p2 = -V2.at(i, j + 1, k) + r;
     p3 = U2.at(i - 1, j, k) + r;
@@ -413,7 +413,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
     psiy2.set(i, j, k, (1.0 - wt)*aux_psiy2 + wt * psiy2.at(i, j, k));
 
     //Eje z.
-    calcular_V(i, j, k);
+    //calcular_V(i, j, k);
     delta = (1 - q * W2.at(i, j, k + 1) + q * W2.at(i, j, k - 1) + 6 * r);
     p1 = -U2.at(i + 1, j, k) + r;
     p2 = -V2.at(i, j + 1, k) + r;
@@ -444,7 +444,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
                         + h * h * omz2.at(i, j, k)) / 6.0);
     psiz2.set(i, j, k, (1.0 - wt)*aux_psiz2 + wt * psiz2.at(i, j, k));
 
-    calcular_V(i, j, k);
+    //calcular_V(i, j, k);
 
 }
 
