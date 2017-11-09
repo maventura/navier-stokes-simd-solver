@@ -729,7 +729,7 @@ calcular_v:
 	sub rsp, 8  ;la pila debe estar alineada a 16 bits
 
 	;---------------set U2------------------------
-	mov r15, [mat_arr_ + offset_psiz2_*4]
+	mov r15, [mat_arr_ + offset_psiz2_]
 	mov r14, pos_
 	add r14, offset_j_
 	movdqu xmm0, [r15+r14*4] ;(psiz2.at(i, j + 1, k)
@@ -739,7 +739,7 @@ calcular_v:
 	movdqu xmm3, [r15+r14*4]
 	subps xmm0, xmm3 ; -psiz2.at(i, j - 1, k)
 
-	mov r15, [mat_arr_ + offset_psiy2_*4]
+	mov r15, [mat_arr_ + offset_psiy2_]
 	mov r14, pos_
 	add r14, offset_k_
 	movdqu xmm3, [r15+r14*4]
@@ -758,7 +758,7 @@ calcular_v:
 	movdqu [r15 + pos_*4], xmm0
 
 	;---------------set V2------------------------
-	mov r15, [mat_arr_ + offset_psix2_*4]
+	mov r15, [mat_arr_ + offset_psix2_]
 	mov r14, pos_
 	add r14, offset_k_
 	movdqu xmm0, [r15+r14*4] ;psix2.at(i, j, k + 1)	
@@ -768,7 +768,7 @@ calcular_v:
 	movdqu xmm3, [r15+r14*4] 
 	subps xmm0, xmm3 ;psix2.at(i, j, k - 1)	
 
-	mov r15, [mat_arr_ + offset_psiz2_*4]
+	mov r15, [mat_arr_ + offset_psiz2_]
 	mov r14, pos_
 	add r14, offset_i_
 	movdqu xmm3, [r15+r14*4]
@@ -787,7 +787,7 @@ calcular_v:
 	movdqu [r15 + pos_*4], xmm0
 
 	;---------------set W2------------------------
-	mov r15, [mat_arr_ + offset_psiy2_*4]
+	mov r15, [mat_arr_ + offset_psiy2_]
 	mov r14, pos_
 	add r14, offset_i_
 	movdqu xmm0, [r15+r14*4] ;psiy2.at(i + 1, j, k)
@@ -797,7 +797,7 @@ calcular_v:
 	movdqu xmm3, [r15+r14*4]
 	subps xmm0, xmm3 ;psiy2.at(i - 1, j, k)
 
-	mov r15, [mat_arr_ + offset_psix2_*4]
+	mov r15, [mat_arr_ + offset_psix2_]
 	mov r14, pos_
 	add r14, offset_j_
 	movdqu xmm3, [r15+r14*4]
