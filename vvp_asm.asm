@@ -46,10 +46,9 @@ vvp_asm:
 	mov rbp, rsp
 	push r15  ;estos son los 5 registros a preservar... si es que los pisamos
 	push r14
-	push r13
-	push r12
+	push rax
 	push rbx
-	sub rsp, 8  ;la pila debe estar alineada a 16 bits
+	;sub rsp, 8  ;la pila debe estar alineada a 16 bits
 
 
   ;int vvp_asm  (
@@ -701,12 +700,11 @@ vvp_asm:
 
 	call calcular_v 
 
-	mov rax, rdi
+	;mov rax, rdi
 
-	add rsp, 8
+	;add rsp, 8
 	pop rbx
-	pop r12
-	pop r13
+	pop rax
 	pop r14
 	pop r15
 	pop rbp

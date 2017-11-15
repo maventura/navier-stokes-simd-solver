@@ -6,7 +6,7 @@
 #include <cmath>
 #include "io.h"
 
-extern "C" {int vvp_asm(float *mats[], int pos, float r, int h, float q, int offsetI, int offsetJ);}
+extern "C" {void vvp_asm(float *mats[], int pos, float r, int h, float q, int offsetI, int offsetJ);}
                         
 class simulator {
 
@@ -266,14 +266,14 @@ void simulator::process() {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
                     //if(j == nY-1) continue;
-                    for (int k = 0; k < nZ-4; ++k) {
-                        runColorTest(i, j, k);
-                        //setVorticityVectorPotencialBorders(i, j, k);
+                    for (int k = 0; k < nZ; ++k) {
+                        //runColorTest(i, j, k);
+                        setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
                         if(inside){ //TODO!! watafac paso aca
-                            vorticityVectorPotencialAsm(i,j,k);
+                            //vorticityVectorPotencialAsm(i,j,k);
                             //k += 3;
-                            //vorticityVectorPotencial(i,j,k);
+                            vorticityVectorPotencial(i,j,k);
                         }
 
                     }
@@ -323,8 +323,7 @@ void simulator::vorticityVectorPotencialAsm(int i, int j, int k) {
 
 
 void simulator::vorticityVectorPotencial(int i, int j, int k) {
-    /*
-        for (int f = 0; f < nX; ++f) {
+    /*for (int f = 0; f < nX; ++f) {
             for (int q = 0; q < nZ; ++q) {
 
                 //Set Cavity flow conditions.
@@ -448,6 +447,7 @@ void simulator::vorticityVectorPotencial(int i, int j, int k) {
 
 }
 
+
 void simulator::simpleDiffusion(int i, int j, int k) {
     //simple diffusion for testing.
     U2.set(i, j, k, (U1.at(i, j, k) + U1.at(i + 1, j, k) + U1.at(i, j + 1, k) + U1.at(i, j, k + 1) + U1.at(i - 1, j, k) + U1.at(i, j - 1, k) + U1.at(i, j, k - 1)) / 7.0 );
@@ -459,6 +459,7 @@ void simulator::simpleDiffusion(int i, int j, int k) {
     if (i == 10 && j == 10 && k == 10) W2.set(i, j, k, 0.1);
 
 }
+
 
 void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
     // Save a 3-D scalar array in VTK format.
@@ -539,7 +540,6 @@ void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
 }
 
 
-
 void simulator::saveVtk(mat3 &m, string file_name) {
     // Save a 3-D scalar array in VTK format.
     io out(file_name, io::type_write);
@@ -584,7 +584,7 @@ void simulator::saveVtk(mat3 &m, string file_name) {
 
 
 void simulator::setVorticityVectorPotencialBorders(int i, int j, int k) {
-//Condiciones de borde.
+    //Condiciones de borde.
     if (j == 0) {
         psix2.set(i, j, k, 0);
         //Se agrega nueva condicion con la derivada normal en dos puntos.
@@ -675,10 +675,9 @@ void simulator::setVorticityVectorPotencialBorders(int i, int j, int k) {
         omx2.set(i, j, k, (V2.at(i, j, k - 1)) / h);
         omy2.set(i, j, k, (-U2.at(i, j, k - 1)) / h);
         omz2.set(i, j, k, 0);
-
     }
-
 }
+
 
 void simulator::calcular_V(int i, int j, int k) {
     U2.set(i, j, k,(psiz2.at(i, j + 1, k) - psiz2.at(i, j - 1, k)
@@ -688,6 +687,7 @@ void simulator::calcular_V(int i, int j, int k) {
     W2.set(i, j, k, (psiy2.at(i + 1, j, k) - psiy2.at(i - 1, j, k) -
            psix2.at(i, j + 1, k) + psix2.at(i, j - 1, k)) / 2 / h);
 }
+
 
 void simulator::calcTerms(int i, int j, int k) {
 
@@ -709,10 +709,12 @@ void simulator::calcTerms(int i, int j, int k) {
 
 }
 
+
 float minFloat(float a, float b) {
     if (a > b)return b;
     return a;
 }
+
 
 void simulator::centralColor() {
 
@@ -760,8 +762,6 @@ void simulator::centralSpeed() {
     }
 
 }
-
-
 
 
 void simulator::gridColor() {
@@ -821,6 +821,7 @@ void simulator::gridColor() {
     }
 
 }
+
 
 void simulator::runColorTest(int i, int j, int k) {
     bool border = (j >= nY - 1  || i >= nX - 1  || k >= nZ - 1 || i * j * k == 0);
