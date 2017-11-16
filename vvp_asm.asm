@@ -50,12 +50,11 @@ vvp_asm:
 	push rbx
 	;sub rsp, 8  ;la pila debe estar alineada a 16 bits
 
-
   ;int vvp_asm  (
     ;float* data,     rdi
     ;int    pos       rsi
     ;float  r		  xmm0
-    ;float  dx		  xmm1
+    ;float  h		  xmm1
     ;float  q		  xmm2
     ;int 	offset i  rdx
     ;int    offset j  rcx

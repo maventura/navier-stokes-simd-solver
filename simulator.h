@@ -6,7 +6,7 @@
 #include <cmath>
 #include "io.h"
 
-extern "C" {void vvp_asm(float *mats[], int pos, float r, int h, float q, int offsetI, int offsetJ);}
+extern "C" {void vvp_asm(float *mats[], int pos, float r, float h, float q, int offsetI, int offsetJ);}
                         
 class simulator {
 
@@ -270,10 +270,12 @@ void simulator::process() {
                         //runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
                         bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
-                        if(inside){ //TODO!! watafac paso aca
-                            //vorticityVectorPotencialAsm(i,j,k);
+                        if(inside){
+                            
+                            vorticityVectorPotencialAsm(i,j,k);
+                            
                             //k += 3;
-                            vorticityVectorPotencial(i,j,k);
+                            //vorticityVectorPotencial(i,j,k);
                         }
 
                     }
