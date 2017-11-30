@@ -6,8 +6,12 @@
 #include <cmath>
 #include "io.h"
 
-#ifndef USE_ASM
-extern "C" {void vvp_asm(float *mats[], int pos, float r, float h, float q, int offsetI, int offsetJ);}
+#ifdef USE_ASM
+extern "C" {
+    void vvp_asm(
+            float *mats[], int pos, float r, 
+            float h, float q, int offsetI, 
+            int offsetJ);}
 #endif
 
 class simulator {
