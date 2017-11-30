@@ -19,7 +19,6 @@ class simulator {
   public:
     simulator();
     void process();
-    int foo();
   private:
     float xMax,  yMax,  zMax,  tMax;
     float nu, rho, C_d;
@@ -79,6 +78,9 @@ class simulator {
     void gridColor();
     void runColorTest(int i, int j, int k);
 
+    void saveVelocitiesToFile();
+    void saveColorToFile();
+    bool isBorder(int i, int j, int k);
 };
 
 simulator::simulator() {
@@ -190,67 +192,25 @@ void simulator::setBorderConditions() {
 }
 
 
-
-int simulator::foo() {
-    return 314;
-}
-
 void simulator::process() {
     step = 0;
     //centralColor();
     gridColor();
     for (t = 0; t < tMax; t = t + dt) {
         setCavityFlowSpeeds();
-        cerr << 100 * t / tMax << "%" << endl;
+        cerr << 100 * t / tMax << "% \r";
         step++;
-        ostringstream U_name;
-        ostringstream V_name;
-        ostringstream W_name;
-        ostringstream P_name;
-        U_name << "./out/U_" << step << ".vtk";
-        ostringstream V0_name;
-        V_name << "./out/V_" << step << ".vtk";
-        ostringstream W0_name;
-        W_name << "./out/W_" << step << ".vtk";
-        ostringstream psix0_name;
-        psix0_name << "./out/psix0_" << step << ".vtk";
-        ostringstream omx0_name;
-        omx0_name << "./out/omx0_" << step << ".vtk";
-        ostringstream psiy0_name;
-        psiy0_name << "./out/psiy0_" << step << ".vtk";
-        ostringstream omy0_name;
-        omy0_name << "./out/omy0_" << step << ".vtk";
-        ostringstream psiz0_name;
-        psiz0_name << "./out/psiz0_" << step << ".vtk";
-        ostringstream omz0_name;
-        omz0_name << "./out/omz0_" << step << ".vtk";
-        ostringstream stream_name;
-        stream_name << "./out/stream_" << step << ".vtk";
-        //  if(step%5 == 0){
-        ostringstream color_name;
-        color_name << "./out/color_" << step << ".vtk";
-        saveVtk(color, color_name.str());
-        //}
-        saveVtk(U2, U_name.str());
-        saveVtk(V2, V_name.str());
-        saveVtk(W2, W_name.str());
-        // saveVtk(psix0, psix0_name.str());
-        // saveVtk(psiy0, psiy0_name.str());
-        //saveVtk(psiz0, psiz0_name.str());
-        // saveVtk(omx0, omx0_name.str());
-        // saveVtk(omy0, omy0_name.str());
-        //saveVtk(omz0, omz0_name.str());
-        //saveStreamVtk(U2, V2, W2, stream_name.str());
+        
+        saveVelocitiesToFile();
+        saveColorToFile();
+
         for (int iter = 0; iter < maxIters; ++iter) {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
-                    //if(j == nY-1) continue;
                     for (int k = 0; k < nZ; ++k) {
-                        //runColorTest(i, j, k);
                         setVorticityVectorPotencialBorders(i, j, k);
-                        bool inside = !(j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
-                        if (inside) {
-                            
+                        
+                        if (!isBorder(i,j,k)) {
                             
                             #ifdef USE_ASM
                                 vorticityVectorPotencialAsm(i, j, k);
@@ -263,7 +223,7 @@ void simulator::process() {
                 }
             }
         }
-        //TODO: actualizar las velocidades acá también genera transiciones bruscas entre t y t+1
+
         U1.copyAll(U2);
         V1.copyAll(V2);
         W1.copyAll(W2);
@@ -273,7 +233,6 @@ void simulator::process() {
         omx1.copyAll(omx2);
         omy1.copyAll(omy2);
         omz1.copyAll(omz2);
-        //TODO:mas bien reseña, establecer a las px_2 en cero no esta bueno, genera resultados con transiciones menos suaves.
     }
     cerr << "Message: Processing finished correctly" << endl << flush;
 }
@@ -416,112 +375,6 @@ void simulator::simpleDiffusion(int i, int j, int k) {
 }
 
 
-void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
-    // Save a 3-D scalar array in VTK format.
-    io out(file_name, io::type_write);
-    out.write("# vtk DataFile Version 2.0");
-    out.newLine();
-    out.write("Comment goes here");
-    out.newLine();
-    out.write("ASCII");
-    out.newLine();
-    out.newLine();
-    out.write("DATASET RECTILINEAR_GRID");
-    out.newLine();
-    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
-    out.newLine();
-    out.newLine();
-    out.write("X_COORDINATES " + to_string(nX) + " float");
-    out.newLine();
-    //for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
-    //    out.newLine();
-    out.write("Y_COORDINATES " + to_string(nY) + " float");
-    out.newLine();
-    //for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
-    //    out.newLine();
-    out.write("Z_COORDINATES " + to_string(nZ) + " float");
-    out.newLine();
-    //for (int i = 0; i < nZ; ++i) out.write(to_string(i) + " ");
-    //    out.newLine();
-    out.write("POINT_DATA " + to_string(nX * nY * nZ));
-    out.newLine();
-    out.write("SCALARS Xvelocity float 1");
-    out.newLine();
-    out.write("LOOKUP_TABLE default");
-    out.newLine();
-    for (int i = 0; i < nX * nY * nZ; ++i) {
-        out.write(to_string(i) + ".0");
-        out.newLine();
-    }
-    out.write("SCALARS Yvelocity float 1");
-    out.newLine();
-    out.write("LOOKUP_TABLE default");
-    out.newLine();
-    for (int i = 0; i < nX * nY * nZ; ++i) {
-        out.write(to_string(i) + ".0");
-        out.newLine();
-    }
-    out.write("SCALARS Zvelocity float 1");
-    out.newLine();
-    out.write("LOOKUP_TABLE default");
-    out.newLine();
-    for (int i = 0; i < nX * nY * nZ; ++i) {
-        out.write(to_string(i) + ".0");
-        out.newLine();
-    }
-    out.write("VECTORS VecVelocity float");
-    for (int i = 0; i < nX; ++i) {
-        for (int j = 0; j < nY; ++j) {
-            for (int k = 0; k < nZ; ++k) {
-                out.write(to_string(m1.at(i, j, k)) + " " + to_string(m2.at(i, j, k))  + " " + to_string(m3.at(i, j, k)));
-                out.newLine();
-            }
-        }
-    }
-    out.close();
-}
-
-
-void simulator::saveVtk(mat3 &m, string file_name) {
-    // Save a 3-D scalar array in VTK format.
-    io out(file_name, io::type_write);
-    out.write("# vtk DataFile Version 2.0");
-    out.newLine();
-    out.write("Comment goes here");
-    out.newLine();
-    out.write("ASCII");
-    out.newLine();
-    out.newLine();
-    out.write("DATASET STRUCTURED_POINTS");
-    out.newLine();
-    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
-    out.newLine();
-    out.newLine();
-    out.write("ORIGIN    0.000   0.000   0.000");
-    out.newLine();
-    out.write("SPACING    1.000   1.000   1.000");
-    out.newLine();
-    out.newLine();
-    out.write("POINT_DATA   " + to_string(nX * nY * nZ));
-    out.newLine();
-    out.write("SCALARS scalars float");
-    out.newLine();
-    out.write("LOOKUP_TABLE default");
-    out.newLine();
-    out.newLine();
-    for (int i = 0; i < nX; ++i) {
-        for (int j = 0; j < nY; ++j) {
-            for (int k = 0; k < nZ; ++k) {
-                out.writeFloat(m.at(i, j, k));
-                out.write(" ");
-            }
-            out.newLine();
-        }
-    }
-    out.close();
-}
-
-
 void simulator::setVorticityVectorPotencialBorders(int i, int j, int k) {
     //Condiciones de borde.
     if (j == 0) {
@@ -635,9 +488,159 @@ void simulator::calcTerms(int i, int j, int k) {
 }
 
 
+bool simulator::isBorder(int i, int j, int k){
+    return (j == nY - 1  || i == nX - 1  || k == nZ - 1 || i * j * k == 0);
+}
+
+
 float minFloat(float a, float b) {
     if (a > b)return b;
     return a;
+}
+
+
+// ----------Functions for file management ----------
+void simulator::saveColorToFile(){
+        ostringstream color_name;
+        color_name << "./out/color_" << step << ".vtk";
+        saveVtk(color, color_name.str());
+}
+
+
+void simulator::saveStreamVtk(mat3 &m1, mat3 &m2, mat3 &m3, string file_name) {
+    // Save a 3-D scalar array in VTK format.
+    io out(file_name, io::type_write);
+    out.write("# vtk DataFile Version 2.0");
+    out.newLine();
+    out.write("Comment goes here");
+    out.newLine();
+    out.write("ASCII");
+    out.newLine();
+    out.newLine();
+    out.write("DATASET RECTILINEAR_GRID");
+    out.newLine();
+    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
+    out.newLine();
+    out.newLine();
+    out.write("X_COORDINATES " + to_string(nX) + " float");
+    out.newLine();
+    //for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
+    //    out.newLine();
+    out.write("Y_COORDINATES " + to_string(nY) + " float");
+    out.newLine();
+    //for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
+    //    out.newLine();
+    out.write("Z_COORDINATES " + to_string(nZ) + " float");
+    out.newLine();
+    //for (int i = 0; i < nZ; ++i) out.write(to_string(i) + " ");
+    //    out.newLine();
+    out.write("POINT_DATA " + to_string(nX * nY * nZ));
+    out.newLine();
+    out.write("SCALARS Xvelocity float 1");
+    out.newLine();
+    out.write("LOOKUP_TABLE default");
+    out.newLine();
+    for (int i = 0; i < nX * nY * nZ; ++i) {
+        out.write(to_string(i) + ".0");
+        out.newLine();
+    }
+    out.write("SCALARS Yvelocity float 1");
+    out.newLine();
+    out.write("LOOKUP_TABLE default");
+    out.newLine();
+    for (int i = 0; i < nX * nY * nZ; ++i) {
+        out.write(to_string(i) + ".0");
+        out.newLine();
+    }
+    out.write("SCALARS Zvelocity float 1");
+    out.newLine();
+    out.write("LOOKUP_TABLE default");
+    out.newLine();
+    for (int i = 0; i < nX * nY * nZ; ++i) {
+        out.write(to_string(i) + ".0");
+        out.newLine();
+    }
+    out.write("VECTORS VecVelocity float");
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            for (int k = 0; k < nZ; ++k) {
+                out.write(to_string(m1.at(i, j, k)) + " " + to_string(m2.at(i, j, k))  + " " + to_string(m3.at(i, j, k)));
+                out.newLine();
+            }
+        }
+    }
+    out.close();
+}
+
+
+void simulator::saveVtk(mat3 &m, string file_name) {
+    // Save a 3-D scalar array in VTK format.
+    io out(file_name, io::type_write);
+    out.write("# vtk DataFile Version 2.0");
+    out.newLine();
+    out.write("Comment goes here");
+    out.newLine();
+    out.write("ASCII");
+    out.newLine();
+    out.newLine();
+    out.write("DATASET STRUCTURED_POINTS");
+    out.newLine();
+    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY) + " " + to_string(nZ));
+    out.newLine();
+    out.newLine();
+    out.write("ORIGIN    0.000   0.000   0.000");
+    out.newLine();
+    out.write("SPACING    1.000   1.000   1.000");
+    out.newLine();
+    out.newLine();
+    out.write("POINT_DATA   " + to_string(nX * nY * nZ));
+    out.newLine();
+    out.write("SCALARS scalars float");
+    out.newLine();
+    out.write("LOOKUP_TABLE default");
+    out.newLine();
+    out.newLine();
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            for (int k = 0; k < nZ; ++k) {
+                out.writeFloat(m.at(i, j, k));
+                out.write(" ");
+            }
+            out.newLine();
+        }
+    }
+    out.close();
+}
+
+
+void simulator::saveVelocitiesToFile(){
+    ostringstream U_name;
+    ostringstream V_name;
+    ostringstream W_name;
+    ostringstream P_name;
+    U_name << "./out/U_" << step << ".vtk";
+    ostringstream V0_name;
+    V_name << "./out/V_" << step << ".vtk";
+    ostringstream W0_name;
+    W_name << "./out/W_" << step << ".vtk";
+    ostringstream psix0_name;
+    psix0_name << "./out/psix0_" << step << ".vtk";
+    ostringstream omx0_name;
+    omx0_name << "./out/omx0_" << step << ".vtk";
+    ostringstream psiy0_name;
+    psiy0_name << "./out/psiy0_" << step << ".vtk";
+    ostringstream omy0_name;
+    omy0_name << "./out/omy0_" << step << ".vtk";
+    ostringstream psiz0_name;
+    psiz0_name << "./out/psiz0_" << step << ".vtk";
+    ostringstream omz0_name;
+    omz0_name << "./out/omz0_" << step << ".vtk";
+    ostringstream stream_name;
+    stream_name << "./out/stream_" << step << ".vtk";
+
+    saveVtk(U2, U_name.str());
+    saveVtk(V2, V_name.str());
+    saveVtk(W2, W_name.str());
 }
 
 
@@ -684,8 +687,8 @@ void simulator::gridColor() {
         for (int j = 2; j < nY - 2; ++j) {
             for (int k = 2; k < nZ - 2; ++k) {
                 if (k % 10 == 3 && j % 10 == 3 && i % 10 == 3) {
-                    //we want the first element non on the border to be painted
-                    //so that edge behabiour is observable from the first step.
+                    //we want the first element not on the border to be painted
+                    //so that edge behaviour is observable from the first step.
                     float color_intensity = 100;
                     color.set(i, j, k, color_intensity);
                     color.set(i + 1, j, k, color_intensity);
