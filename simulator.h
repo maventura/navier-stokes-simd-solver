@@ -81,6 +81,9 @@ class simulator {
     void saveVelocitiesToFile();
     void saveColorToFile();
     bool isBorder(int i, int j, int k);
+
+    void checkForNan();
+
 };
 
 simulator::simulator() {
@@ -201,19 +204,29 @@ void simulator::process() {
         cerr << 100 * t / tMax << "% \r";
         step++;
         
-        saveVelocitiesToFile();
-        saveColorToFile();
+        //saveVelocitiesToFile();
+        //saveColorToFile();
 
         for (int iter = 0; iter < maxIters; ++iter) {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
                     for (int k = 0; k < nZ; ++k) {
+
+                        saveVelocitiesToFile();
+                        saveColorToFile();
+
+                        checkForNan();
                         setVorticityVectorPotencialBorders(i, j, k);
-                        
+                        cout << " i: " << i << " j: " << j << " k: " << k << endl; 
                         if (!isBorder(i,j,k)) {
-                            
                             #ifdef USE_ASM
-                                vorticityVectorPotencialAsm(i, j, k);
+                                if(k > nZ-5){
+                                    vorticityVectorPotencial(i, j, k);    
+                                }else{
+                                    vorticityVectorPotencialAsm(i, j, k);
+                                    k += 3;
+                                }
+                                
                             #endif
                             #ifdef USE_CPP
                                 vorticityVectorPotencial(i,j,k);
@@ -641,6 +654,7 @@ void simulator::saveVelocitiesToFile(){
     saveVtk(U2, U_name.str());
     saveVtk(V2, V_name.str());
     saveVtk(W2, W_name.str());
+    step++;
 }
 
 
@@ -745,5 +759,38 @@ void simulator::runColorTest(int i, int j, int k) {
     color.set(i, j, k, c);
 }
 
+
+void simulator::checkForNan(){
+
+    U2.checkForNan();
+    //U0.checkForNan();
+    //W0.checkForNan();
+    //P0.checkForNan();
+    //U1.checkForNan();
+    //W1.checkForNan();
+    //P1.checkForNan();
+    U2.checkForNan();
+    V2.checkForNan();
+    W2.checkForNan();
+    P2.checkForNan();
+    //omx0.checkForNan();
+    //omy0.checkForNan();
+    //omz0.checkForNan();
+    //omx1.checkForNan();
+    //omy1.checkForNan();
+    //omz1.checkForNan();
+    omx2.checkForNan();
+    omy2.checkForNan();
+    omz2.checkForNan();
+    //psix0.checkForNan();
+    //psiy0.checkForNan();
+    //psiz0.checkForNan();
+    //psix1.checkForNan();
+    //psiy1.checkForNan();
+    //psiz1.checkForNan();
+    psix2.checkForNan();
+    psiy2.checkForNan();
+    psiz2.checkForNan();
+}
 
 #endif

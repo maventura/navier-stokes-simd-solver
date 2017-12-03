@@ -29,6 +29,7 @@ class mat3 {
     float rows();
     float dims();
     void print();
+    bool checkForNan();
 
 
   private:
@@ -36,8 +37,21 @@ class mat3 {
     int j_max_;
     int k_max_;
 
-
 };
+
+
+
+bool mat3::checkForNan(){
+    for (int i = 0; i < rows(); ++i) {
+        for (int j = 0; j < cols(); ++j) {
+            for (int k = 0; k < dims(); ++k) {
+                if (std::isnan(at(i,j,k))) {
+                    cerr << "NaN fount at (" << i << ", " << j << ", "<< k << ")" << endl; 
+                }
+            }
+        }
+    }
+}
 
 mat3::mat3() {
     i_max_ = 0;
@@ -80,7 +94,7 @@ void mat3::setAll(float val) {
 
 void mat3::set(int i, int j, int k, float val) {
     if (std::isnan(val)) {
-        cerr << "Error: Setting Nan value. Terminating." << endl;
+        cerr << "Error: Setting Nan value at (" << i << "," << j << "," << k << "). Terminating." << endl;
         std::exit(1);
     }
     data[k_max_ * j_max_ * i + j * k_max_ + k] = val;
