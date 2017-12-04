@@ -204,28 +204,25 @@ void simulator::process() {
         cerr << 100 * t / tMax << "% \r";
         step++;
         
-        //saveVelocitiesToFile();
-        //saveColorToFile();
+        saveVelocitiesToFile();
+        saveColorToFile();
 
         for (int iter = 0; iter < maxIters; ++iter) {
             for (int i = 0; i < nX; ++i) {
                 for (int j = 0; j < nY; ++j) {
                     for (int k = 0; k < nZ; ++k) {
 
-                        saveVelocitiesToFile();
-                        saveColorToFile();
-
-                        checkForNan();
+                        //checkForNan();
                         setVorticityVectorPotencialBorders(i, j, k);
-                        cout << " i: " << i << " j: " << j << " k: " << k << endl; 
+                        //cout << " i: " << i << " j: " << j << " k: " << k << endl; 
                         if (!isBorder(i,j,k)) {
                             #ifdef USE_ASM
-                                if(k > nZ-5){
-                                    vorticityVectorPotencial(i, j, k);    
-                                }else{
+                                //if(k > nZ-5){
+                                //    vorticityVectorPotencial(i, j, k);    
+                                //}else{
                                     vorticityVectorPotencialAsm(i, j, k);
-                                    k += 3;
-                                }
+                                    //k += 3;
+                                //}
                                 
                             #endif
                             #ifdef USE_CPP
@@ -654,7 +651,6 @@ void simulator::saveVelocitiesToFile(){
     saveVtk(U2, U_name.str());
     saveVtk(V2, V_name.str());
     saveVtk(W2, W_name.str());
-    step++;
 }
 
 

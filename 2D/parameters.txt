@@ -1,0 +1,26 @@
+xMax 4.0
+yMax 4.0
+tMax 0.1
+nu 0.01 
+rho 1.0 
+dx 0.05
+dy 0.05
+dt 0.001
+al 0.5
+upwind false
+fixedPointError 0.000001
+minFixedPointIters 10
+rMax 0.5 * min(xMax, yMax) / 2.0
+rMin 0.2 * min(xMax, yMax) / 2.0
+fanTurns 1.5
+startingAngle 0.0 
+printPercentageSteps 20
+percentageStop 100.0
+F 10.0
+fanWidth 0.1
+printWork false
+C_d 2.0
+stepsUntilPrint 99999999
+printPercentage true
+onlyPrintFan false
+plotPressureInstead false

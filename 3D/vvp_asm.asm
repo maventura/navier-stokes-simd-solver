@@ -13,11 +13,11 @@ seis: DD 6.0, 6.0, 6.0, 6.0
 dos: DD 2.0, 2.0, 2.0, 2.0
 
 section .text
-	%define q_ xmm11
-	%define h_ xmm12
-	%define wt_ xmm13
-	%define delta_ xmm14
-	%define r_ xmm15
+%define q_ xmm11
+%define h_ xmm12
+%define wt_ xmm13
+%define delta_ xmm14
+%define r_ xmm15
 %define offset_i_ rdx
 %define offset_j_ rcx
 %define offset_k_ 1

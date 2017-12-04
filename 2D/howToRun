@@ -1,0 +1,49 @@
+compile:
+	mpicxx hello_mpi.cpp -std=c++11 -o2 -o hello_mpi
+run:
+	mpirun -np 5 ./hello_mpi
+run network:
+	mpirun -np 5 -H ./hello_mpi
+				 -hosts ip1,ip2,ip3...				(separadon con comas sin espacios) 
+
+con hostfile:
+	mpirun -np 5 --hostfile hostfile.txt ./hello_mpi
+
+
+
+
+
+
+to get my ip: 
+				ip route get 8.8.8.8 | awk '{print $NF; exit}'
+
+
+
+tools:
+
+./listar_host.sh 10.2.6.1-25 hostlist.txt
+nmap -sP 10.2.6.1-25 > salida.txt
+python host_up.py salida.txt hostlist.txt 
+
+
+
+
+
+SSH:
+
+
+ssh aventura@milagro.dc.uba.ar
+ssh ws1.labo7.lab.dc.uba.ar                                                                                                                                       
+
+Generar claves:
+
+ssh-keygen -t dsa
+ssh-copy-id 10.2.7.1
+no importa que ip porque estan sincronizadas entonces se copia en todas.                                                       
+de hecho con hacerlo en una sola slave alcanza.
+
+eval `ssh-agent`; ssh-add ~/.ssh/id_dsa
+
+esto ultimo es para entrar sin password.
+
+
