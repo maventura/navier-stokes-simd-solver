@@ -5,6 +5,7 @@
 #include "mat2.h"
 #include <cmath>
 #include "io.h"
+#include <algorithm>    // std::min
 
 
 class simulator {
@@ -31,22 +32,16 @@ class simulator {
     float V1xx, V2xx, V1yy, V2yy;
     float P1xx, P1yy, P2yy;
 
-    int stepsUntilPrint, printPercentageSteps, maxSteps;
+    int printPercentageSteps, maxSteps;
     bool printPercentage;
     float t;
 
     float percentageStop, fanArea, fanWidth;
 
     //0 es tiempo n-1, 1 es tiempo n, 2 es tiempo n+1
-    //3 es simplemente las matrices auxiliares para no perder datos de el tiempo 2
     mat2 U0, V0, P0;
     mat2 U1, V1, P1;
     mat2 U2, V2, P2;
-
-    mat2 U_aux_0, V_aux_0, W_aux_0;
-    mat2 U_aux_1, V_aux_1, W_aux_1;
-    mat2 U_aux_2, V_aux_2, W_aux_2;
-
 
     float Re, Fx, Fy, Fz;
 
@@ -68,7 +63,6 @@ class simulator {
     void saveVelocitiesToFile();
     bool isBorder(int i, int j, int k);
 
-    void checkForNan();
 
 };
 
@@ -88,12 +82,7 @@ simulator::simulator() {
     U2.confAndInit(nX, nY, 0);
     V2.confAndInit(nX, nY, 0);
     P2.confAndInit(nX, nY, 1);
-    U_aux_0.confAndInit(nX, nY, 0);
-    V_aux_0.confAndInit(nX, nY, 0);
-    U_aux_1.confAndInit(nX, nY, 0);
-    V_aux_1.confAndInit(nX, nY, 0);
-    U_aux_2.confAndInit(nX, nY, 0);
-    V_aux_2.confAndInit(nX, nY, 0);
+
     fanArea = dx * dy;
     xc = nX / 2;
     yc = nY / 2;
@@ -121,7 +110,6 @@ void simulator::readParameters(string file_name) {
         if (tag == "printPercentageSteps") file.readInt(printPercentageSteps);
         if (tag == "C_d") file.readFloat(C_d);
         if (tag == "maxSteps") file.readInt(maxSteps);
-        if (tag == "stepsUntilPrint") file.readInt(stepsUntilPrint);
         if (tag == "printPercentage") file.readBool(printPercentage);
         if (tag == "maxIters") file.readInt(maxIters);
         if (tag == "percentageStop") file.readFloat(percentageStop);
@@ -161,9 +149,8 @@ void simulator::setPBorders() {
 
 
 void simulator::process() {
-    unsigned long int step = 0;
 
-    for (float t = 0.0; t < tMax; t = t + dt) {
+    for (t = 0.0; t < tMax; t = t + dt) {
         if (step % printPercentageSteps == 0) 
             cerr << 100 * t / tMax << "% \r";
         step++;
@@ -190,37 +177,40 @@ void simulator::process() {
                 calcTerms(i,j);
                 calcVelocities(i,j);
 
-                float x = i * dx - xc;
-                float y = j * dy - yc;
 
 
-                if (y > nY / 2) y -= nY / 2;
-                float theta = atan2(y , x);
-                theta += pi;
-                float beta = theta + (pi / 2.0);
 
-                float r = sqrt(x * x + y * y);
-                float tanVel = dFanAngle * r;
-                float tanVelX = tanVel*cos(beta);
-                float tanVelY = tanVel*sin(beta);
+                //from fan scenario. 
+               // float x = i * dx - xc;
+               // float y = j * dy - yc;
+                //TODO: Fan scenario needed this fix, why?
+               // if (y > nY / 2) y -= nY / 2;
+               // float theta = atan2(y , x);
+               // theta += pi;
+               // float beta = theta + (pi / 2.0);
 
-                float relVelX = tanVelX - U2.at(i, j);
-                float relVelY = tanVelY - V2.at(i, j);
-                float Fx = 0.5 * fanArea * C_d*relVelX / dt;
-                float Fy = 0.5 * fanArea * C_d*relVelY / dt; //Mass(dt*dx since water density is 1)
+               // float r = sqrt(x * x + y * y);
+               // float tanVel = dFanAngle * r;
+               // float tanVelX = tanVel*cos(beta);
+               // float tanVelY = tanVel*sin(beta);
+
+               // float relVelX = tanVelX - U2.at(i, j);
+               // float relVelY = tanVelY - V2.at(i, j);
+              //  float Fx = 0.5 * fanArea * C_d*relVelX / dt;
+              //  float Fy = 0.5 * fanArea * C_d*relVelY / dt; //Mass(dt*dx since water density is 1)
                 //times tangent expected speed
                 //divided by time
 
 
-                float Fu = Fx;//F * cos(beta);
-                float Fv = Fy;//F * sin(beta);
+              //  float Fu = Fx;//F * cos(beta);
+               // float Fv = Fy;//F * sin(beta);
 
-                float angleDif = fabs(theta - startinAngle);
-                if ( angleDif < fanWidth  && r > rMin && r < rMax) {
-                    float strMult = 1 - angleDif / fanWidth;
-                    U2.add(i, j, -Fu * dt * strMult);
-                    V2.add(i, j, -Fv * dt * strMult);
-                }
+               // float angleDif = fabs(theta - startinAngle);
+               // if ( angleDif < fanWidth  && r > rMin && r < rMax) {
+               //     float strMult = 1 - angleDif / fanWidth;
+               //     U2.add(i, j, -Fu * dt * strMult);
+               //     V2.add(i, j, -Fv * dt * strMult);
+               // }
 
             }
         }
@@ -232,10 +222,6 @@ void simulator::process() {
         P0.copyAll(P1);
         P1.copyAll(P2);
 
-         if (step % stepsUntilPrint == 0) {
-            U0.print();
-            V0.print();
-        }
 
     }
 }
@@ -287,70 +273,45 @@ bool simulator::isBorder(int i, int j, int k){
     return (j == nY - 1  || i == nX - 1 || i * j  == 0);
 }
 
-
-float minFloat(float a, float b) {
-    if (a > b)return b;
-    return a;
-}
-
-
 // ----------Functions for file management ----------
 
+void simulator::saveVelocitiesToFile(){
+    ostringstream U_name;
+    ostringstream V_name;
+    U_name << "./out/U_" << step << ".vtk";
+    ostringstream V0_name;
+    V_name << "./out/V_" << step << ".vtk";
+    
+    ostringstream stream_name;
+    stream_name << "./out/stream_" << step << ".vtk";
 
-void simulator::saveStreamVtk(mat2 &m1, mat2 &m2, string file_name) {
-    // Save a 3-D scalar array in VTK format.
-    io out(file_name, io::type_write);
-    out.write("# vtk DataFile Version 2.0");
-    out.newLine();
-    out.write("Comment goes here");
-    out.newLine();
-    out.write("ASCII");
-    out.newLine();
-    out.newLine();
-    out.write("DATASET RECTILINEAR_GRID");
-    out.newLine();
-    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY));
-    out.newLine();
-    out.newLine();
-    out.write("X_COORDINATES " + to_string(nX) + " float");
-    out.newLine();
-    //for (int i = 0; i < nX; ++i) out.write(to_string(i) + " ");
-    //    out.newLine();
-    out.write("Y_COORDINATES " + to_string(nY) + " float");
-    out.newLine();
-    //for (int i = 0; i < nY; ++i) out.write(to_string(i) + " ");
-    //    out.newLine();
-
-    out.write("POINT_DATA " + to_string(nX * nY));
-    out.newLine();
-    out.write("SCALARS Xvelocity float 1");
-    out.newLine();
-    out.write("LOOKUP_TABLE default");
-    out.newLine();
-    for (int i = 0; i < nX * nY; ++i) {
-        out.write(to_string(i) + ".0");
-        out.newLine();
-    }
-    out.write("SCALARS Yvelocity float 1");
-    out.newLine();
-    out.write("LOOKUP_TABLE default");
-    out.newLine();
-    for (int i = 0; i < nX * nY; ++i) {
-        out.write(to_string(i) + ".0");
-        out.newLine();
-    }
-
-    out.write("VECTORS VecVelocity float");
-    for (int i = 0; i < nX; ++i) {
-        for (int j = 0; j < nY; ++j) {
-            out.write(to_string(m1.at(i, j)) + " " + to_string(m2.at(i, j)));
-            out.newLine();
-        }
-    }
-    out.close();
+    saveVtk(U2, U_name.str());
+    saveVtk(V2, V_name.str());
 }
 
 
+void simulator::centralSpeed() {
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            float r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc));
+            if (r < 2.5) {
+                float max = 0.01;
+                U2.set(i, j, min(max / r, max));
+                U1.set(i, j, min(max / r, max));
+                U0.set(i, j, min(max / r, max));
+                //TODO: we were using a custom min function, dont know why, test this one.
+            }
+        }
+    }
+}
+
+
+#endif
+
+
+
+/*
+//not working.
 void simulator::saveVtk(mat2 &m, string file_name) {
     // Save a 3-D scalar array in VTK format.
     io out(file_name, io::type_write);
@@ -386,48 +347,4 @@ void simulator::saveVtk(mat2 &m, string file_name) {
     }
     out.close();
 }
-
-
-void simulator::saveVelocitiesToFile(){
-    ostringstream U_name;
-    ostringstream V_name;
-    U_name << "./out/U_" << step << ".vtk";
-    ostringstream V0_name;
-    V_name << "./out/V_" << step << ".vtk";
-    
-    ostringstream stream_name;
-    stream_name << "./out/stream_" << step << ".vtk";
-
-    saveVtk(U2, U_name.str());
-    saveVtk(V2, V_name.str());
-}
-
-
-void simulator::centralSpeed() {
-    for (int i = 0; i < nX; ++i) {
-        for (int j = 0; j < nY; ++j) {
-            float r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc));
-            if (r < 2.5) {
-                float max = 0.01;
-                U2.set(i, j, minFloat(max / r, max));
-                U1.set(i, j, minFloat(max / r, max));
-                U0.set(i, j, minFloat(max / r, max));
-            }
-        }
-    }
-}
-
-
-void simulator::checkForNan(){
-
-    U2.checkForNan();
-    //U0.checkForNan();
-    //P0.checkForNan();
-    //U1.checkForNan();
-    //P1.checkForNan();
-    U2.checkForNan();
-    V2.checkForNan();
-    P2.checkForNan();
-}
-
-#endif
+*/

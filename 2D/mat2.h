@@ -37,20 +37,6 @@ class mat2 {
 
 };
 
-
-
-bool mat2::checkForNan(){
-    /*for (int i = 0; i < rows(); ++i) {
-        for (int j = 0; j < cols(); ++j) {
-            if (std::isnan(at(i,j))) {
-                cerr << "NaN fount at (" << i << ", " << j <<")" << endl; 
-                return true;
-            }
-        }
-    }*/
-    return false;
-}
-
 mat2::mat2() {
     i_max_ = 0;
     j_max_ = 0;

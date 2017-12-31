@@ -8,8 +8,8 @@
 #	g++ -DUSE_ASM -c -m64 -std=c++11 main.cpp -o main.o
 #	g++ -o main -m64 vvp_asm.o main.o
 
-cpp:  main_serial_arrays.cpp mat2.h io.h
-	g++ main_serial_arrays.cpp -std=c++11  -o main
+cpp:  main.cpp mat2.h io.h
+	g++ main.cpp -std=c++11  -o main
 
 clean:
 	rm -f main
