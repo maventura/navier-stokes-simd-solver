@@ -285,8 +285,8 @@ void simulator::saveVelocitiesToFile(){
     ostringstream stream_name;
     stream_name << "./out/stream_" << step << ".vtk";
 
-    saveVtk(U2, U_name.str());
-    saveVtk(V2, V_name.str());
+    //saveVtk(U2, U_name.str());
+    //saveVtk(V2, V_name.str());
 }
 
 
