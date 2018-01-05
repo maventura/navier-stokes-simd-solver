@@ -37,7 +37,7 @@ class simulator {
     float t;
 
     float percentageStop, fanArea, fanWidth;
-
+    //TODO: Add option to import text.
     //0 es tiempo n-1, 1 es tiempo n, 2 es tiempo n+1
     mat2 U0, V0, P0;
     mat2 U1, V1, P1;
@@ -61,6 +61,9 @@ class simulator {
     void simpleDiffusion(int i, int j, int k);
 
     void saveVelocitiesToFile();
+    void saveVelocitiesToTxt();
+    void appendTxt(string file_name, mat2 &M);
+
     bool isBorder(int i, int j, int k);
 
 
@@ -149,14 +152,14 @@ void simulator::setPBorders() {
 
 
 void simulator::process() {
-
+    cout << "cols: " << U2.cols() << ", rows: " << U2.rows() << endl;
     for (t = 0.0; t < tMax; t = t + dt) {
         if (step % printPercentageSteps == 0) 
             cerr << 100 * t / tMax << "% \r";
         step++;
 
-        saveVelocitiesToFile();
-
+        //saveVelocitiesToFile();
+        saveVelocitiesToTxt();
         if(100 * t / tMax > percentageStop) return ;
 
         float dFanAngle = fanTurns * 2 * pi / nT; //
@@ -175,6 +178,7 @@ void simulator::process() {
             for (int j = 1; j < nY - 1; ++j) {
 
                 calcTerms(i,j);
+                centralSpeed();
                 calcVelocities(i,j);
 
 
@@ -285,9 +289,20 @@ void simulator::saveVelocitiesToFile(){
     ostringstream stream_name;
     stream_name << "./out/stream_" << step << ".vtk";
 
-    //saveVtk(U2, U_name.str());
-    //saveVtk(V2, V_name.str());
+    saveVtk(U2, U_name.str());
+    saveVtk(V2, V_name.str());
 }
+
+
+void simulator::saveVelocitiesToTxt(){
+    ostringstream name;
+    name << "./out/UV.txt";
+
+    appendTxt(name.str(),U2);
+    appendTxt(name.str(),V2);
+}
+
+
 
 
 void simulator::centralSpeed() {
@@ -309,9 +324,6 @@ void simulator::centralSpeed() {
 #endif
 
 
-
-/*
-//not working.
 void simulator::saveVtk(mat2 &m, string file_name) {
     // Save a 3-D scalar array in VTK format.
     io out(file_name, io::type_write);
@@ -347,4 +359,21 @@ void simulator::saveVtk(mat2 &m, string file_name) {
     }
     out.close();
 }
-*/
+
+
+void simulator::appendTxt(string file_name, mat2 &M){
+    io out(file_name, io::type_read_write_appending);
+    for (int i = 0; i < M.rows(); ++i)
+    {
+        for (int j = 0; j < M.cols(); ++j)
+        {
+            out.writeFloat(M.at(i,j));
+            out.write(" ");
+
+        }
+        out.newLine();
+    }
+    out.newLine();
+    out.close();
+
+}

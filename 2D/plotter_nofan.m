@@ -1,10 +1,10 @@
 clear all;
-data = dlmread('out_serial');
+data = dlmread('./out/UV.txt');
 
 n = size(data);
  data_rows = n(1);
  data_cols = n(2);
- mat_rows = 11*2*10 + 1;
+ mat_rows = 41;
  mat_cols = data_cols;
  skip = 1;
  elementSkip = 1;

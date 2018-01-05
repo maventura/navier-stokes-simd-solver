@@ -28,7 +28,7 @@ public:
 
   static constexpr const char* type_read = "read";
   static constexpr const char* type_write = "write"; //TODO: Something better? enum?
-
+  static constexpr const char* type_read_write_appending = "write_appending";
 
 
 private:
@@ -54,7 +54,12 @@ io::io(string file_name, string type){
     out.open(file_name_);
     return;
   }
-  cerr << "Error: valid io types are read and write" << endl;
+  if(type == type_read_write_appending){
+    out.open(file_name_, fstream::in | fstream::out | fstream::app);
+    return;
+  }
+  
+  cerr << "Error: valid io types are read, write and read_write_appending" << endl;
 }
 
 io::~io(){
