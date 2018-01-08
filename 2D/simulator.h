@@ -231,38 +231,47 @@ void simulator::process() {
 }
 
 void simulator::calcVelocities(int i, int j){
-    float u2val = U1.at(i, j) - U1.at(i, j) * (dt / dx) * (U1.at(i, j) - U1.at(i - 1, j)) - V1.at(i, j) * (dt / dy) * (U1.at(i, j) - U1.at(i, j - 1)) - (dt / (rho * 2 * dx)) * (P1.at(i + 1, j) - P1.at(i - 1, j))
-                                    + nu * ((dt / (dx * dx)) * (U1.at(i + 1, j) - 2 * U1.at(i, j) + U1.at(i - 1, j)) + (dt / (dy * dy)) * (U1.at(i, j + 1) - 2 * U1.at(i, j) + U1.at(i, j - 1)));
+    float u2val = U1.at(i, j) 
+                - U1.at(i, j) * (dt / dx) * (U1.at(i, j) - U1.at(i - 1, j)) 
+                - V1.at(i, j) * (dt / dy) * (U1.at(i, j) - U1.at(i, j - 1)) 
+                - (dt / (rho * 2 * dx)) * (P1.at(i + 1, j) - P1.at(i - 1, j))
+                + nu * ((dt / (dx * dx)) * (U1.at(i + 1, j) - 2 * U1.at(i, j) + U1.at(i - 1, j)) 
+                    + (dt / (dy * dy)) * (U1.at(i, j + 1) - 2 * U1.at(i, j) + U1.at(i, j - 1)) );
     U2.set(i, j, u2val);
 
-    float v2val = V1.at(i, j) - U1.at(i, j) * (dt / dx) * (V1.at(i, j) - V1.at(i - 1, j)) - V1.at(i, j) * (dt / dy) * (V1.at(i, j) - V1.at(i, j - 1))
-                                    - (dt / (rho * 2 * dy)) * (P1.at(i, j + 1) - P1.at(i, j - 1))
-                                    + nu * ((dt / (dx * dx)) * (V1.at(i + 1, j) - 2 * V1.at(i, j) + V1.at(i - 1, j)) + (dt / (dy * dy)) * (V1.at(i, j + 1) - 2 * V1.at(i, j) + V1.at(i, j - 1)));
+    float v2val = V1.at(i, j) 
+                - U1.at(i, j) * (dt / dx) * (V1.at(i, j) - V1.at(i - 1, j)) 
+                - V1.at(i, j) * (dt / dy) * (V1.at(i, j) - V1.at(i, j - 1))
+                - (dt / (rho * 2 * dy)) * (P1.at(i, j + 1) - P1.at(i, j - 1))
+                + nu * ((dt / (dx * dx)) * (V1.at(i + 1, j) - 2 * V1.at(i, j) + V1.at(i - 1, j)) 
+                    + (dt / (dy * dy)) * (V1.at(i, j + 1) - 2 * V1.at(i, j) + V1.at(i, j - 1)) );
     V2.set(i, j, v2val);
 
     float finalTerm = (1 / dt) * (U1x + V1y) - U1x * U1x - 2 * U1y * V1x - V1y * V1y;
-    float p2val = ((P1.at(i + 1, j) + P1.at(i - 1, j)) * dy * dy + (P1.at(i, j + 1) + P1.at(i, j - 1)) * dx * dx) * (1.0 / (2 * (dx * dx + dy * dy)));
-    p2val -= (rho * dx * dx * dy * dy / (2 * dx * dx + 2 * dy * dy)) * finalTerm;
+    float p2val =   (1.0 / (2 * (dx * dx + dy * dy)))
+                    * ((P1.at(i + 1, j) + P1.at(i - 1, j)) * dy * dy 
+                        + (P1.at(i, j + 1) + P1.at(i, j - 1)) * dx * dx)
+                    - (rho * dx * dx * dy * dy / (2 * dx * dx + 2 * dy * dy)) * finalTerm;
     P2.set(i, j, p2val);
 }
 
 void simulator::calcTerms(int i, int j) {
-    U1x = (U1.at(i + 1, j) - U1.at(i - 1, j)) / (2.0 * dx);
-    U2x = (U2.at(i + 1, j) - U2.at(i - 1, j)) / (2.0 * dx);
-    U1y = (U1.at(i, j + 1) - U1.at(i, j - 1)) / (2.0 * dy);
-    U2y = (U2.at(i, j + 1) - U2.at(i, j - 1)) / (2.0 * dy);
+    U1x  = (U1.at(i + 1, j) - U1.at(i - 1, j)) / (2.0 * dx);
+    U2x  = (U2.at(i + 1, j) - U2.at(i - 1, j)) / (2.0 * dx);
+    U1y  = (U1.at(i, j + 1) - U1.at(i, j - 1)) / (2.0 * dy);
+    U2y  = (U2.at(i, j + 1) - U2.at(i, j - 1)) / (2.0 * dy);
     U1xx = (U1.at(i + 1, j) - 2.0 * U1.at(i, j) + U1.at(i - 1, j)) / (dx * dx);
     U2xx = (U2.at(i + 1, j) - 2.0 * U2.at(i, j) + U2.at(i - 1, j)) / (dx * dx);
     U1yy = (U1.at(i, j + 1) - 2.0 * U1.at(i, j) + U1.at(i, j - 1)) / (dy * dy);
     U2yy = (U2.at(i, j + 1) - 2.0 * U2.at(i, j) + U2.at(i, j - 1)) / (dy * dy);
-    P1x = (P1.at(i + 1, j) - P1.at(i - 1, j)) / (2.0 * dx);
-    P2x = (P2.at(i + 1, j) - P2.at(i - 1, j)) / (2.0 * dx);
-    P1y = (P1.at(i, j + 1) - P1.at(i, j - 1)) / (2.0 * dy);
-    P2y = (P2.at(i, j + 1) - P2.at(i, j - 1)) / (2.0 * dy);
-    V1x = (V1.at(i + 1, j) - V1.at(i - 1, j)) / (2.0 * dx);
-    V2x = (V2.at(i + 1, j) - V2.at(i - 1, j)) / (2.0 * dx);
-    V1y = (V1.at(i, j + 1) - V1.at(i, j - 1)) / (2.0 * dy);
-    V2y = (V2.at(i, j + 1) - V2.at(i, j - 1)) / (2.0 * dy);
+    P1x  = (P1.at(i + 1, j) - P1.at(i - 1, j)) / (2.0 * dx);
+    P2x  = (P2.at(i + 1, j) - P2.at(i - 1, j)) / (2.0 * dx);
+    P1y  = (P1.at(i, j + 1) - P1.at(i, j - 1)) / (2.0 * dy);
+    P2y  = (P2.at(i, j + 1) - P2.at(i, j - 1)) / (2.0 * dy);
+    V1x  = (V1.at(i + 1, j) - V1.at(i - 1, j)) / (2.0 * dx);
+    V2x  = (V2.at(i + 1, j) - V2.at(i - 1, j)) / (2.0 * dx);
+    V1y  = (V1.at(i, j + 1) - V1.at(i, j - 1)) / (2.0 * dy);
+    V2y  = (V2.at(i, j + 1) - V2.at(i, j - 1)) / (2.0 * dy);
     V1xx = (V1.at(i + 1, j) - 2.0 * V1.at(i, j) + V1.at(i - 1, j)) / (dx * dx);
     V2xx = (V2.at(i + 1, j) - 2.0 * V2.at(i, j) + V2.at(i - 1, j)) / (dx * dx);
     V1yy = (V1.at(i, j + 1) - 2.0 * V1.at(i, j) + V1.at(i, j - 1)) / (dy * dy);
@@ -277,55 +286,11 @@ bool simulator::isBorder(int i, int j, int k){
     return (j == nY - 1  || i == nX - 1 || i * j  == 0);
 }
 
-// ----------Functions for file management ----------
 
-void simulator::saveVelocitiesToFile(){
-    ostringstream U_name;
-    ostringstream V_name;
-    U_name << "./out/U_" << step << ".vtk";
-    ostringstream V0_name;
-    V_name << "./out/V_" << step << ".vtk";
-    
-    ostringstream stream_name;
-    stream_name << "./out/stream_" << step << ".vtk";
-
-    saveVtk(U2, U_name.str());
-    saveVtk(V2, V_name.str());
-}
-
-
-void simulator::saveVelocitiesToTxt(){
-    ostringstream name;
-    name << "./out/UV.txt";
-
-    appendTxt(name.str(),U2);
-    appendTxt(name.str(),V2);
-}
-
-
-
-
-void simulator::centralSpeed() {
-    for (int i = 0; i < nX; ++i) {
-        for (int j = 0; j < nY; ++j) {
-            float r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc));
-            if (r < 2.5) {
-                float max = 0.01;
-                U2.set(i, j, min(max / r, max));
-                U1.set(i, j, min(max / r, max));
-                U0.set(i, j, min(max / r, max));
-                //TODO: we were using a custom min function, dont know why, test this one.
-            }
-        }
-    }
-}
-
-
-#endif
-
+// ---------- Functions for file management ----------
 
 void simulator::saveVtk(mat2 &m, string file_name) {
-    // Save a 3-D scalar array in VTK format.
+    // Save a 2-D scalar array in VTK format.
     io out(file_name, io::type_write);
     out.write("# vtk DataFile Version 2.0");
     out.newLine();
@@ -361,6 +326,30 @@ void simulator::saveVtk(mat2 &m, string file_name) {
 }
 
 
+void simulator::saveVelocitiesToFile(){
+    ostringstream U_name;
+    ostringstream V_name;
+    U_name << "./out/U_" << step << ".vtk";
+    ostringstream V0_name;
+    V_name << "./out/V_" << step << ".vtk";
+    
+    ostringstream stream_name;
+    stream_name << "./out/stream_" << step << ".vtk";
+
+    saveVtk(U2, U_name.str());
+    saveVtk(V2, V_name.str());
+}
+
+
+void simulator::saveVelocitiesToTxt(){
+    ostringstream name;
+    name << "./out/UV.txt";
+
+    appendTxt(name.str(),U2);
+    appendTxt(name.str(),V2);
+}
+
+
 void simulator::appendTxt(string file_name, mat2 &M){
     io out(file_name, io::type_read_write_appending);
     for (int i = 0; i < M.rows(); ++i)
@@ -375,5 +364,25 @@ void simulator::appendTxt(string file_name, mat2 &M){
     }
     out.newLine();
     out.close();
-
 }
+
+
+// ---------- Functions for testing ----------
+
+void simulator::centralSpeed() {
+    for (int i = 0; i < nX; ++i) {
+        for (int j = 0; j < nY; ++j) {
+            float r = sqrt((i - xc) * (i - xc) + (j - yc) * (j - yc));
+            if (r < 2.5) {
+                float max = 0.01;
+                U2.set(i, j, min(max / r, max));
+                U1.set(i, j, min(max / r, max));
+                U0.set(i, j, min(max / r, max));
+                //TODO: we were using a custom min function, dont know why, test this one.
+            }
+        }
+    }
+}
+
+
+#endif
