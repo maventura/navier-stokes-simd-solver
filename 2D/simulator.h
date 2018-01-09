@@ -85,7 +85,7 @@ simulator::simulator() {
     U2.confAndInit(nX, nY, 0);
     V2.confAndInit(nX, nY, 0);
     P2.confAndInit(nX, nY, 1);
-
+    step = 0;
     fanArea = dx * dy;
     xc = nX / 2;
     yc = nY / 2;
@@ -144,6 +144,7 @@ void simulator::setPBorders() {
         P0.set(nX - 1, c , P0.at(nX - 2, c));
         P1.set(nX - 1, c , P1.at(nX - 2, c));
         P2.set(nX - 1, c , P2.at(nX - 2, c));
+        
         P0.set(0, c, P0.at(1, c));
         P1.set(0, c, P1.at(1, c));
         P2.set(0, c, P2.at(1, c));
@@ -152,70 +153,33 @@ void simulator::setPBorders() {
 
 
 void simulator::process() {
-    cout << "cols: " << U2.cols() << ", rows: " << U2.rows() << endl;
     for (t = 0.0; t < tMax; t = t + dt) {
         if (step % printPercentageSteps == 0) 
             cerr << 100 * t / tMax << "% \r";
         step++;
 
-        //saveVelocitiesToFile();
-        saveVelocitiesToTxt();
+        saveVelocitiesToFile();
+        //saveVelocitiesToTxt();
         if(100 * t / tMax > percentageStop) return ;
 
-        float dFanAngle = fanTurns * 2 * pi / nT; //
-        startinAngle += dFanAngle; //TODO: solo funciona en el 1er y tercer cuadrante.
-        if (startinAngle > 2 * pi) startinAngle = 0;
+        // float dFanAngle = fanTurns * 2 * pi / nT; //
+        // startinAngle += dFanAngle; //TODO: solo funciona en el 1er y tercer cuadrante.
+        // if (startinAngle > 2 * pi) startinAngle = 0;
 
-        //cerr << 100 * t / tMax << "%" << endl ;
-        if (isnan(U1.at(3, 3))) {
-            cerr << "ERROR: nan found" << endl;
-            exit(EXIT_FAILURE);
-        }
+
+        // if (isnan(U1.at(3, 3))) {
+        //     cerr << "ERROR: nan found" << endl;
+        //     exit(EXIT_FAILURE);
+        // }
        
-        setPBorders();
-
+        //setPBorders();
+        setCavityFlowSpeeds();
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
 
                 calcTerms(i,j);
-                centralSpeed();
+                //centralSpeed();
                 calcVelocities(i,j);
-
-
-
-
-                //from fan scenario. 
-               // float x = i * dx - xc;
-               // float y = j * dy - yc;
-                //TODO: Fan scenario needed this fix, why?
-               // if (y > nY / 2) y -= nY / 2;
-               // float theta = atan2(y , x);
-               // theta += pi;
-               // float beta = theta + (pi / 2.0);
-
-               // float r = sqrt(x * x + y * y);
-               // float tanVel = dFanAngle * r;
-               // float tanVelX = tanVel*cos(beta);
-               // float tanVelY = tanVel*sin(beta);
-
-               // float relVelX = tanVelX - U2.at(i, j);
-               // float relVelY = tanVelY - V2.at(i, j);
-              //  float Fx = 0.5 * fanArea * C_d*relVelX / dt;
-              //  float Fy = 0.5 * fanArea * C_d*relVelY / dt; //Mass(dt*dx since water density is 1)
-                //times tangent expected speed
-                //divided by time
-
-
-              //  float Fu = Fx;//F * cos(beta);
-               // float Fv = Fy;//F * sin(beta);
-
-               // float angleDif = fabs(theta - startinAngle);
-               // if ( angleDif < fanWidth  && r > rMin && r < rMax) {
-               //     float strMult = 1 - angleDif / fanWidth;
-               //     U2.add(i, j, -Fu * dt * strMult);
-               //     V2.add(i, j, -Fv * dt * strMult);
-               // }
-
             }
         }
 
@@ -298,23 +262,19 @@ void simulator::saveVtk(mat2 &m, string file_name) {
     out.newLine();
     out.write("ASCII");
     out.newLine();
-    out.newLine();
     out.write("DATASET STRUCTURED_POINTS");
     out.newLine();
-    out.write("DIMENSIONS    " + to_string(nX) + " " +  to_string(nY));
+    out.write("DIMENSIONS " + to_string(nX) + " " +  to_string(nY) + " 1");
     out.newLine();
+    out.write("ORIGIN 0 0 0");
     out.newLine();
-    out.write("ORIGIN    0.000   0.000   0.000");
+    out.write("SPACING " + to_string(dx) + " " + to_string(dy) + " 1");
     out.newLine();
-    out.write("SPACING    1.000   1.000   1.000");
+    out.write("POINT_DATA " + to_string(nX * nY));
     out.newLine();
-    out.newLine();
-    out.write("POINT_DATA   " + to_string(nX * nY));
-    out.newLine();
-    out.write("SCALARS scalars float");
+    out.write("SCALARS volume_scalars float 1");
     out.newLine();
     out.write("LOOKUP_TABLE default");
-    out.newLine();
     out.newLine();
     for (int i = 0; i < nX; ++i) {
         for (int j = 0; j < nY; ++j) {
