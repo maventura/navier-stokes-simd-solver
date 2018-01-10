@@ -226,7 +226,7 @@ vvp_asm:
 
     mov r15, [mat_arr_ + offset_omx2_]
 	mov r14, pos_
-	shl r14, 2
+	;shl r14, 2
 	add r15, r14
 	movdqu [r15], xmm0 ;hasta aca calculamos omx2(i,j,k)
 
@@ -434,7 +434,7 @@ vvp_asm:
 
     mov r15, [mat_arr_ + offset_omy2_]
 	mov r14, pos_
-	shl r14, 2
+	;shl r14, 2
 	add r15, r14
 	movdqu [r15], xmm0
 
@@ -639,7 +639,7 @@ vvp_asm:
 
 	mov r15, [mat_arr_ + offset_omz2_]
 	mov r14, pos_
-	shl r14, 2
+	;shl r14, 2
 	add r15, r14
 	movdqu [r15], xmm0
 
