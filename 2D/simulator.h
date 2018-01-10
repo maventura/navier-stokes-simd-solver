@@ -7,6 +7,11 @@
 #include "io.h"
 #include <algorithm>    // std::min
 
+#ifdef USE_ASM
+extern "C" {
+    void vvp_asm(float *mats[], int pos, int offsetI, 
+        float dt, float dx, float dy, float rho, float nu);}
+#endif
 
 class simulator {
 
@@ -15,14 +20,13 @@ class simulator {
     void process();
   private:
     float xMax, yMax, tMax;
-    float nu, rho, C_d;
+    float nu, rho;
     float dx, dy, dt, h;
-    int nX, nY, nT, step, maxIters;
+    int nX, nY, nT, step;
 
     float xc, yc;
-    float rMax, rMin, fanTurns, startinAngle;
 
-    float al, fixedPointError, minFixedPointIters;
+    float al;
     float pi = atan(1) * 4;
 
     float U1x, U2x, U2y, U1y;
@@ -32,11 +36,11 @@ class simulator {
     float V1xx, V2xx, V1yy, V2yy;
     float P1xx, P1yy, P2yy;
 
-    int printPercentageSteps, maxSteps;
+    int printPercentageSteps;
     bool printPercentage;
     float t;
 
-    float percentageStop, fanArea, fanWidth;
+    float percentageStop;
     //TODO: Add option to import text.
     //0 es tiempo n-1, 1 es tiempo n, 2 es tiempo n+1
     mat2 U0, V0, P0;
@@ -51,21 +55,15 @@ class simulator {
     void calcTerms(int i, int j);
     void calcVelocities(int i, int j);
 
+    void saveVelocitiesToFile();
     void saveVtk(mat2 &state, string file_name);
-    void saveStreamVtk(mat2 &m1, mat2 &m2, string file_name);
 
     void setCavityFlowSpeeds();
     void setPBorders();
     void readParameters(string file_name);
 
-    void simpleDiffusion(int i, int j, int k);
-
-    void saveVelocitiesToFile();
-    void saveVelocitiesToTxt();
-    void appendTxt(string file_name, mat2 &M);
-
-    bool isBorder(int i, int j, int k);
-
+    void simpleDiffusion(int i, int j);
+    void calcVelocitiesAsm(int i, int j);
 
 };
 
@@ -86,7 +84,6 @@ simulator::simulator() {
     V2.confAndInit(nX, nY, 0);
     P2.confAndInit(nX, nY, 1);
     step = 0;
-    fanArea = dx * dy;
     xc = nX / 2;
     yc = nY / 2;
 }
@@ -104,19 +101,9 @@ void simulator::readParameters(string file_name) {
         if (tag == "dy") file.readFloat(dy);
         if (tag == "dt") file.readFloat(dt);
         if (tag == "al") file.readFloat(al);
-        if (tag == "fixedPointError") file.readFloat(fixedPointError);
-        if (tag == "minFixedPointIters") file.readFloat(minFixedPointIters);
-        if(tag == "rMax")file.readFloat(rMax);
-        if(tag == "rMin")file.readFloat(rMin);
-        if(tag == "fanTurns")file.readFloat(fanTurns);
-        if(tag == "startinAngle")file.readFloat(startinAngle);
         if (tag == "printPercentageSteps") file.readInt(printPercentageSteps);
-        if (tag == "C_d") file.readFloat(C_d);
-        if (tag == "maxSteps") file.readInt(maxSteps);
         if (tag == "printPercentage") file.readBool(printPercentage);
-        if (tag == "maxIters") file.readInt(maxIters);
         if (tag == "percentageStop") file.readFloat(percentageStop);
-        if(tag == "fanWidth") file.readFloat(fanWidth);
     }
     file.close();
 }
@@ -130,6 +117,7 @@ void simulator::setCavityFlowSpeeds() {
         U2.set(i, nY - 1, 0.01);
     }
 }
+
 void simulator::setPBorders() {
     for (int c = 0; c < nX; ++c) {
         P0.set(c, 0, P0.at(c, 1));
@@ -155,31 +143,23 @@ void simulator::setPBorders() {
 void simulator::process() {
     for (t = 0.0; t < tMax; t = t + dt) {
         if (step % printPercentageSteps == 0) 
-            cerr << 100 * t / tMax << "% \r";
+            cerr << 100 * t / tMax << "% \r" << std::flush;
         step++;
 
         saveVelocitiesToFile();
-        //saveVelocitiesToTxt();
         if(100 * t / tMax > percentageStop) return ;
 
-        // float dFanAngle = fanTurns * 2 * pi / nT; //
-        // startinAngle += dFanAngle; //TODO: solo funciona en el 1er y tercer cuadrante.
-        // if (startinAngle > 2 * pi) startinAngle = 0;
-
-
-        // if (isnan(U1.at(3, 3))) {
-        //     cerr << "ERROR: nan found" << endl;
-        //     exit(EXIT_FAILURE);
-        // }
-       
-        //setPBorders();
+        setPBorders();
         setCavityFlowSpeeds();
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
-
-                calcTerms(i,j);
-                //centralSpeed();
-                calcVelocities(i,j);
+                #ifdef USE_ASM
+                    calcVelocitiesAsm(i, j);
+                #endif
+                #ifdef USE_CPP
+                    calcTerms(i,j);
+                    calcVelocities(i,j);
+                #endif
             }
         }
 
@@ -189,8 +169,6 @@ void simulator::process() {
         V1.copyAll(V2);
         P0.copyAll(P1);
         P1.copyAll(P2);
-
-
     }
 }
 
@@ -219,6 +197,17 @@ void simulator::calcVelocities(int i, int j){
     P2.set(i, j, p2val);
 }
 
+
+#ifdef USE_ASM
+void simulator::calcVelocitiesAsm(int i, int j) {
+
+    float *mats[] = {U2.data, V2.data, P2.data, U1.data, V1.data, P1.data};
+    int pos = i*nX+j;
+    vvp_asm(mats, 4*pos, nX*4, dt, dx, dy, rho, nu);
+}
+#endif
+
+
 void simulator::calcTerms(int i, int j) {
     U1x  = (U1.at(i + 1, j) - U1.at(i - 1, j)) / (2.0 * dx);
     U2x  = (U2.at(i + 1, j) - U2.at(i - 1, j)) / (2.0 * dx);
@@ -243,11 +232,6 @@ void simulator::calcTerms(int i, int j) {
     P1xx = (P1.at(i + 1, j) - 2.0 * P1.at(i, j) + P1.at(i - 1, j)) / (dx * dx);
     P1yy = (P1.at(i, j + 1) - 2.0 * P1.at(i, j) + P1.at(i, j - 1)) / (dy * dy);
     P2yy = (P2.at(i, j + 1) - 2.0 * P2.at(i, j) + P2.at(i, j - 1)) / (dy * dy);
-}
-
-
-bool simulator::isBorder(int i, int j, int k){
-    return (j == nY - 1  || i == nX - 1 || i * j  == 0);
 }
 
 
@@ -289,41 +273,25 @@ void simulator::saveVtk(mat2 &m, string file_name) {
 void simulator::saveVelocitiesToFile(){
     ostringstream U_name;
     ostringstream V_name;
+    ostringstream norm_name;
+
+    norm_name << "./out/norm_" << step << ".vtk";
     U_name << "./out/U_" << step << ".vtk";
-    ostringstream V0_name;
     V_name << "./out/V_" << step << ".vtk";
-    
-    ostringstream stream_name;
-    stream_name << "./out/stream_" << step << ".vtk";
+
+    mat2 norm(U2.rows(), U2.cols());
+    for (int i = 0; i < norm.rows(); ++i)
+    {
+        for (int j = 0; j < norm.cols(); ++j)
+        {
+            norm.set(i,j,sqrt(U2.at(i,j)*U2.at(i,j) + V2.at(i,j)*V2.at(i,j)));
+        }
+    }
 
     saveVtk(U2, U_name.str());
     saveVtk(V2, V_name.str());
-}
+    saveVtk(norm, norm_name.str());
 
-
-void simulator::saveVelocitiesToTxt(){
-    ostringstream name;
-    name << "./out/UV.txt";
-
-    appendTxt(name.str(),U2);
-    appendTxt(name.str(),V2);
-}
-
-
-void simulator::appendTxt(string file_name, mat2 &M){
-    io out(file_name, io::type_read_write_appending);
-    for (int i = 0; i < M.rows(); ++i)
-    {
-        for (int j = 0; j < M.cols(); ++j)
-        {
-            out.writeFloat(M.at(i,j));
-            out.write(" ");
-
-        }
-        out.newLine();
-    }
-    out.newLine();
-    out.close();
 }
 
 
