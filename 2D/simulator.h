@@ -154,7 +154,15 @@ void simulator::process() {
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
                 #ifdef USE_ASM
-                    calcVelocitiesAsm(i, j);
+                    if(j > nY-5){
+                        calcTerms(i,j);
+                        calcVelocities(i,j);
+                    }else{
+                        calcVelocitiesAsm(i, j);
+                        j += 3;
+                    }
+                    
+
                 #endif
                 #ifdef USE_CPP
                     calcTerms(i,j);
