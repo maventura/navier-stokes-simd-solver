@@ -376,10 +376,10 @@ vvp_asm:
 	;v1y=(V1.at(i, j + 1) - V1.at(i, j - 1)) / (2.0 * dy)
 	mov rax, pos_
 	add rax, offset_j_
-	movdqu xmm10, [r14, rax]
+	movdqu xmm10, [r14 + rax]
 	sub rax, offset_j_
 	sub rax, offset_j_
-	movdqu xmm9, [r14, rax]
+	movdqu xmm9, [r14 + rax]
 	subps xmm10, xmm9
 	divps xmm10, xmm7
 	divps xmm10, dy_
