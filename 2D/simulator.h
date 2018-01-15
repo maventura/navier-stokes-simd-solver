@@ -143,7 +143,7 @@ void simulator::setPBorders() {
 void simulator::process() {
     for (t = 0.0; t < tMax; t = t + dt) {
         if (step % printPercentageSteps == 0) 
-            cerr << 100 * t / tMax << "% \r" << std::flush;
+            cerr << static_cast<int>(100 * t / tMax) << "% \r" << std::flush;
         step++;
 
         saveVelocitiesToFile();
@@ -178,6 +178,7 @@ void simulator::process() {
         P0.copyAll(P1);
         P1.copyAll(P2);
     }
+    cerr << 100 << "% \n";
 }
 
 void simulator::calcVelocities(int i, int j){
