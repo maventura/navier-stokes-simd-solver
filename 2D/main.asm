@@ -6,7 +6,6 @@ global vvp_asm
 
 section .data
 copy_float_value_mask: DB 0x0, 0x1, 0x2, 0x3,0x0, 0x1, 0x2, 0x3,0x0, 0x1, 0x2, 0x3,0x0, 0x1, 0x2, 0x3
-eltest: DB 0x05
 uno: DD 1.0, 1.0, 1.0, 1.0
 dos: DD 2.0, 2.0, 2.0, 2.0
 
@@ -62,6 +61,8 @@ vvp_asm:
 	pshufb dt_, xmm15
 	pshufb dx_, xmm15
 	pshufb dy_, xmm15
+	pshufb rho_, xmm15
+	pshufb nu_, xmm15
 
 	movdqu xmm7, [dos]
 
@@ -178,7 +179,7 @@ vvp_asm:
 	;from now on xmm15 acumulates the result
 	xorps xmm15, xmm15
 
-	;U1.at(i,j)
+	;V1.at(i,j)
 	movdqu xmm15, v1ij_ ;184
 
 	;- U1.at(i, j) *(dt/dx)
@@ -197,14 +198,14 @@ vvp_asm:
 	mulps xmm14, xmm13
 	addps xmm15, xmm14	;hasta 185
 
-	;- V1.at(i, j) * (dt / dy) * (V1.at(i, j) - V1.at(i-1, j)) 
+	;- V1.at(i, j) * (dt / dy) * (V1.at(i, j) - V1.at(i, j-1)) 
 	movdqu xmm14, v1ij_
 	mulps xmm14, dt_
 	divps xmm14, dy_
 
 	movdqu xmm13, v1ij_
 	mov rax, pos_
-	sub rax, offset_i_
+	sub rax, offset_j_
 	movdqu xmm12, [v1p_ + rax]
 	subps xmm13, xmm12
 	mulps xmm14, xmm13
@@ -278,14 +279,8 @@ vvp_asm:
 
 	;-------------Setting P2-------------------;
 
-
-
-;(1.0 / (2 * (dx * dx + dy * dy) ) )
-
-; *( (P1.at(i + 1, j) + P1.at(i - 1, j) ) * dy * dy 
-;   +(P1.at(i, j + 1) + P1.at(i, j - 1) ) * dx * dx)
-
-    
+;  (P1.at(i + 1, j) + P1.at(i - 1, j) ) * dy * dy 
+;+ (P1.at(i, j + 1) + P1.at(i, j - 1) ) * dx * dx
 
 	mov r13, [mat_arr_ + offset_P1_]
 	mov rax, pos_
@@ -310,108 +305,83 @@ vvp_asm:
 
 	addps xmm15, xmm14
 
-	movdqu xmm14, dx_
-	mulps xmm14, dx_
-	movdqu xmm13, dy_
-	mulps xmm13, dy_
-	addps xmm14, xmm13
-	mulps xmm14, xmm7
-
-	divps xmm15, xmm14
-
-
-;-(rho * dx * dx * dy * dy / (2 * dx * dx + 2 * dy * dy) ) 
-
- 
-
-	movdqu xmm14, rho_
-	mulps xmm14, dx_
-	mulps xmm14, dx_
-	mulps xmm14, dy_
-	mulps xmm14, dy_
-	divps xmm14, xmm7
-
-	movdqu xmm13, dx_
-	mulps xmm13, dx_
-	movdqu xmm12, dy_
-	mulps xmm12, dy_
-	addps xmm13, xmm12
-
-	divps xmm14, xmm13
-	;*( (1 / dt) * (U1x + V1y) - U1x * U1x - 2 * U1y * V1x - V1y * V1y )
-
+	;----Calculo de derivadas
 	;u1x = (U1.at(i + 1, j) - U1.at(i - 1, j)) / (2.0 * dx);
 	mov rax, pos_
 	add rax, offset_i_
-	movdqu xmm13, [r15 + rax]
+	movdqu xmm14, [u1p_ + rax]
 	sub rax, offset_i_
 	sub rax, offset_i_
-	movdqu xmm12, [r15 + rax]
-	subps xmm13, xmm12
-	divps xmm13, xmm7
-	divps xmm13, dx_
+	movdqu xmm13, [u1p_ + rax]
+	subps xmm14, xmm13
+	divps xmm14, xmm7
+	divps xmm14, dx_
 
 	;v1x = (V1.at(i + 1, j) - V1.at(i - 1, j)) / (2.0 * dx);
 	mov rax, pos_
 	add rax, offset_i_
-	movdqu xmm12, [r14 + rax]
+	movdqu xmm13, [v1p_ + rax]
 	sub rax, offset_i_
 	sub rax, offset_i_
-	movdqu xmm11, [r14 + rax]
-	subps xmm12, xmm11
-	divps xmm12, xmm7
-	divps xmm12, dx_
+	movdqu xmm12, [v1p_ + rax]
+	subps xmm13, xmm12
+	divps xmm13, xmm7
+	divps xmm13, dx_
 
 	;u1y  = (U1.at(i, j + 1) - U1.at(i, j - 1)) / (2.0 * dy)
 	mov rax, pos_
 	add rax, offset_j_
-	movdqu xmm11, [r15 + rax]
+	movdqu xmm12, [u1p_ + rax]
 	sub rax, offset_j_
 	sub rax, offset_j_
-	movdqu xmm10, [r15 + rax]
+	movdqu xmm11, [u1p_ + rax]
+	subps xmm12, xmm11
+	divps xmm12, xmm7
+	divps xmm12, dy_
+
+	;v1y = (V1.at(i, j + 1) - V1.at(i, j - 1)) / (2.0 * dy)
+	mov rax, pos_
+	add rax, offset_j_
+	movdqu xmm11, [v1p_ + rax]
+	sub rax, offset_j_
+	sub rax, offset_j_
+	movdqu xmm10, [v1p_ + rax]
 	subps xmm11, xmm10
 	divps xmm11, xmm7
 	divps xmm11, dy_
+	;---fin calculo de derivadas
 
-	;v1y=(V1.at(i, j + 1) - V1.at(i, j - 1)) / (2.0 * dy)
-	mov rax, pos_
-	add rax, offset_j_
-	movdqu xmm10, [r14 + rax]
-	sub rax, offset_j_
-	sub rax, offset_j_
-	movdqu xmm9, [r14 + rax]
+	;(u1x + v1y)/dt - u1x * u1x - 2*u1y*v1x - v1y * v1y
+	movdqu xmm10, xmm14
+	addps xmm10, xmm11
+	divps xmm10, dt_
+	movdqu xmm9, xmm14
+	mulps xmm9, xmm14
 	subps xmm10, xmm9
-	divps xmm10, xmm7
-	divps xmm10, dy_
+	movdqu xmm9, xmm12
+	mulps xmm9, xmm13
+	mulps xmm9, xmm7
+	subps xmm10, xmm9
+	movdqu xmm9, xmm11
+	mulps xmm9, xmm11
+	subps xmm10, xmm9
 
-	movdqu xmm9, xmm13
-	addps xmm9, xmm10
-	divps xmm9, dt_
+	;*rho *dx² *dy²
+	mulps xmm10, dx_
+	mulps xmm10, dx_
+	mulps xmm10, dy_
+	mulps xmm10, dy_
+	mulps xmm10, rho_
 
-	;*( (1 / dt) * (U1x + V1y)  esta en xmm9
+	addps xmm15, xmm10
+	divps xmm15, xmm7
 
-	; - U1x * U1x - 2 * U1y * V1x - V1y * V1y )
-	movdqu xmm8, xmm13
-	mulps xmm8, xmm8
-
-	subps xmm9, xmm8
-
-	movdqu xmm8, xmm11
-	mulps xmm8, xmm12
-	mulps xmm8, xmm7
-
-
-	subps xmm9, xmm8
-
-	movdqu xmm8, xmm10
-	mulps xmm8, xmm10
-
-	subps xmm9, xmm8
-
-	mulps xmm14, xmm8
-
-	subps xmm15, xmm14
-
+	movdqu xmm14, dx_
+	mulps xmm14, dx_
+	movdqu xmm13, dy_
+	mulps xmm13, dy_ 
+	addps xmm14, xmm13
+	divps xmm15, xmm14
 
 	mov r13, [mat_arr_ + offset_P2_]
 	add r13, pos_
