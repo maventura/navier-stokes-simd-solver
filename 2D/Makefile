@@ -9,7 +9,7 @@ asm: main.cpp main.asm mat2.h simulator.h io.h #assembly
 	g++ -o mainASM -m64 mainasm.o main.o
 
 cpp:  main.cpp mat2.h io.h
-	g++ main.cpp -std=c++11  -o mainCPP
+	g++ -DUSE_CPP main.cpp -std=c++11  -o mainCPP
 
 clean:
 	rm -f mainASM
