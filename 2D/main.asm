@@ -17,6 +17,7 @@ section .text
 %define nu_ xmm4
 %define u1ij_ xmm5
 %define v1ij_ xmm6
+%define dos_ xmm7
 
 %define u1p_ r15
 %define v1p_ r14
@@ -63,8 +64,7 @@ vvp_asm:
 	pshufb dy_, xmm15
 	pshufb rho_, xmm15
 	pshufb nu_, xmm15
-
-	movdqu xmm7, [dos]
+	movdqu dos_, [dos]
 
 	;setting pointers
 	mov u1p_, [mat_arr_ + offset_U1_]
@@ -78,7 +78,7 @@ vvp_asm:
 	xorps xmm15, xmm15
 
 	;U1.at(i,j)
-	movdqu xmm15, u1ij_ ;176
+	movdqu xmm15, u1ij_ 
 
 	;- U1.at(i, j) *(dt/dx)
 	xorps xmm14, xmm14
@@ -94,7 +94,7 @@ vvp_asm:
 	subps xmm13, xmm12
 
 	mulps xmm14, xmm13
-	addps xmm15, xmm14	;hasta 177
+	addps xmm15, xmm14	
 
 	;- V1.at(i, j) * (dt / dy) * (U1.at(i, j) - U1.at(i, j - 1)) 
 	movdqu xmm14, v1ij_
@@ -108,14 +108,13 @@ vvp_asm:
 	subps xmm13, xmm12
 	mulps xmm14, xmm13
 
-	subps xmm15, xmm14  ;hasta 178
+	subps xmm15, xmm14
 
 	;(dt / (rho * 2 * dx)) * (P1.at(i + 1, j) - P1.at(i - 1, j))
 	movdqu xmm14, dt_
-	movdqu xmm13, rho_
-	mulps xmm13, xmm7
-	mulps xmm13, dx_
-	divps xmm14, xmm13
+	divps xmm14, rho_
+	divps xmm14, dos_
+	divps xmm14, dx_
 
 	mov r13, [mat_arr_ + offset_P1_] 
 	mov rax, pos_
@@ -126,10 +125,10 @@ vvp_asm:
 	movdqu xmm12, [r13 + rax]
 	subps xmm13, xmm12
 
-	mulps xmm14, xmm13	;hasta 179 
+	mulps xmm14, xmm13 
 	subps xmm15, xmm14
-;+ nu * (
-;		(dt / (dx * dx)) * (U1.at(i + 1, j)
+
+;	(dt / (dx * dx)) * (U1.at(i + 1, j)
 ;- 2 * U1.at(i, j) + U1.at(i - 1, j)) 
 
 	
@@ -169,18 +168,18 @@ vvp_asm:
 	;adding the two terms
 	addps xmm14, xmm12
 	mulps xmm14, nu_ 
-	addps xmm15, xmm14 ;181
+	addps xmm15, xmm14
 
 	mov r13, [mat_arr_ + offset_U2_]
 	add r13, pos_
-	movdqu [r13], xmm15 ;182
+	movdqu [r13], xmm15
 
 	;-------------Setting V2-------------------;
 	;from now on xmm15 acumulates the result
 	xorps xmm15, xmm15
 
 	;V1.at(i,j)
-	movdqu xmm15, v1ij_ ;184
+	movdqu xmm15, v1ij_
 
 	;- U1.at(i, j) *(dt/dx)
 	xorps xmm14, xmm14
@@ -196,7 +195,7 @@ vvp_asm:
 	subps xmm13, xmm12
 
 	mulps xmm14, xmm13
-	addps xmm15, xmm14	;hasta 185
+	addps xmm15, xmm14
 
 	;- V1.at(i, j) * (dt / dy) * (V1.at(i, j) - V1.at(i, j-1)) 
 	movdqu xmm14, v1ij_
@@ -210,14 +209,13 @@ vvp_asm:
 	subps xmm13, xmm12
 	mulps xmm14, xmm13
 
-	subps xmm15, xmm14  ;hasta 186
+	subps xmm15, xmm14
 
 	;(dt / (rho * 2 * dy)) * (P1.at(i, j+1) - P1.at(i, j-1))
 	movdqu xmm14, dt_
-	movdqu xmm13, rho_
-	mulps xmm13, xmm7
-	mulps xmm13, dy_
-	divps xmm14, xmm13
+	divps xmm14, rho_
+	divps xmm14, dos_
+	divps xmm14, dy_
 
 	mov r13, [mat_arr_ + offset_P1_] 
 	mov rax, pos_
@@ -228,12 +226,11 @@ vvp_asm:
 	movdqu xmm12, [r13 + rax]
 	subps xmm13, xmm12
 
-	mulps xmm14, xmm13	;hasta 187 
+	mulps xmm14, xmm13
 	subps xmm15, xmm14
 
-;+ nu * (
-;		(dt / (dx * dx)) * (V1.at(i + 1, j)
-;- 2 * V1.at(i, j) + U1.at(i - 1, j)) 
+;	(dt / (dx * dx)) * (V1.at(i + 1, j)
+;- 2 * V1.at(i, j) + V1.at(i - 1, j)) 
 
 	mov rax, pos_
 	add rax, offset_i_
@@ -271,11 +268,11 @@ vvp_asm:
 	;adding the two terms
 	addps xmm14, xmm12
 	mulps xmm14, nu_ 
-	addps xmm15, xmm14 ;189
+	addps xmm15, xmm14
 
 	mov r13, [mat_arr_ + offset_V2_]
 	add r13, pos_
-	movdqu [r13], xmm15 ;190
+	movdqu [r13], xmm15
 
 	;-------------Setting P2-------------------;
 
@@ -314,7 +311,7 @@ vvp_asm:
 	sub rax, offset_i_
 	movdqu xmm13, [u1p_ + rax]
 	subps xmm14, xmm13
-	divps xmm14, xmm7
+	divps xmm14, dos_
 	divps xmm14, dx_
 
 	;v1x = (V1.at(i + 1, j) - V1.at(i - 1, j)) / (2.0 * dx);
@@ -325,7 +322,7 @@ vvp_asm:
 	sub rax, offset_i_
 	movdqu xmm12, [v1p_ + rax]
 	subps xmm13, xmm12
-	divps xmm13, xmm7
+	divps xmm13, dos_
 	divps xmm13, dx_
 
 	;u1y  = (U1.at(i, j + 1) - U1.at(i, j - 1)) / (2.0 * dy)
@@ -336,7 +333,7 @@ vvp_asm:
 	sub rax, offset_j_
 	movdqu xmm11, [u1p_ + rax]
 	subps xmm12, xmm11
-	divps xmm12, xmm7
+	divps xmm12, dos_
 	divps xmm12, dy_
 
 	;v1y = (V1.at(i, j + 1) - V1.at(i, j - 1)) / (2.0 * dy)
@@ -347,7 +344,7 @@ vvp_asm:
 	sub rax, offset_j_
 	movdqu xmm10, [v1p_ + rax]
 	subps xmm11, xmm10
-	divps xmm11, xmm7
+	divps xmm11, dos_
 	divps xmm11, dy_
 	;---fin calculo de derivadas
 
@@ -360,7 +357,7 @@ vvp_asm:
 	subps xmm10, xmm9
 	movdqu xmm9, xmm12
 	mulps xmm9, xmm13
-	mulps xmm9, xmm7
+	mulps xmm9, dos_
 	subps xmm10, xmm9
 	movdqu xmm9, xmm11
 	mulps xmm9, xmm11
@@ -373,9 +370,10 @@ vvp_asm:
 	mulps xmm10, dy_
 	mulps xmm10, rho_
 
-	addps xmm15, xmm10
-	divps xmm15, xmm7
+	subps xmm15, xmm10 ;era addps 
 
+	; /2 * (dx * dx + dy * dy)
+	divps xmm15, dos_
 	movdqu xmm14, dx_
 	mulps xmm14, dx_
 	movdqu xmm13, dy_

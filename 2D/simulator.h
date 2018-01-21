@@ -282,11 +282,13 @@ void simulator::saveVtk(mat2 &m, string file_name) {
 void simulator::saveVelocitiesToFile(){
     ostringstream U_name;
     ostringstream V_name;
+    ostringstream P_name;
     ostringstream norm_name;
 
     norm_name << "./out/norm_" << step << ".vtk";
     U_name << "./out/U_" << step << ".vtk";
     V_name << "./out/V_" << step << ".vtk";
+    P_name << "./out/P_" << step << ".vtk";
 
     mat2 norm(U2.rows(), U2.cols());
     for (int i = 0; i < norm.rows(); ++i)
@@ -299,6 +301,7 @@ void simulator::saveVelocitiesToFile(){
 
     saveVtk(U2, U_name.str());
     saveVtk(V2, V_name.str());
+    saveVtk(P2, P_name.str());
     saveVtk(norm, norm_name.str());
 
 }
