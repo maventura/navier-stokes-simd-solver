@@ -22,7 +22,7 @@ section .text
 %define u1p_ r15
 %define v1p_ r14
 %define offset_i_ rdx
-%define offset_j_ 1
+%define offset_j_ 4
 %define mat_arr_ rdi
 %define pos_ rsi
 
