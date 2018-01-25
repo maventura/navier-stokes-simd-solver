@@ -6,6 +6,7 @@
 #include <cmath>
 #include "io.h"
 #include <algorithm>    // std::min
+#include <omp.h>
 
 #ifdef USE_ASM
 extern "C" {
@@ -151,6 +152,8 @@ void simulator::process() {
 
         setPBorders();
         setCavityFlowSpeeds();
+        omp_set_dynamic(0);     // Explicitly disable dynamic teams
+        omp_set_num_threads(4); // Use 4 threads for all consecutive parallel regions
         #pragma omp parallel for
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
