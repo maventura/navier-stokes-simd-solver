@@ -146,11 +146,12 @@ void simulator::process() {
             cerr << static_cast<int>(100 * t / tMax) << "% \r" << std::flush;
         step++;
 
-        saveVelocitiesToFile();
+        //saveVelocitiesToFile();
         if(100 * t / tMax > percentageStop) return ;
 
         setPBorders();
         setCavityFlowSpeeds();
+        #pragma omp parallel for
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
                 #ifdef USE_ASM
