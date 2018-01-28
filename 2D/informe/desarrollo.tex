@@ -1,0 +1,12 @@
+\section{Desarrolo}%Describe cada una de las funciones que implementaron, respondiendo en profundidad cada una de las preguntas de los Experimentos. Para la descripcion de cada funcion deberan decir como opera una iteracion del ciclo de la funcion. Es decir, como mueven los datos a los registros, como los reordenan para procesarlos, las operaciones que se aplican a los datos, etc. Para esto pueden utilizar pseudocodigo, diagramas (mostrando graficamente el contenido de los registros XMM) o cualquier otro recurso que le sea util para describir la adaptacion del algoritmo al procesamiento simultaneo SIMD. No se debera incluir el codigo assembler de las funciones (aunque se pueden incluir extractos en donde haga falta). Las preguntas en cada ejercicio son una guıa para la confeccion de los resultados obtenidos. Al responder estas preguntas, se deberan analizar y comparar las implementaciones de cada funciones en su version C y ASM, mostrando los resultados obtenidos a traves de tablas y graficos. Tambien se debera comentar acerca de los resultados obtenidos. En el caso de que sucediera que la version en C anduviese mas rapidamente que su version ASM, justificar fuertemente a que se debe esto.
+
+
+
+\subsection{Experimentacion(version borrador)}
+
+Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++, obtuvimos y analizamos el código ensamblado por el compilador.
+Cosas que notamos 
+\begin{itemize}
+	\item Dentro de la función calcVelocities, hay llamados varios recursivos que en al version de c++ no suceden
+	\item Hay consultas a memorias innecesarias (pide un valora memoria, que no se pisa y luego de varias operaciones, vuelve a pedirlo, habiendolo tenido cargado)
+\end{itemize}
