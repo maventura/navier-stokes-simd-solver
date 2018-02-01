@@ -1,6 +1,145 @@
 \section{Desarrolo}%Describe cada una de las funciones que implementaron, respondiendo en profundidad cada una de las preguntas de los Experimentos. Para la descripcion de cada funcion deberan decir como opera una iteracion del ciclo de la funcion. Es decir, como mueven los datos a los registros, como los reordenan para procesarlos, las operaciones que se aplican a los datos, etc. Para esto pueden utilizar pseudocodigo, diagramas (mostrando graficamente el contenido de los registros XMM) o cualquier otro recurso que le sea util para describir la adaptacion del algoritmo al procesamiento simultaneo SIMD. No se debera incluir el codigo assembler de las funciones (aunque se pueden incluir extractos en donde haga falta). Las preguntas en cada ejercicio son una guıa para la confeccion de los resultados obtenidos. Al responder estas preguntas, se deberan analizar y comparar las implementaciones de cada funciones en su version C y ASM, mostrando los resultados obtenidos a traves de tablas y graficos. Tambien se debera comentar acerca de los resultados obtenidos. En el caso de que sucediera que la version en C anduviese mas rapidamente que su version ASM, justificar fuertemente a que se debe esto.
 
 
+\subsection{Discretización}
+Comenzaremos con algunas definiciones. al modelar con diferencias finitas, se utilizan ciertos reemplazos de los operadores diferenciales conocidos como discretizaciones. Como su nombre indica, estos son versiones discretas de los operadores, y se los usa bajo el supuesto de que en el limite se comportan de forma similar. Pasaremos ahora a definir algunas discretizaciones que serán utilizadas en al hacer el pasaje.
+~\\
+~\\
+\begin{minipage}{\linewidth}
+
+Centradas de primer orden:
+\begin{center}
+
+~\\
+$\frac{dU}{dx} = \frac{U^{n}_{i+1,j} - U^{n}_{i-1,j}}{2dx} $
+~\\
+~\\
+$\frac{dU}{dy} = \frac{U^{n}_{i,j+1} - U^{n}_{i,j-1}}{2dy} $
+~\\
+~\\
+$\frac{dU}{dt} = \frac{U^{n+1}_{i,j} - U^{n-1}_{i,j}}{2dt} $
+~\\
+\end{center}
+
+\end{minipage}
+\begin{minipage}{\linewidth}
+
+
+
+Centradas de segundo orden:
+\begin{center}
+
+~\\
+$\frac{d^{2}U}{dx^{2}} = \frac{ U^{n}_{i+1,j} - 2*U^{n}_{i,j} + U^{n}_{i-1,j}}{dx^2}$
+~\\
+~\\
+$\frac{d^{2}U}{dy^{2}} = \frac{ U^{n}_{i,j+1} - 2*U^{n}_{i,j} + U^{n}_{i,j-1}}{dx^2}$
+~\\
+~\\
+$\frac{d^{2}U}{dt^{2}} = \frac{ U^{n+1}_{i,j} - 2*U^{n}_{i,j} + U^{n-1}_{i,j}}{dt^2}$
+~\\
+\end{center}
+
+\end{minipage}
+\begin{minipage}{\linewidth}
+
+Adelantadas de primer orden:
+\begin{center}
+
+~\\
+$\frac{dU}{dx} = \frac{U^{n}_{i+1,j} - U^{n}_{i,j}}{dx} $
+~\\
+~\\
+$\frac{dU}{dy} = \frac{U^{n}_{i,j+1} - U^{n}_{i,j}}{dy} $
+~\\
+~\\
+$\frac{dU}{dt} = \frac{U^{n+1}_{i,j} - U^{n}_{i,j}}{dx} $
+~\\
+\end{center}
+
+\end{minipage}
+\begin{minipage}{\linewidth}
+
+
+Atrasadas de primer orden:
+\begin{center}
+
+~\\
+$\frac{dU}{dx} = \frac{U^{n}_{i,j} - U^{n}_{i-1,j}}{dx} $
+~\\
+~\\
+$\frac{dU}{dy} = \frac{U^{n}_{i,j} - U^{n}_{i,j-1}}{dy} $
+~\\
+~\\
+$\frac{dU}{dt} = \frac{U^{n}_{i,j} - U^{n-1}_{i,j}}{dx} $
+~\\
+\end{center}
+\end{minipage}
+~\\
+
+\begin{minipage}{\linewidth}
+
+Reemplazando estas discretizaciones en las ecuaciones semi-acopladas de Navier Stokes y obtenemos: 
+\begin{center}
+~\\
+
+~\\
+$\frac{u_{i,j}^{n+1}-u_{i,j}^{n}}{\Delta t}+u_{i,j}^{n}\frac{u_{i,j}^{n}-u_{i-1,j}^{n}}{\Delta x}+v_{i,j}^{n}\frac{u_{i,j}^{n}-u_{i,j-1}^{n}}{\Delta y}
+=-\frac{1}{\rho}\frac{p_{i+1,j}^{n}-p_{i-1,j}^{n}}{2\Delta x}+\nu (\frac{u_{i+1,j}^{n}-2u_{i,j}^{n}+u_{i-1,j}^{n}}{\Delta x^2}+\frac{u_{i,j+1}^{n}-2u_{i,j}^{n}+u_{i,j-1}^{n}}{\Delta y^2}) + Fu$
+~\\
+~\\
+~\\
+
+$\frac{v_{i,j}^{n+1}-v_{i,j}^{n}}{\Delta t}+u_{i,j}^{n}\frac{v_{i,j}^{n}-v_{i-1,j}^{n}}{\Delta x}+v_{i,j}^{n}\frac{v_{i,j}^{n}-v_{i,j-1}^{n}}{\Delta y}=-\frac{1}{\rho}\frac{p_{i,j+1}^{n}-p_{i,j-1}^{n}}{2\Delta y}
++\nu(\frac{v_{i+1,j}^{n}-2v_{i,j}^{n}+v_{i-1,j}^{n}}{\Delta x^2}+\frac{v_{i,j+1}^{n}-2v_{i,j}^{n}+v_{i,j-1}^{n}}{\Delta y^2}) + Fv$
+~\\
+~\\
+~\\
+
+$\frac{p_{i+1,j}^{n}-2p_{i,j}^{n}+p_{i-1,j}^{n}}{\Delta x^2}+\frac{p_{i,j+1}^{n}-2*p_{i,j}^{n}+p_{i,j-1}^{n}}{\Delta y^2} 
+=\rho[\frac{1}{\Delta t}(\frac{u_{i+1,j}-u_{i-1,j}}{2\Delta x}+\frac{v_{i,j+1}-v_{i,j-1}}{2\Delta y})$
+\end{center}
+
+\end{minipage}
+~\\
+~\\
+
+\begin{minipage}{\linewidth}
+Aquí en la ultima ecuación podemos ver que no se reemplazó directamente cada operador mediante las ecuaciones de discretización, sino que se agregó un termino temporal, sin que hubiera en principio información sobre el tiempo en la ecuación de la presión. Este cambio se hace con el objetivo de terminar de acoplar la ecuación de la presión con las ecuaciones de velocidad. La derivación de esta solución no se presentará en este trabajo.
+~\\
+
+Cabe aclarar que al discretizar, se puede modelar el sistema mediante un método implícito o explicito. Un método implícito, o parcialmente implícito, incluiría una ponderación entre los valores de las variables en la iteración n, y la iteración n+1. En este trabajo utilizaremos un método explicito, ya que el sistema de ecuaciones determinado por un método explicito es lineal, y resulta en relaciones donde un elemento en la iteración n+1 depende de otros en la iteración n, pudiendo entonces realizarse los reemplazos en las matrices que representan el sistema de forma directa, y resultando así en una implementación mas sencilla. Un método implícito da como resultado un sistema no lineal, en el cual hay que hacer uso de algún método de resolución de sistemas no lineales, como punto fijo, lo cual aumenta la complejidad de la implementación.
+
+\end{minipage}
+
+
+\subsection{Implementación}
+La implementación fue realizada casi completamente en C++, excepto por la sección donde es critico el rendimiento, la cual fue programada en C+ y Assembler.
+~\\
+~\\
+Corriendo de forma no vectorizada, el programa define las matrices U2, U2, V1, V2, P1, P2, que representan el estado del sistema en una iteración para la velocidad en u, en v, y la presión, y luego estas mismas en la iteración siguiente. 
+~\\
+~\\
+Se definen las condiciones iniciales del problema, y luego se utiliza un método explicito para calcular los nuevos valores del sistema. Estos son guardados en U2, V2, y P2. Seguido de esto el programa reemplaza los valores de U1, V1, y P1, por aquellos de U2, V2 y P2, quedado así preparado para la siguiente iteración. 
+~\\
+~\\
+Se implementó también una clase mat2, que representa una matriz, y que contiene un puntero a un arreglo de números de punto flotante de doble precisión y dos enteros que representan el tamaño en filas y columnas de la matriz. Ademas la clase cuenta con funciones que realizan la abstracción de indexar en el arreglo calculando la posición del elemento buscado como la columna pedida, mas la fila pedida multiplicada por la cantidad de columnas. Esta clase también cuenta con una función de impresión que escribe los elementos de la matriz en formato separado por espacios.
+~\\
+~\\
+En cuanto a la vectorización, como se comentó anteriormente se utilizó la tecnología SIMD de Intel, que fue utilizado de la siguiente forma:
+\begin{itemize}
+
+\item Mediante una directiva DEFINE, se elije si se desea compilar con soporte para SIMD, soporte para OpenMP, ambos, o ninguno.
+\item El programa inicializa las matrices necesarias con los valores iniciales segun lo estipulado por el metodo de discretización utilizado.
+\item La sección del programa que realiza el calculo consta de tres ciclos for consecutivos. El primero cicla en la variable t, que representa el tiempo. el segundo en la variable i, que representa la altura, y el tercero en la variable j que representa el ancho.
+\item Mediante la utilización de las directivas de compilador, el codigo compilado constara de una implementación en C++ plano, Una implementación SIMD, donde al llegar a un valor menos al ancho de los registros XMM dividido por el tamaño de el tipo de datos flotante de precision simple se cambia el procesamiento mediante SIMD por el de C++, y ademas mediante estas mismas directivas puede definirse o no la presencia de OpenMP, logrando asi la utilización de multiples nucleos.
+
+\item La paralelización mediante OpenMP se realiza en la variable i.
+\item La vctorización mediante SIMD, se realiza mediante la variable j. Es decir, en un solo llamado a la versión de assembler de la funcion de calculo se calculan 4 elementos.
+
+\item Ademas, durante la simulación no se crean ni se destruyen matrices, sino que estas son reutilizadas cambiando los valores que contienen para no perder tiempo manejando memoria.
+
+\end{itemize}
 
 \subsection{Experimentacion(version borrador)}
 
