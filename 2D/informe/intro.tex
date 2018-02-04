@@ -1,6 +1,11 @@
 \section{Introducción}%Describe lo realizado en el trabajo practico.
+Los flujos son gobernados por ecuaciones diferenciales parciales, que representan las leyes de conservación de masa, momento y energía. La dinámica de fluidos computacional se encarga de resolver esas ecuaciones diferenciales utilizando técnicas de análisis numérico. Las computadoras son utilizadas para realizar los cálculos requeridos para simular la interacción entre líquidos, gases y superficies definidas por las condiciones de borde. Disponer de mas poder computacional es útil para disminuir el tiempo requerido para realizar las simulaciones, o aumentar la calidad de los resultados.
 
-En el presente informe se resuelve el sistema de ecuaciones de Navier-Stokes para el cálculo de las velocidades de un fluido. Las instancias particulares del problema que se analizan son cavity flow y channel flow. Se implementó la solución en c++ y en asembler.
+Para poder aumentar el poder computacional disponible, se utilizan a menudo, técnicas de computación en paralelo, o de computación vectorial. en este trabajo nos centraremos en la tecnología de computación vectorial SIMD (Single instruction multiple data) de Intel.
+
+concretamente se desarrollará codigo en assembler que utilizando las instrucciónes de vectorización de los procesadores intel logre un aumento de rendimiento. Luego se comparará ese aumento de rendimiento con tecnicas automaticas de vectorización o paralelización, tales como OpenMP, una api para el procesamiento multinucleo con memoria compartida, y las optimizaciónes disponibles en los compiladores ICC (Intel C compiler) y g++, que a su vez utilizan instrucciónes SIMD.
+
+Hay diversos problemas de flujo conocidos que son utilizados frecuentemente para testear aplicaciónes de este estilo. En este trabajo utilizaremos cavity flow y channel flow.
+
 
 Se realizó una solución iterativa de punto fijo, creo.
-
