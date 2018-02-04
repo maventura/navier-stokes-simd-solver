@@ -4,9 +4,19 @@
 
 \subsection{Experimentacion(version borrador)}
 
-Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++, obtuvimos y analizamos el código ensamblado por el compilador.
+Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ (sin flags de optimización), obtuvimos y analizamos el código ensamblado por el compilador.
 Cosas que notamos 
 \begin{itemize}
-	\item Dentro de la función calcVelocities, hay llamados varios recursivos que en al version de c++ no suceden
-	\item Hay consultas a memorias innecesarias (pide un valora memoria, que no se pisa y luego de varias operaciones, vuelve a pedirlo, habiendolo tenido cargado)
+	\item Dentro de la función calcVelocities, hay calls a distintas secciones de la función misma que no son necesarios, ya que saltan a una línea consecutiva.
+	\item Hay consultas a memorias innecesarias (pide un valor a memoria, que no se pisa y luego de varias operaciones, vuelve a pedirlo).
+	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones
+	%continuar con  como es el codigo generado, como se manipulan las variables locales
+\end{itemize}
+
+\newline
+
+Probando compilar el código de c++ con flags de optimización
+
+\begin{itemize}
+	\item El código en asembler obtenido mediante la herramienta objdump era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag de optimización -O1 341 líneas)
 \end{itemize}
