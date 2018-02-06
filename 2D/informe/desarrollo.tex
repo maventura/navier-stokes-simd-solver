@@ -112,9 +112,10 @@ Cabe aclarar que al discretizar, se puede modelar el sistema mediante un método
 
 \end{minipage}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Implementación}
-La implementación fue realizada casi completamente en C++, excepto por la sección donde es critico el rendimiento, la cual fue programada en C+ y Assembler.
+La implementación fue realizada casi completamente en C++, excepto por la sección donde es critico el rendimiento, la cual fue programada en C+ y Assembler. Esta sección es la correspondiente a la función calcVelocities, que como su nombre indica, calcula las velocidades en cada punto.
 ~\\
 ~\\
 Corriendo de forma no vectorizada, el programa define las matrices U2, U2, V1, V2, P1, P2, que representan el estado del sistema en una iteración para la velocidad en u, en v, y la presión, y luego estas mismas en la iteración siguiente. 
@@ -128,18 +129,18 @@ Se implementó también una clase mat2, que representa una matriz, y que contien
 ~\\
 En cuanto a la vectorización, como se comentó anteriormente se utilizó la tecnología SIMD de Intel, que fue utilizado de la siguiente forma:
 \begin{itemize}
+	\item Mediante una directiva DEFINE, se elije si se desea compilar con soporte para SIMD, soporte para OpenMP, ambos, o ninguno.
+	\item El programa inicializa las matrices necesarias con los valores iniciales segun lo estipulado por el metodo de discretización utilizado.
+	\item La sección del programa que realiza el calculo consta de tres ciclos for consecutivos. El primero cicla en la variable t, que representa el tiempo. el segundo en la variable i, que representa la altura, y el tercero en la variable j que representa el ancho.
+	\item Mediante la utilización de las directivas de compilador, el codigo compilado constara de una implementación en C++ plano, Una implementación SIMD, donde al llegar a un valor menos al ancho de los registros XMM dividido por el tamaño de el tipo de datos flotante de precision simple se cambia el procesamiento mediante SIMD por el de C++, y ademas mediante estas mismas directivas puede definirse o no la presencia de OpenMP, logrando asi la utilización de multiples nucleos.
 
-\item Mediante una directiva DEFINE, se elije si se desea compilar con soporte para SIMD, soporte para OpenMP, ambos, o ninguno.
-\item El programa inicializa las matrices necesarias con los valores iniciales segun lo estipulado por el metodo de discretización utilizado.
-\item La sección del programa que realiza el calculo consta de tres ciclos for consecutivos. El primero cicla en la variable t, que representa el tiempo. el segundo en la variable i, que representa la altura, y el tercero en la variable j que representa el ancho.
-\item Mediante la utilización de las directivas de compilador, el codigo compilado constara de una implementación en C++ plano, Una implementación SIMD, donde al llegar a un valor menos al ancho de los registros XMM dividido por el tamaño de el tipo de datos flotante de precision simple se cambia el procesamiento mediante SIMD por el de C++, y ademas mediante estas mismas directivas puede definirse o no la presencia de OpenMP, logrando asi la utilización de multiples nucleos.
+	\item La paralelización mediante OpenMP se realiza en la variable i.
+	\item La vctorización mediante SIMD, se realiza mediante la variable j. Es decir, en un solo llamado a la versión de assembler de la funcion de calculo se calculan 4 elementos.
 
-\item La paralelización mediante OpenMP se realiza en la variable i.
-\item La vctorización mediante SIMD, se realiza mediante la variable j. Es decir, en un solo llamado a la versión de assembler de la funcion de calculo se calculan 4 elementos.
-
-\item Ademas, durante la simulación no se crean ni se destruyen matrices, sino que estas son reutilizadas cambiando los valores que contienen para no perder tiempo manejando memoria.
-
+	\item Ademas, durante la simulación no se crean ni se destruyen matrices, sino que estas son reutilizadas cambiando los valores que contienen para no perder tiempo manejando memoria.
 \end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Experimentacion(version borrador)}
 
@@ -149,13 +150,16 @@ Cosas que notamos
 	\item Dentro de la función calcVelocities, hay calls a distintas secciones de la función misma que no son necesarios, ya que saltan a una línea consecutiva.
 	\item Hay consultas a memorias innecesarias (pide un valor a memoria, que no se pisa y luego de varias operaciones, vuelve a pedirlo).
 	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones
-	%continuar con  como es el codigo generado, como se manipulan las variables locales
 \end{itemize}
 
 \newline
 
-Probando compilar el código de c++ con flags de optimización
+Probando compilar el código de c++ con el flag de optimización -O1 se obtuvieron los siguientes resultados respecto al código sin flags de optimización:
 
 \begin{itemize}
-	\item El código en asembler obtenido mediante la herramienta objdump era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag de optimización -O1 341 líneas)
+	\item El código en asembler obtenido mediante la herramienta objdump era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag 341 líneas).
+	\item El tiempo de compilación aumento con el uso del flag. Los tiempos fueron (real 0m0.693s, user	0m0.644s, sys 0m0.044s) sin flags y (real 0m1.113s, user 0m0.948s, sys 0m0.056s) con el flag.
+	\item El tiempo de ejecución disminuyó (real 0m3.718s, user 0m3.672s, sys 0m0.000s) con el uso del flag (real 0m1.447s, user 0m1.444s, sys 0m0.000s).
 \end{itemize}
+
+%seguir con flag 02 y 03 y el resto de los experimentos
