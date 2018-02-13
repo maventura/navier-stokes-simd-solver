@@ -52,10 +52,10 @@ for side_size in xrange(min_side_size, max_side_size+1):
 
 	devnull = open(os.devnull, 'w')
 	for x in xrange(1,repetitions):
-		print(2*spacer + 'percentage: ' + str(float(x)*100.0/float(repetitions)) + "%", end='\r')
+		print(2*spacer + 'status: ' + str(float(x)*100.0/float(repetitions)) + "%" + spacer*3, end='\r')
 		sys.stdout.flush()
 		subprocess.call(call, shell=True,  stdout=devnull, stderr=devnull)
-	print(2*spacer + 'percentage: 100%')
+	print(2*spacer + 'status: completed' + spacer*3)
 	devnull.close()
 
 
