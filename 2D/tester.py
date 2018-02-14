@@ -9,13 +9,8 @@ max_side_size = 16
 min_time = 2
 max_time = 2
 repetitions = 100
-versions = ['cpp', 'cpp_omp']
-
-
-version_list = ['asm', 'cpp', 'asm_omp', 'cpp_omp']
-
+version_list = ['asm', 'cpp', 'asm_omp', 'cpp_omp', 'icc']
 version = version_list[1]
-
 spacer = '   '
 
 
