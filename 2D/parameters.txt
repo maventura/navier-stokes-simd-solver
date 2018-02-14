@@ -1,6 +1,6 @@
-xMax 2.0
-yMax 2.0
-tMax 2.0
+xMax 16
+yMax 16
+tMax 4
 nu 0.01 
 rho 1.0 
 dx 0.05

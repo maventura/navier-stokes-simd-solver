@@ -154,7 +154,14 @@ void simulator::process() {
         setCavityFlowSpeeds();
         //omp_set_dynamic(0);     // Explicitly disable dynamic teams
         //omp_set_num_threads(4); // Use 4 threads for all consecutive parallel regions
+
+
+        #ifndef USE_ICC
         #pragma omp parallel for
+        #endif
+
+
+        
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
 
