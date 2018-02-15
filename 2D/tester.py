@@ -4,13 +4,13 @@ import os
 import sys
 
 param_file_name = "parameters.txt"
-min_side_size = 1
-max_side_size = 16
+min_side_size = 18
+max_side_size = 100
 min_time = 2
 max_time = 2
 repetitions = 100
 version_list = ['asm', 'cpp', 'asm_omp', 'cpp_omp', 'icc']
-version = version_list[1]
+version = version_list[3]
 spacer = '   '
 
 
@@ -57,8 +57,8 @@ for time in xrange(min_time, max_time+1):
 
 
 		devnull = open(os.devnull, 'w')
-		for x in xrange(0,repetitions):
-			print(2*spacer + 'status: ' + str(float(x)*100.0/float(repetitions)) + "%" + spacer*3, end='\r')
+		for r in xrange(0,repetitions):
+			print(2*spacer + 'status: ' + str(float(r)*100.0/float(repetitions)) + "%" + spacer*3, end='\r')
 			sys.stdout.flush()
 			try:
 				subprocess.call(call, shell=True,  stdout=devnull, stderr=devnull)
