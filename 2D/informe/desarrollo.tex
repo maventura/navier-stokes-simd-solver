@@ -141,25 +141,102 @@ En cuanto a la vectorización, como se comentó anteriormente se utilizó la tec
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{Experimentacion}
 
-\subsection{Experimentacion(version borrador)}
+\subsection{Análisis del código generado}
 
-Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ (sin flags de optimización), obtuvimos y analizamos el código ensamblado por el compilador.
-Cosas que notamos 
+Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ (sin flags de optimización), obtuvimos y analizamos el código ensamblado por el compilador. Notamos las siguientes caracterísicas del código generado que dan lugar a mejoras:
 \begin{itemize}
-	\item Dentro de la función calcVelocities, hay calls a distintas secciones de la función misma que no son necesarios, ya que saltan a una línea consecutiva.
-	\item Hay consultas a memorias innecesarias (pide un valor a memoria, que no se pisa y luego de varias operaciones, vuelve a pedirlo).
-	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones
+	\item Dentro de la función calcVelocities, la función donde se ralizan los cálculos que luego se vectorialiaran, hay llamados a líneas consecutivas.
+	\item Hay consultas a memorias innecesarias (se pide un mismo valor a memoria varias veces, a pesar de haber sido guardado en un registro y nunca haber sido reemplazado con otro valor).
+	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones.
 \end{itemize}
 
 
-~\\
-Probando compilar el código de c++ con el flag de optimización -O1 se obtuvieron los siguientes resultados respecto al código sin flags de optimización:
+\subsection{Optimizaciones del compilador}
+
+El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de estas optimizaciones es habilitado por el parámetro -O1. Entre ellos se encuentran los siguientes flags:
+
+ %    -fauto-inc-dec 
+ %    -fcompare-elim 
+ %    -fcprop-registers 
+ %    -fdefer-pop
+ %    -fdelayed-branch 
+ %    -fdse -fguess-branch-probability 
+
+ %    -fif-conversion2
+	% fif-conversion 
+
+	% -fipa-pure-const 
+	% -fipa-profile 
+	% -fipa-reference 
+    
+ %    -ftree-bit-ccp
+ %    -ftree-builtin-call-dce 
+ %    -ftree-ccp 
+ %    -ftree-ch 
+ %    -ftree-copyrename
+ %    -ftree-dce 
+ %    -ftree-dominator-opts 
+ %    -ftree-dse 
+ %    -ftree-forwprop
+ %    -ftree-fre 
+ %    -ftree-phiprop 
+ %    -ftree-slsr 
+ %    -ftree-sra 
+ %    -ftree-pta
+ %    -ftree-ter
+
+            
+%-O also turns on -fomit-frame-pointer on machines where doing so      does not interfere with debugging.
 
 \begin{itemize}
-	\item El código en asembler obtenido mediante la herramienta objdump era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag 341 líneas).
-	\item El tiempo de compilación aumento con el uso del flag. Los tiempos fueron (real 0m0.693s, user	0m0.644s, sys 0m0.044s) sin flags y (real 0m1.113s, user 0m0.948s, sys 0m0.056s) con el flag.
-	\item El tiempo de ejecución disminuyó (real 0m3.718s, user 0m3.672s, sys 0m0.000s) con el uso del flag (real 0m1.447s, user 0m1.444s, sys 0m0.000s).
+	\item fdce: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es un tipo de lenguaje ensamblador neutral respecto a la arquitectura. RTL es además el nombre específico del lenguaje usado en GCC.}.
+	\item fdse: Realiza eliminación de guardado muerto en RTL.
+	\item fsplit-wide-types: Cuando se usa un tipo de datos que ocupa múltiples registros, como por ejemplo \"long long\" en un sistema de 32-bit, separa el dato y lo guarda de manera independiente. Esto, normalmente, genera mejor código para estos tipos de datos, pero hace más dificil el debuggeo.
+	\item -fmerge-constants: Attempt to merge identical constants (string constants and floating-point constants) across compilation units. This option is the default for optimized compilation if the assembler and linker support it.
 \end{itemize}
 
-%seguir con flag 02 y 03 y el resto de los experimentos
+TODO: SEGUIR VIENDO EL RESTO DE LOS FLAGS, QUIZA HAYA ALGUNOS QUE JUSTIFIQUEN LOS RESULTADOS Y ESTARIA BUENO PONERLO.\\%no comentar
+
+Compilamos el código de c++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados respecto al código sin flags de optimización:\\
+
+\begin{center}
+	\begin{tabular}{ccc}  
+		\toprule 
+		\multicolumn{2}{c}{Tiempo ejecución} \\
+		\cmidrule(r){1-3}
+		Tamaño & Sin optimización & Con optimización (O1)  \\
+		\midrule
+		6 x 6   &	8.328s 	&	3.260s	\\
+		8 x 8	&	14.640s	&	5.776s	\\
+		10 x 10	&	22.872s	&	8.980s	\\
+		12 x 12 &	32.916s &   12.888s \\
+		\bottomrule
+	\end{tabular}\\
+\end{center}
+
+Los tiempos de ejecución se reducen utilizando el flag de optimización.\\
+
+Veamos que, al contrario que el tiempo de ejecución, el tiempo de compilación del código aumenta.\\
+
+\begin{center}
+	\begin{tabular}{cc}  
+		\toprule 
+		\multicolumn{2}{c}{Tiempo compilación} \\
+		\cmidrule(r){1-2}
+		Sin optimización & Con optimización (O1) \\
+		\midrule
+		0.652s	&	1.044s	\\
+
+		\bottomrule
+	\end{tabular}\\
+\end{center}
+
+Utilizamos nuevamente la herramienta objdump. El código en asembler obtenido mediante la herramienta era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag 341 líneas).\\
+
+Además notamos que, con el uso del parámetro -O1, se hace uso de los registros para el manejo de las variables locales en vez de la pila como sucedía usando el parámetro -O0 (está por defecto).\\
+
+Por otro lado, está el análisis del uso de memoria.
+TODO: Corri valgrind pero todavia no terminé de analizar los resultados, es medio dolor de cabeza.
