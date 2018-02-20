@@ -115,27 +115,27 @@ Cabe aclarar que al discretizar, se puede modelar el sistema mediante un método
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Implementación}
-La implementación fue realizada casi completamente en C++, excepto por la sección donde es critico el rendimiento, la cual fue programada en C+ y Assembler. Esta sección es la correspondiente a la función calcVelocities, que como su nombre indica, calcula las velocidades en cada punto.
+La implementación fue realizada casi completamente en C++, excepto por la sección donde es critico el rendimiento, la cual fue programada en C++ y Assembler. Esta sección es la correspondiente a la función calcVelocities, que como su nombre indica, calcula las velocidades en cada punto.
 ~\\
 ~\\
-Corriendo de forma no vectorizada, el programa define las matrices U2, U2, V1, V2, P1, P2, que representan el estado del sistema en una iteración para la velocidad en u, en v, y la presión, y luego estas mismas en la iteración siguiente. 
+El programa define las matrices U2, U2, V1, V2, P1, P2, que representan el estado del sistema en una iteración para la velocidad en u, en v, y la presión, y luego estas mismas en la iteración siguiente. 
 ~\\
 ~\\
 Se definen las condiciones iniciales del problema, y luego se utiliza un método explicito para calcular los nuevos valores del sistema. Estos son guardados en U2, V2, y P2. Seguido de esto el programa reemplaza los valores de U1, V1, y P1, por aquellos de U2, V2 y P2, quedado así preparado para la siguiente iteración. 
 ~\\
 ~\\
-Se implementó también una clase mat2, que representa una matriz, y que contiene un puntero a un arreglo de números de punto flotante de doble precisión y dos enteros que representan el tamaño en filas y columnas de la matriz. Ademas la clase cuenta con funciones que realizan la abstracción de indexar en el arreglo calculando la posición del elemento buscado como la columna pedida, mas la fila pedida multiplicada por la cantidad de columnas. Esta clase también cuenta con una función de impresión que escribe los elementos de la matriz en formato separado por espacios.
+Se implementó también una clase mat2, que representa una matriz, y que contiene un puntero a un arreglo de números de punto flotante de simple precisión y dos enteros que representan el tamaño en filas y columnas de la matriz. Ademas la clase cuenta con funciones que realizan la abstracción de indexar en el arreglo calculando la posición del elemento buscado como la columna pedida, más la fila pedida multiplicada por la cantidad de columnas. 
 ~\\
 ~\\
-En cuanto a la vectorización, como se comentó anteriormente se utilizó la tecnología SIMD de Intel, que fue utilizado de la siguiente forma:
+En cuanto a la vectorización, como se comentó anteriormente se utilizó la tecnología SIMD de Intel, de la forma descripta a continuación:
 \begin{itemize}
-	\item Mediante una directiva DEFINE, se elije si se desea compilar con soporte para SIMD, soporte para OpenMP, ambos, o ninguno.
-	\item El programa inicializa las matrices necesarias con los valores iniciales segun lo estipulado por el metodo de discretización utilizado.
+	\item Mediante una directiva DEFINE presente en el Makefile, se elije si se desea compilar con soporte para SIMD, soporte para OpenMP, ambos, o ninguno.
+	\item El programa define las matrices necesarias con los valores iniciales segun lo estipulado por el metodo de discretización utilizado.
 	\item La sección del programa que realiza el calculo consta de tres ciclos for consecutivos. El primero cicla en la variable t, que representa el tiempo. el segundo en la variable i, que representa la altura, y el tercero en la variable j que representa el ancho.
-	\item Mediante la utilización de las directivas de compilador, el codigo compilado constara de una implementación en C++ plano, Una implementación SIMD, donde al llegar a un valor menos al ancho de los registros XMM dividido por el tamaño de el tipo de datos flotante de precision simple se cambia el procesamiento mediante SIMD por el de C++, y ademas mediante estas mismas directivas puede definirse o no la presencia de OpenMP, logrando asi la utilización de multiples nucleos.
+	\item Mediante la utilización de las directivas de compilador, el codigo compilado constara de una implementación en C++ plano, una implementación SIMD, donde al llegar a un valor menor al ancho de los registros XMM dividido por el tamaño de el tipo de datos flotante de precision simple se cambia el procesamiento mediante SIMD por el de C++, y ademas mediante estas mismas directivas puede definirse o no la presencia de OpenMP, logrando asi la utilización de multiples nucleos.
 
 	\item La paralelización mediante OpenMP se realiza en la variable i.
-	\item La vctorización mediante SIMD, se realiza mediante la variable j. Es decir, en un solo llamado a la versión de assembler de la funcion de calculo se calculan 4 elementos.
+	\item La vectorización mediante SIMD, se realiza en la variable j. Es decir, en un solo llamado a la versión de assembler de la funcion de calculo se calculan 4 elementos consecutivos en memoria.
 
 	\item Ademas, durante la simulación no se crean ni se destruyen matrices, sino que estas son reutilizadas cambiando los valores que contienen para no perder tiempo manejando memoria.
 \end{itemize}
@@ -146,10 +146,10 @@ En cuanto a la vectorización, como se comentó anteriormente se utilizó la tec
 
 \subsection{Análisis del código generado}
 
-Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ (sin flags de optimización), obtuvimos y analizamos el código ensamblado por el compilador. Notamos las siguientes caracterísicas del código generado que dan lugar a mejoras:
+Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ (sin flags de optimización), obtuvimos y analizamos el código ensamblado por el compilador. Notamos las siguientes caracterísicas del código generado que dan lugar a mejoras en el rendimiento:
 \begin{itemize}
-	\item Dentro de la función calcVelocities, la función donde se ralizan los cálculos que luego se vectorialiaran, hay llamados a líneas consecutivas.
-	\item Hay consultas a memorias innecesarias (se pide un mismo valor a memoria varias veces, a pesar de haber sido guardado en un registro y nunca haber sido reemplazado con otro valor).
+	\item Dentro de la función calcVelocities, la función donde se ralizan los cálculos que luego se vectorizarán, hay llamados a líneas consecutivas.
+	\item Hay consultas a memorias innecesarias, por ejemplo, se pide un mismo valor a memoria varias veces, a pesar de haber sido guardado en un registro y nunca haber sido reemplazado con otro valor.
 	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones.
 \end{itemize}
 
@@ -192,13 +192,14 @@ El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de esta
 %-O also turns on -fomit-frame-pointer on machines where doing so      does not interfere with debugging.
 
 \begin{itemize}
-	\item fdce: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es un tipo de lenguaje ensamblador neutral respecto a la arquitectura. RTL es además el nombre específico del lenguaje usado en GCC.}.
+	\item fdce: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es un tipo de lenguaje ensamblador neutral respecto a la arquitectura. RTL es además el nombre específico del lenguaje usado en GCC.}. \colorbox{BurntOrange}{Explicar mejor.}
 	\item fdse: Realiza eliminación de guardado muerto en RTL.
 	\item fsplit-wide-types: Cuando se usa un tipo de datos que ocupa múltiples registros, como por ejemplo \"long long\" en un sistema de 32-bit, separa el dato y lo guarda de manera independiente. Esto, normalmente, genera mejor código para estos tipos de datos, pero hace más dificil el debuggeo.
 	\item -fmerge-constants: Attempt to merge identical constants (string constants and floating-point constants) across compilation units. This option is the default for optimized compilation if the assembler and linker support it.
 \end{itemize}
 
-TODO: SEGUIR VIENDO EL RESTO DE LOS FLAGS, QUIZA HAYA ALGUNOS QUE JUSTIFIQUEN LOS RESULTADOS Y ESTARIA BUENO PONERLO.\\%no comentar
+
+\colorbox{BurntOrange}{SEGUIR VIENDO EL RESTO DE LOS FLAGS, QUIZA HAYA ALGUNOS QUE JUSTIFIQUEN LOS RESULTADOS Y ESTARIA BUENO PONERLO.}
 
 Compilamos el código de c++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados respecto al código sin flags de optimización:\\
 
