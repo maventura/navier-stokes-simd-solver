@@ -4,7 +4,7 @@ import os
 import sys
 
 param_file_name = "parameters.txt"
-min_side_size = 1
+min_side_size = 11
 max_side_size = 100
 min_time = 2
 max_time = 2
