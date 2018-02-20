@@ -229,7 +229,6 @@ Veamos que, al contrario que el tiempo de ejecución, el tiempo de compilación 
 		Sin optimización & Con optimización (O1) \\
 		\midrule
 		0.652s	&	1.044s	\\
-
 		\bottomrule
 	\end{tabular}\\
 \end{center}
@@ -240,3 +239,36 @@ Además notamos que, con el uso del parámetro -O1, se hace uso de los registros
 
 Por otro lado, está el análisis del uso de memoria.
 TODO: Corri valgrind pero todavia no terminé de analizar los resultados, es medio dolor de cabeza.
+
+
+\subsection{Secuencial vs. vectorial}
+
+
+
+\subsection{CPU vs. memoria}
+
+El objetivo de este experimento es conocer el factor que limita la performance en el código de asembler; la intensidad del cómputo o la cantidad de accesos a memoria.\\
+El experimento sugiere agregar ciclos bobos en el código de asembler y ver si el tiempo de uso de la cpu tiene picos.
+
+%real	0m9.487s 	user	0m9.480s  		sys	 	0m0.000s  	size 8x8
+%real	0m5.274s	user	0m5.268s		sys		0m0.000s	size 6x6  con ciclos en calculo de u2
+
+
+%real	0m6.237s 	user	0m6.232s		sys	0m0.004s		size 6x6 con ciclo bobo de 10000
+%real	7m29.152s	user	7m29.156s		sys	0m0.000s 		size 6x5 con ciclo de calculo 10000
+
+
+
+
+Si los picos de tiempo se hacen ver, quiere decir que el procesamiento es nuestro cuello de botella.
+
+En caso contrario hay que analizar el uso de la memoria.
+En este caso, yo creo que lo más costoso es el acceso a memoria, pero no lo verifique todavía.
+
+Realicé una medicion con valgrind-massif, que mide el uso del heap de memoria y tira varios detalles.
+
+El pico más grande sucede en el tiempo 109995366147 (?) donde el uso total es de 6,380,856B - el uso posta es de 6,380,676B y el uso auxiliar es de 180B.
+
+El pico se realiza cuando se llama a mat2::inic(float)
+
+TODO: AVERIGUAR QUE ESTA PASANDO CON ESTE LLAMADO RARO. PINTA QUE ES SOLO CUANDO SE CREA LAS MATRICES, EL PROBLEMA ES QUE NO SUCEDE EN CADA ITERACION O AL PPIO DEL PROGRAMA, QUE ES DONDE SE ESPERARIA QUE SE CREEN TODAS LAS MATRICES, SINO AL FINAL DE LOS SNAPSHOTS. QUIZA INTERPRETE MAL LA SALIDA DE MASSIF, YA QUE EL HISTOGRAMA MUESTRA UN PICO SUPER GRANDE AL PPIO
