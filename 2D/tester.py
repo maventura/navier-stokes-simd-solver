@@ -4,19 +4,19 @@ import os
 import sys
 
 param_file_name = "parameters.txt"
-min_side_size = 18
+min_side_size = 1
 max_side_size = 100
 min_time = 2
 max_time = 2
 repetitions = 100
-version_list = ['asm', 'cpp', 'asm_omp', 'cpp_omp', 'icc']
-version = version_list[3]
+version_list = ['asm', 'cpp','cpp_o1','cpp_o2','cpp_o3','cpp_ofast','cpp', 'asm_omp', 'cpp_omp', 'icc']
+version = version_list[5]
 spacer = '   '
 
 
-print(spacer + '___ ____ ____ ___ ____ ____ ')
-print(spacer + ' |  |___ [__   |  |___ |__/ ')
-print(spacer + ' |  |___ ___]  |  |___ |  \ ')
+print(spacer + '___ ____  ___ ___ ____ ___  ')
+print(spacer + ' |  |___ (__   |  |___ |__) ')
+print(spacer + ' |  |___ ___)  |  |___ |  \ ')
                             
 
 total_tests = (max_time - min_time +1)*(max_side_size - min_side_size +1)
