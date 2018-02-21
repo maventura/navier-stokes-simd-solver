@@ -4,13 +4,13 @@ import os
 import sys
 
 param_file_name = "parameters.txt"
-min_side_size = 11
-max_side_size = 100
+min_side_size = 1
+max_side_size = 20
 min_time = 2
 max_time = 2
 repetitions = 100
 version_list = ['asm', 'cpp','cpp_o1','cpp_o2','cpp_o3','cpp_ofast','cpp', 'asm_omp', 'cpp_omp', 'icc']
-version = version_list[5]
+version = version_list[9]
 spacer = '   '
 
 

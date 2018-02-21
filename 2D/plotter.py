@@ -18,8 +18,8 @@ print(spacer + '|    |___ |__|  |   |  |___ |  \ ')
 print(os.linesep*2)
 
 #Define parameters.
-min_side_size = 1
-max_side_size = 17
+min_side_size = 5
+max_side_size = 6
 min_time = 2
 max_time = 2
 version_list = ['asm', 'cpp', 'asm_omp', 'cpp_omp', 'icc']
@@ -76,12 +76,12 @@ def read_as_array(min_time, max_time, min_side_size, max_side_size, version):
 	return data_array
 
 result_asm = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[0])
-result_cpp = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[1])
-result_cpp_omp = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[3])
+#result_cpp = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[1])
+#result_cpp_omp = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[3])
 
 ax = sns.tsplot(data=result_asm, ci='sd', color='red', condition = 'ASM')
-ax2 = sns.tsplot(data=result_cpp, ci='sd', color='green', condition = 'C++')
-ax3 = sns.tsplot(data=result_cpp_omp, ci='sd', color='blue', condition = 'OpenMP')
+#ax2 = sns.tsplot(data=result_cpp, ci='sd', color='green', condition = 'C++')
+#ax3 = sns.tsplot(data=result_cpp_omp, ci='sd', color='blue', condition = 'OpenMP')
 
 
 

@@ -42,7 +42,7 @@ cpp_omp:  main.cpp mat2.h io.h
 	g++ -DUSE_CPP -fopenmp main.cpp -std=c++11  -o main_cpp_omp
 
 icc: main.cpp mat2.h io.h
-	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC  -fp_speculation=safe main.cpp -std=c++11 -c
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -c
 	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc main.o
 
 clean:

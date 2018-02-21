@@ -192,16 +192,16 @@ El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de esta
 %-O also turns on -fomit-frame-pointer on machines where doing so      does not interfere with debugging.
 
 \begin{itemize}
-	\item fdce: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es un tipo de lenguaje ensamblador neutral respecto a la arquitectura. RTL es además el nombre específico del lenguaje usado en GCC.}. \colorbox{BurntOrange}{Explicar mejor.}
-	\item fdse: Realiza eliminación de guardado muerto en RTL.
+	\item fdce: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es una representación intermedia (RI), similar a assembler. Se utiliza para describir el transferencia de datos de una arquitectura a nivel registro}. Disminuyendo asi la presencia de codigo que no tiene efecto en el resultado.
+	\item fdse: Realiza eliminación de guardado muerto en RTL, valores que son escritos a memoria, pero que no vuelven a leerse.
 	\item fsplit-wide-types: Cuando se usa un tipo de datos que ocupa múltiples registros, como por ejemplo \"long long\" en un sistema de 32-bit, separa el dato y lo guarda de manera independiente. Esto, normalmente, genera mejor código para estos tipos de datos, pero hace más dificil el debuggeo.
-	\item -fmerge-constants: Attempt to merge identical constants (string constants and floating-point constants) across compilation units. This option is the default for optimized compilation if the assembler and linker support it.
+	\item -fmerge-constants: Intenta unir constantes identicas (cadenas o flotantes) a travez de unidades de compilación. Esta opción es la por defecto para la compilacion optimizada si el ensamblador y linker la soportan.
 \end{itemize}
 
 
 \colorbox{BurntOrange}{SEGUIR VIENDO EL RESTO DE LOS FLAGS, QUIZA HAYA ALGUNOS QUE JUSTIFIQUEN LOS RESULTADOS Y ESTARIA BUENO PONERLO.}
 
-Compilamos el código de c++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados respecto al código sin flags de optimización:\\
+Compilamos el código de C++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados respecto al código sin flags de optimización:\\
 
 \begin{center}
 	\begin{tabular}{ccc}  
@@ -243,8 +243,9 @@ TODO: Corri valgrind pero todavia no terminé de analizar los resultados, es med
 
 
 \subsection{Comparación entre secuencial, vectorial y multicore}
+Ya analizado el tipo de mejoras que son implementadas por G++ al utilizar -O1, se comparan mediciones de tiempo de los distintos flags presentes en el compilador, con otras formas de mejorar el rendimiento. En particular se estudia vectorización medinte SIMD y multicore mediante OpenMP.
 
-
+Para cada mejora se experimentó con distintos tamaños del sistema simulado, yendo desde 1x1$m^2$ hasta 20x20$m^2$. Además, para cada tamaño, se realizaron 100 repticiónes, y se tomo la media y varianza de las mismas, con el objetivo de eliminar el error de medición introducido por la falta de control del tiempo otorgado a las distintas tareas del sistema operativo por parte del scheduler.
 
 \subsection{CPU vs. memoria}
 
