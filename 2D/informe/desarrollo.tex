@@ -392,7 +392,139 @@ Please note the warning under -fgcse about invoking -O2 on programs that use com
 
 
 
+\begin{verbatim} %O1
+
+000000000000106c <_ZN9simulator19setCavityFlowSpeedsEv>:
+    106c:   83 7f 24 00             cmp    DWORD PTR [rdi+0x24],0x0
+    1070:   7e 7d                   jle    10ef <_ZN9simulator19setCavityFlowSpeedsEv+0x83>
+    1072:   41 56                   push   r14
+    1074:   41 55                   push   r13
+    1076:   41 54                   push   r12
+    1078:   55                      push   rbp
+    1079:   53                      push   rbx
+    107a:   48 89 fd                mov    rbp,rdi
+    107d:   bb 00 00 00 00          mov    ebx,0x0
+    1082:   4c 8d b7 b0 00 00 00    lea    r14,[rdi+0xb0]
+    1089:   4c 8d af e0 00 00 00    lea    r13,[rdi+0xe0]
+    1090:   4c 8d a7 10 01 00 00    lea    r12,[rdi+0x110]
+    1097:   8b 45 28                mov    eax,DWORD PTR [rbp+0x28]
+    109a:   8d 50 ff                lea    edx,[rax-0x1]
+    109d:   f3 0f 10 05 00 00 00    movss  xmm0,DWORD PTR [rip+0x0]        # 10a5 <_ZN9simulator19setCavityFlowSpeedsEv+0x39>
+    10a4:   00 
+    10a5:   89 de                   mov    esi,ebx
+    10a7:   4c 89 f7                mov    rdi,r14
+    10aa:   e8 00 00 00 00          call   10af <_ZN9simulator19setCavityFlowSpeedsEv+0x43>
+    10af:   8b 45 28                mov    eax,DWORD PTR [rbp+0x28]
+    10b2:   8d 50 ff                lea    edx,[rax-0x1]
+    10b5:   f3 0f 10 05 00 00 00    movss  xmm0,DWORD PTR [rip+0x0]        # 10bd <_ZN9simulator19setCavityFlowSpeedsEv+0x51>
+    10bc:   00 
+    10bd:   89 de                   mov    esi,ebx
+    10bf:   4c 89 ef                mov    rdi,r13
+    10c2:   e8 00 00 00 00          call   10c7 <_ZN9simulator19setCavityFlowSpeedsEv+0x5b>
+    10c7:   8b 45 28                mov    eax,DWORD PTR [rbp+0x28]
+    10ca:   8d 50 ff                lea    edx,[rax-0x1]
+    10cd:   f3 0f 10 05 00 00 00    movss  xmm0,DWORD PTR [rip+0x0]        # 10d5 <_ZN9simulator19setCavityFlowSpeedsEv+0x69>
+    10d4:   00 
+    10d5:   89 de                   mov    esi,ebx
+    10d7:   4c 89 e7                mov    rdi,r12
+    10da:   e8 00 00 00 00          call   10df <_ZN9simulator19setCavityFlowSpeedsEv+0x73>
+    10df:   83 c3 01                add    ebx,0x1
+    10e2:   39 5d 24                cmp    DWORD PTR [rbp+0x24],ebx
+    10e5:   7f b0                   jg     1097 <_ZN9simulator19setCavityFlowSpeedsEv+0x2b>
+    10e7:   5b                      pop    rbx
+    10e8:   5d                      pop    rbp
+    10e9:   41 5c                   pop    r12
+    10eb:   41 5d                   pop    r13
+    10ed:   41 5e                   pop    r14
+    10ef:   f3 c3                   repz ret 
+    10f1:   90                      nop
+
+\end{verbatim} %O1
+
 ~\\
+
+\begin{verbatim} %O2
+0000000000001880 <_ZN9simulator19setCavityFlowSpeedsEv>:
+    1880:   44 8b 5f 24             mov    r11d,DWORD PTR [rdi+0x24]
+    1884:   45 85 db                test   r11d,r11d
+    1887:   7e 72                   jle    18fb <_ZN9simulator19setCavityFlowSpeedsEv+0x7b>
+    1889:   8b 47 28                mov    eax,DWORD PTR [rdi+0x28]
+    188c:   4c 63 97 bc 00 00 00    movsxd r10,DWORD PTR [rdi+0xbc]
+    1893:   31 d2                   xor    edx,edx
+    1895:   4c 63 8f ec 00 00 00    movsxd r9,DWORD PTR [rdi+0xec]
+    189c:   4c 63 87 1c 01 00 00    movsxd r8,DWORD PTR [rdi+0x11c]
+    18a3:   83 e8 01                sub    eax,0x1
+    18a6:   48 98                   cdqe   
+    18a8:   49 c1 e2 02             shl    r10,0x2
+    18ac:   48 c1 e0 02             shl    rax,0x2
+    18b0:   49 c1 e1 02             shl    r9,0x2
+    18b4:   49 c1 e0 02             shl    r8,0x2
+    18b8:   48 89 c6                mov    rsi,rax
+    18bb:   48 89 c1                mov    rcx,rax
+    18be:   48 03 b7 b0 00 00 00    add    rsi,QWORD PTR [rdi+0xb0]
+    18c5:   48 03 8f e0 00 00 00    add    rcx,QWORD PTR [rdi+0xe0]
+    18cc:   48 03 87 10 01 00 00    add    rax,QWORD PTR [rdi+0x110]
+    18d3:   0f 1f 44 00 00          nop    DWORD PTR [rax+rax*1+0x0]
+    18d8:   83 c2 01                add    edx,0x1
+    18db:   c7 06 0a d7 23 3c       mov    DWORD PTR [rsi],0x3c23d70a
+    18e1:   c7 01 0a d7 23 3c       mov    DWORD PTR [rcx],0x3c23d70a
+    18e7:   4c 01 d6                add    rsi,r10
+    18ea:   c7 00 0a d7 23 3c       mov    DWORD PTR [rax],0x3c23d70a
+    18f0:   4c 01 c9                add    rcx,r9
+    18f3:   4c 01 c0                add    rax,r8
+    18f6:   44 39 da                cmp    edx,r11d
+    18f9:   75 dd                   jne    18d8 <_ZN9simulator19setCavityFlowSpeedsEv+0x58>
+    18fb:   f3 c3                   repz ret 
+    18fd:   90                      nop
+    18fe:   66 90                   xchg   ax,ax
+
+\end{verbatim} %O2
+
+Analizaremos ahora las diferencias entre el codigo resultado de compilar con optimizaciónes O1 y el que es generado por la compilación mediante optimizaciónes O2. Para eso tomaremos como objeto de estudio la función setCavityFlowSpeeds. Esta función es interesante ya que consiste de un unico ciclo, dentro del cual presenta un llamado a una función con una pequeña operatoria aritmetica. En particular lo que hace es recorrer el borde de cada matriz, y mediante un llamado a la función set, esta función concretamente multiplica el valor del indice i por el valor maximo que puede tomar la variable j y luego suma el valor de entrada de j a este resultado, abstrayendo asi el mecanismo de indexado en un arreglo plano.  
+~\\
+~\\
+A grandes rasgos la optimización mas notoria se constituye por un calculo previo al ciclado, de los distintos valores numericos necesarios para luego acceder a las posiciónes de memoria necesarias. Este calculo previo no se da en la version O1, sino que estos calculos son realizados dentro del ciclo. Esto es claro ya que si observamos el ciclo que se constituye entre las lineas 1097 y 10e5 (24 instrucciónes) de la versión O1, este consta de una mayor cantida de lineas que el de la versión O2, 18d8, 18f9 (9 instrucciónes). Por el contrario, el codigo entre el inicio de la función y el del ciclo, es mas largo en la versión O2. 
+~\\
+~\\
+%-fcaller-saves parece ser el flag que saca los push de la version de O2.
+
+Además se puede notar la activación de los flags de alineamiento. Por ejemplo, se nota claramente la presencia de -falign-functions, que fuerza el comienzo de las funciónes en posiciones de memoria que sean multiplos de potencias de dos. Esto se logra insertando instrucciones sin efectos. Una forma de hacer esto es insertar líneas luego de un ret, que nunca se llegan a ejecutar. 
+
+~\\
+~\\
+
+Si analizamos las direcciones de memoria donde se encuentran definidas las funciones, su último dígito siempre es cero. A continuación se muestran algunos ejemplos donde se ve el final de una función, con sus respectivas instrucciónes extra y el comienzo de la nueva función alineada.
+
+~\\
+calcVelocities:
+\begin{verbatim}
+    1a99:   41 5d                   pop    r13
+    1a9b:   41 5e                   pop    r14
+    1a9d:   c3                      ret    
+    1a9e:   66 90                   xchg   ax,ax
+
+0000000000001aa0 <_ZN9simulator14calcVelocitiesEii>:
+    1aa0:   8b 8f ec 00 00 00       mov    ecx,DWORD PTR [rdi+0xec]
+    1aa6:   41 57                   push   r15
+    1aa8:   41 56                   push   r14
+\end{verbatim}
+~\\
+setPBorders:
+\begin{verbatim}
+    18fb:   f3 c3                   repz ret 
+    18fd:   90                      nop
+    18fe:   66 90                   xchg   ax,ax
+
+0000000000001900 <_ZN9simulator11setPBordersEv>:
+    1900:   41 56                   push   r14
+    1902:   41 55                   push   r13
+\end{verbatim}
+
+
+se aclara que, la potencia de dos utilizada, es algo que se especifica en el flag cuando es utilizado por el usuario, y que no queda definido cuando este flag es agregado mediante el uso de $-$O2. Aún así el hecho de que el último dígito de todas las funciónes sea cero es un fuerte indicador de la presencia del efecto de esta optimización.
+
+
+
 
 \subsection{Tiempos de compilación y tamañano de código generado}
 
