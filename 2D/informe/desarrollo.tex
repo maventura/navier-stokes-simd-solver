@@ -154,37 +154,14 @@ Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ 
 \end{itemize}
 
 
+~\\
+
+
 \subsection{Optimizaciones del compilador}
 
+\subsubsection{Optimizaciones O1}
 El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de estas optimizaciones es habilitado por el parámetro -O1. Entre ellos se encuentran los siguientes flags:
 
-
- %		-fguess-branch-probability 
-
- %    -fif-conversion2
-	% fif-conversion 
-
-	% -fipa-profile 
-	% -fipa-reference 
-    
- %    -ftree-bit-ccp
- %    -ftree-builtin-call-dce 
- %    -ftree-ccp 
- %    -ftree-ch 
- %    -ftree-copyrename
- %    -ftree-dce 
- %    -ftree-dominator-opts 
- %    -ftree-dse 
- %    -ftree-forwprop
- %    -ftree-fre 
- %    -ftree-phiprop 
- %    -ftree-slsr 
- %    -ftree-sra 
- %    -ftree-pta
- %    -ftree-ter
-
-            
-%-O also turns on -fomit-frame-pointer on machines where doing so      does not interfere with debugging.
 
 \begin{itemize}
 	\item fdce: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es una representación intermedia (RI), similar a assembler. Se utiliza para describir el transferencia de datos de una arquitectura a nivel registro}. Disminuyendo asi la presencia de codigo que no tiene efecto en el resultado.
@@ -194,14 +171,41 @@ El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de esta
 	\item -fdelayed-branch: No tiene efecto en el código pero causa la ejecución a priori en ramas de ejecución para aumentar la performance.
 \end{itemize}
 
+~\\
 
-\colorbox{BurntOrange}{tenemos que hablar de la eliminacion de codigo muerto y de la falta de uso de registros (nop)}
+Tenemos un extracto de código de la función CalcVelocities (donde se realiza el grueso de los cálculos) donde podemos ver el flag de eliminación de código muerto (fdce) en acción. Tenemos un primer pedazo de código donde obtenemos la ejecucion de cpp sin optimización en version assembler y más abajo lo mismo pero con optimización -O1. 
+El formato es línea de código, instrucción en hexadecimal y descripción de la instrucción versión asembler.\\
 
 Muestra de código de cpp 
 \begin{verbatim}
+	<_simulatorCalcVelocities>:
+    1abe:	55                   	push   rbp
+    1abf:	48 89 e5             	mov    rbp,rsp
+    1ac2:	48 83 ec 38          	sub    rsp,0x38
+    1ac6:	48 89 7d e8          	mov    QWORD PTR [rbp-0x18],rdi
+    1aca:	89 75 e4             	mov    DWORD PTR [rbp-0x1c],esi
+    1acd:	89 55 e0             	mov    DWORD PTR [rbp-0x20],edx
+    1ad0:	48 8b 45 e8          	mov    rax,QWORD PTR [rbp-0x18]
+    1ad4:	48 8d 88 e0 00 00 00 	lea    rcx,[rax+0xe0]
+    1adb:	8b 55 e0             	mov    edx,DWORD PTR [rbp-0x20]
+    1ade:	8b 45 e4             	mov    eax,DWORD PTR [rbp-0x1c]
+    1ae1:	89 c6                	mov    esi,eax
+    1ae3:	48 89 cf             	mov    rdi,rcx
+    1ae6:	e8 00 00 00 00       	call   1aeb 
+    1aeb:	f3 0f 11 45 d8       	movss  DWORD PTR [rbp-0x28],xmm0
+    1af0:	48 8b 45 e8          	mov    rax,QWORD PTR [rbp-0x18]
+    1af4:	48 8d 88 e0 00 00 00 	lea    rcx,[rax+0xe0]
+    1afb:	8b 55 e0             	mov    edx,DWORD PTR [rbp-0x20]
+    1afe:	8b 45 e4             	mov    eax,DWORD PTR [rbp-0x1c]
+    1b01:	89 c6                	mov    esi,eax
+    1b03:	48 89 cf             	mov    rdi,rcx
+    1b06:	e8 00 00 00 00       	call   1b0b 
+    .
+    .
+    .
     2400:	f3 0f 10 45 d8       	movss  xmm0,DWORD PTR [rbp-0x28]
     2405:	89 c6                	mov    esi,eax
-    2407:	e8 00 00 00 00       	call   240c <_ZN9simulator14calcVelocitiesEii+0x94e>
+    2407:	e8 00 00 00 00       	call   240c 
     240c:	90                   	nop
     240d:	c9                   	leave  
     240e:	c3                   	ret    
@@ -210,10 +214,44 @@ Muestra de código de cpp
 
 Muestra de código de cpp con 01
 \begin{verbatim}
+    <_simulatorCalcVelocities>:
+    12f0:	41 57                	push   r15
+    12f2:	41 56                	push   r14
+    12f4:	41 55                	push   r13
+    12f6:	41 54                	push   r12
+    12f8:	55                   	push   rbp
+    12f9:	53                   	push   rbx
+    12fa:	48 83 ec 30          	sub    rsp,0x30
+    12fe:	48 89 fb             	mov    rbx,rdi
+    1301:	89 f5                	mov    ebp,esi
+    1303:	41 89 d4             	mov    r12d,edx
+    1306:	4c 8d bf e0 00 00 00 	lea    r15,[rdi+0xe0]
+    130d:	4c 89 ff             	mov    rdi,r15
+    1310:	e8 00 00 00 00       	call   1315
+    1315:	0f 28 e0             	movaps xmm4,xmm0
+    1318:	f3 0f 10 7b 1c       	movss  xmm7,DWORD PTR [rbx+0x1c]
+    131d:	f3 0f 10 5b 14       	movss  xmm3,DWORD PTR [rbx+0x14]
+    1322:	f3 0f 11 7c 24 04    	movss  DWORD PTR [rsp+0x4],xmm7
+    1328:	0f 28 c7             	movaps xmm0,xmm7
+    132b:	f3 0f 11 5c 24 10    	movss  DWORD PTR [rsp+0x10],xmm3
+    1331:	f3 0f 5e c3          	divss  xmm0,xmm3
+    1335:	0f 28 f0             	movaps xmm6,xmm0
+    1338:	f3 0f 11 24 24       	movss  DWORD PTR [rsp],xmm4
+    133d:	f3 0f 59 f4          	mulss  xmm6,xmm4
+    1341:	f3 0f 11 74 24 08    	movss  DWORD PTR [rsp+0x8],xmm6
+    1347:	8d 45 ff             	lea    eax,[rbp-0x1]
+    134a:	44 89 e2             	mov    edx,r12d
+    134d:	89 44 24 14          	mov    DWORD PTR [rsp+0x14],eax
+    1351:	89 c6                	mov    esi,eax
+    1353:	4c 89 ff             	mov    rdi,r15
+    1356:	e8 00 00 00 00       	call   135b
+    135b:	f3 0f 10 24 24       	movss  xmm4,DWORD PTR [rsp]
+
+
     187a:	48 8d bb 30 01 00 00 	lea    rdi,[rbx+0x130]
     1881:	44 89 e2             	mov    edx,r12d
     1884:	89 ee                	mov    esi,ebp
-    1886:	e8 00 00 00 00       	call   188b <_ZN9simulator14calcVelocitiesEii+0x59b>
+    1886:	e8 00 00 00 00       	call   188b 
     188b:	48 83 c4 30          	add    rsp,0x30
     188f:	5b                   	pop    rbx
     1890:	5d                   	pop    rbp
@@ -224,8 +262,24 @@ Muestra de código de cpp con 01
     1899:	c3                   	ret 
 \end{verbatim}
 
+Lo que notamos de los dos extractos de código anterior, la diferencia, es el uso de la instrucción not. Aparentemente no tiene ningun tipo de efecto, con lo cual, en el código optimizado se hace eliminación de este.
 
-\colorbox{BurntOrange}{Este codigo estaria bueno para nombrar como elimina accesos al pedo a memoria, como en el caso de rbp-0x8, lo tiene en un registro, luego lo guarda en la pila para volver a levantarlo. La version optimizada es como la haria un humano, entonces porque la version sin optimizar tiene tanto codigo de mas?}
+En la posición lad0 se carga el registro rax con un valor, no se lo pisa y luego vuelve a cargarlo en laf0. Este tipo de instrucciones donde no es necesario volver a cargar de memoria datos, se arregla con el flag fdse.(accesos al pedo de O0)
+
+Además notamos que, con el uso del parámetro -O1, se hace uso de los registros para el manejo de las variables locales en vez de la pila como sucedía usando el parámetro -O0 (está por defecto).\\
+
+En el código de cpp con flag O1, el manejo de memoria no tiene el comportamiento tonto de volver a cargar algo desde memoria que ya tenía. Sin embargo repite movimientos de datos innecesarios entre registros.
+
+También notamos que no utiliza al máximo los registros, ya que guarda ciertos datos a memoria.
+
+
+Además aqui se puede notar el uso de la pila para las variables en vez de usar registros en la versión no optimizada (referencia a experimento anterior). A diferencia de esto, una vez que activamos la optimización o1 podemos ver que los valores de los registros son guardados dentro de la función para permitir operaciones más rápidas por el resto del llamado.
+
+
+~\\
+
+
+El siguiente extracto, muestra el nivel de mejora en cuanto a manejo de datos de memoria de O1. No asi las cagadas, pero esta bueno ponerlo.
 
 \begin{verbatim}
 000000000000018e <_ZN4mat23setEiif>:
@@ -267,7 +321,7 @@ Muestra de código de cpp con 01
 
 
 
-Compilamos el código de C++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados respecto al código sin flags de optimización:\\
+Compilamos el código de C++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados en medición de tiempo de ejecución respecto al código sin flags de optimización:\\
 
 \begin{center}
 	\begin{tabular}{ccc}  
@@ -286,7 +340,61 @@ Compilamos el código de C++ con el flag de optimización -O1 y se obtuvieron lo
 
 Los tiempos de ejecución se reducen utilizando el flag de optimización.\\
 
-Veamos que, al contrario que el tiempo de ejecución, el tiempo de compilación del código aumenta.\\
+~\\
+
+\subsubsection{Optimizaciones O2}
+
+Las optimizaciones de O2 realizan mejoras de velocidad y tamaño de código tal que las mejoras de una no comprometan a la otra. En comparación con -O1, aumenta aún más el tiempo de compilación y la mejora de performace del código generado.\\
+Algunos de los flags que O2 activa:
+
+\begin{itemize}
+	\item 
+\end{itemize}
+
+-fthread-jumps 
+-falign-functions  -falign-jumps 
+-falign-loops  -falign-labels 
+-fcaller-saves 
+-fcrossjumping 
+-fcse-follow-jumps  -fcse-skip-blocks 
+-fdelete-null-pointer-checks 
+-fdevirtualize -fdevirtualize-speculatively 
+-fexpensive-optimizations 
+-fgcse  -fgcse-lm  
+-fhoist-adjacent-loads 
+-finline-small-functions 
+-findirect-inlining 
+-fipa-cp 
+-fipa-bit-cp 
+-fipa-vrp 
+-fipa-sra 
+-fipa-icf 
+-fisolate-erroneous-paths-dereference 
+-flra-remat 
+-foptimize-sibling-calls 
+-foptimize-strlen 
+-fpartial-inlining 
+-fpeephole2 
+-freorder-blocks-algorithm=stc 
+-freorder-blocks-and-partition -freorder-functions 
+-frerun-cse-after-loop  
+-fsched-interblock  -fsched-spec 
+-fschedule-insns  -fschedule-insns2 
+-fstore-merging 
+-fstrict-aliasing 
+-ftree-builtin-call-dce 
+-ftree-switch-conversion -ftree-tail-merge 
+-fcode-hoisting 
+-ftree-pre 
+-ftree-vrp 
+-fipa-ra
+Please note the warning under -fgcse about invoking -O2 on programs that use computed gotos.
+
+
+
+~\\
+
+\subsection{Tiempos de compilación y tamañano de código generado}
 
 \begin{center}
 	\begin{tabular}{cc}  
@@ -300,12 +408,11 @@ Veamos que, al contrario que el tiempo de ejecución, el tiempo de compilación 
 	\end{tabular}\\
 \end{center}
 
-Utilizamos nuevamente la herramienta objdump. El código en asembler obtenido mediante la herramienta era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag 341 líneas).\\
 
-Además notamos que, con el uso del parámetro -O1, se hace uso de los registros para el manejo de las variables locales en vez de la pila como sucedía usando el parámetro -O0 (está por defecto).\\
+Utilizamos nuevamente la herramienta objdump. El código en asembler obtenido mediante la herramienta era reducido en cuanto a cantidad de líneas (por ejemplo, la función calcVelocities tenia 558 líneas en assembler sin flags de optimización y luego con el flag 341 líneas).
 
-Por otro lado, está el análisis del uso de memoria.
-TODO: Corri valgrind pero todavia no terminé de analizar los resultados, es medio dolor de cabeza.
+~\\
+
 
 
 \subsection{Comparación entre secuencial, vectorial y multicore}
@@ -313,30 +420,8 @@ Ya analizado el tipo de mejoras que son implementadas por G++ al utilizar -O1, s
 
 Para cada mejora se experimentó con distintos tamaños del sistema simulado, yendo desde 1x1$m^2$ hasta 20x20$m^2$. Además, para cada tamaño, se realizaron 100 repticiónes, y se tomo la media y varianza de las mismas, con el objetivo de eliminar el error de medición introducido por la falta de control del tiempo otorgado a las distintas tareas del sistema operativo por parte del scheduler.
 
+
+
 \subsection{CPU vs. memoria}
 
-El objetivo de este experimento es conocer el factor que limita la performance en el código de asembler; la intensidad del cómputo o la cantidad de accesos a memoria.\\
-El experimento sugiere agregar ciclos bobos en el código de asembler y ver si el tiempo de uso de la cpu tiene picos.
-
-%real	0m9.487s 	user	0m9.480s  		sys	 	0m0.000s  	size 8x8
-%real	0m5.274s	user	0m5.268s		sys		0m0.000s	size 6x6  con ciclos en calculo de u2
-
-
-%real	0m6.237s 	user	0m6.232s		sys	0m0.004s		size 6x6 con ciclo bobo de 10000
-%real	7m29.152s	user	7m29.156s		sys	0m0.000s 		size 6x5 con ciclo de calculo 10000
-
-
-
-
-Si los picos de tiempo se hacen ver, quiere decir que el procesamiento es nuestro cuello de botella.
-
-En caso contrario hay que analizar el uso de la memoria.
-En este caso, yo creo que lo más costoso es el acceso a memoria, pero no lo verifique todavía.
-
-Realicé una medicion con valgrind-massif, que mide el uso del heap de memoria y tira varios detalles.
-
-El pico más grande sucede en el tiempo 109995366147 (?) donde el uso total es de 6,380,856B - el uso posta es de 6,380,676B y el uso auxiliar es de 180B.
-
-El pico se realiza cuando se llama a mat2::inic(float)
-
-TODO: AVERIGUAR QUE ESTA PASANDO CON ESTE LLAMADO RARO. PINTA QUE ES SOLO CUANDO SE CREA LAS MATRICES, EL PROBLEMA ES QUE NO SUCEDE EN CADA ITERACION O AL PPIO DEL PROGRAMA, QUE ES DONDE SE ESPERARIA QUE SE CREEN TODAS LAS MATRICES, SINO AL FINAL DE LOS SNAPSHOTS. QUIZA INTERPRETE MAL LA SALIDA DE MASSIF, YA QUE EL HISTOGRAMA MUESTRA UN PICO SUPER GRANDE AL PPIO
+%con uderclock de la cpu o la ram

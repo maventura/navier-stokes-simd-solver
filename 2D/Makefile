@@ -12,22 +12,17 @@ cpp: main.cpp mat2.h io.h
 	g++ -DUSE_CPP main.cpp -std=c++11 -c
 	g++ -o main_cpp main.o
 
-
-
 cpp_o1: main.cpp mat2.h io.h
 	g++ -DUSE_CPP main.cpp -O1 -std=c++11 -c
 	g++ -o main_cpp_o1 main.o
-
 
 cpp_o2: main.cpp mat2.h io.h
 	g++ -DUSE_CPP main.cpp -O2 -std=c++11 -c
 	g++ -o main_cpp_o2 main.o
 
-
 cpp_o3: main.cpp mat2.h io.h
 	g++ -DUSE_CPP main.cpp -O3 -std=c++11 -c
 	g++ -o main_cpp_o3 main.o
-
 
 cpp_ofast: main.cpp mat2.h io.h
 	g++ -DUSE_CPP main.cpp -Ofast -std=c++11 -c
@@ -44,6 +39,21 @@ cpp_omp:  main.cpp mat2.h io.h
 icc: main.cpp mat2.h io.h
 	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -c
 	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc main.o
+
+objdump: main.o
+	objdump -D -M intel -S main.o>dumpFile.txt
+
+help:
+	@echo 'Opciones para el Makefile:'
+	@echo ' Make cpp, para ...'
+	@echo ' Make cpp_o1, para ...'
+	@echo ' Make cpp_o2, para ...'
+	@echo ' Make cpp_o3, para ...'
+	@echo ' Make cpp_ofast, para ...'
+	@echo ' Make cpp_omp, para ...'
+	@echo ' Make asm, para ...'
+	@echo ' Make asm_omp, para ...'
+	@echo ' Make objdump, para generar código assembly de la version cpp compilada.'
 
 clean:
 	rm -f main_asm
