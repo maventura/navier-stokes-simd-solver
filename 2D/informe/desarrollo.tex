@@ -158,17 +158,12 @@ Usando la herramienta objdump sobre los archivos objeto (.o) del código de c++ 
 
 El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de estas optimizaciones es habilitado por el parámetro -O1. Entre ellos se encuentran los siguientes flags:
 
- %    -fauto-inc-dec 
- %    -fcompare-elim 
- %    -fcprop-registers 
- %    -fdefer-pop
- %    -fdelayed-branch 
- %    -fdse -fguess-branch-probability 
+
+ %		-fguess-branch-probability 
 
  %    -fif-conversion2
 	% fif-conversion 
 
-	% -fipa-pure-const 
 	% -fipa-profile 
 	% -fipa-reference 
     
@@ -196,10 +191,81 @@ El compilador de gcc posee una gran cantidad de optimizaciones. Un grupo de esta
 	\item fdse: Realiza eliminación de guardado muerto en RTL, valores que son escritos a memoria, pero que no vuelven a leerse.
 	\item fsplit-wide-types: Cuando se usa un tipo de datos que ocupa múltiples registros, como por ejemplo \"long long\" en un sistema de 32-bit, separa el dato y lo guarda de manera independiente. Esto, normalmente, genera mejor código para estos tipos de datos, pero hace más dificil el debuggeo.
 	\item -fmerge-constants: Intenta unir constantes identicas (cadenas o flotantes) a travez de unidades de compilación. Esta opción es la por defecto para la compilacion optimizada si el ensamblador y linker la soportan.
+	\item -fdelayed-branch: No tiene efecto en el código pero causa la ejecución a priori en ramas de ejecución para aumentar la performance.
 \end{itemize}
 
 
-\colorbox{BurntOrange}{SEGUIR VIENDO EL RESTO DE LOS FLAGS, QUIZA HAYA ALGUNOS QUE JUSTIFIQUEN LOS RESULTADOS Y ESTARIA BUENO PONERLO.}
+\colorbox{BurntOrange}{tenemos que hablar de la eliminacion de codigo muerto y de la falta de uso de registros (nop)}
+
+Muestra de código de cpp 
+\begin{verbatim}
+    2400:	f3 0f 10 45 d8       	movss  xmm0,DWORD PTR [rbp-0x28]
+    2405:	89 c6                	mov    esi,eax
+    2407:	e8 00 00 00 00       	call   240c <_ZN9simulator14calcVelocitiesEii+0x94e>
+    240c:	90                   	nop
+    240d:	c9                   	leave  
+    240e:	c3                   	ret    
+    240f:	90                   	nop
+\end{verbatim}
+
+Muestra de código de cpp con 01
+\begin{verbatim}
+    187a:	48 8d bb 30 01 00 00 	lea    rdi,[rbx+0x130]
+    1881:	44 89 e2             	mov    edx,r12d
+    1884:	89 ee                	mov    esi,ebp
+    1886:	e8 00 00 00 00       	call   188b <_ZN9simulator14calcVelocitiesEii+0x59b>
+    188b:	48 83 c4 30          	add    rsp,0x30
+    188f:	5b                   	pop    rbx
+    1890:	5d                   	pop    rbp
+    1891:	41 5c                	pop    r12
+    1893:	41 5d                	pop    r13
+    1895:	41 5e                	pop    r14
+    1897:	41 5f                	pop    r15
+    1899:	c3                   	ret 
+\end{verbatim}
+
+
+\colorbox{BurntOrange}{Este codigo estaria bueno para nombrar como elimina accesos al pedo a memoria, como en el caso de rbp-0x8, lo tiene en un registro, luego lo guarda en la pila para volver a levantarlo. La version optimizada es como la haria un humano, entonces porque la version sin optimizar tiene tanto codigo de mas?}
+
+\begin{verbatim}
+000000000000018e <_ZN4mat23setEiif>:
+     18e:	55                   	push   rbp
+     18f:	48 89 e5             	mov    rbp,rsp
+     192:	48 89 7d f8          	mov    QWORD PTR [rbp-0x8],rdi
+     196:	89 75 f4             	mov    DWORD PTR [rbp-0xc],esi
+     199:	89 55 f0             	mov    DWORD PTR [rbp-0x10],edx
+     19c:	f3 0f 11 45 ec       	movss  DWORD PTR [rbp-0x14],xmm0
+     1a1:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+     1a5:	48 8b 10             	mov    rdx,QWORD PTR [rax]
+     1a8:	48 8b 45 f8          	mov    rax,QWORD PTR [rbp-0x8]
+     1ac:	8b 40 0c             	mov    eax,DWORD PTR [rax+0xc]
+     1af:	0f af 45 f4          	imul   eax,DWORD PTR [rbp-0xc]
+     1b3:	89 c1                	mov    ecx,eax
+     1b5:	8b 45 f0             	mov    eax,DWORD PTR [rbp-0x10]
+     1b8:	01 c8                	add    eax,ecx
+     1ba:	48 98                	cdqe   
+     1bc:	48 c1 e0 02          	shl    rax,0x2
+     1c0:	48 01 d0             	add    rax,rdx
+     1c3:	f3 0f 10 45 ec       	movss  xmm0,DWORD PTR [rbp-0x14]
+     1c8:	f3 0f 11 00          	movss  DWORD PTR [rax],xmm0
+     1cc:	90                   	nop
+     1cd:	5d                   	pop    rbp
+     1ce:	c3                   	ret    
+     1cf:	90                   	nop
+\end{verbatim}
+
+\begin{verbatim}
+00000000000000d4 <_ZN4mat23setEiif>:
+      d4:	0f af 77 0c          	imul   esi,DWORD PTR [rdi+0xc]
+      d8:	01 f2                	add    edx,esi
+      da:	48 63 d2             	movsxd rdx,edx
+      dd:	48 8b 07             	mov    rax,QWORD PTR [rdi]
+      e0:	f3 0f 11 04 90       	movss  DWORD PTR [rax+rdx*4],xmm0
+      e5:	c3                   	ret  
+\end{verbatim}
+
+
+
 
 Compilamos el código de C++ con el flag de optimización -O1 y se obtuvieron los siguientes resultados respecto al código sin flags de optimización:\\
 
