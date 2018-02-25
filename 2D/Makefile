@@ -45,15 +45,14 @@ objdump: main.o
 
 help:
 	@echo 'Opciones para el Makefile:'
-	@echo ' Make cpp, para ...'
-	@echo ' Make cpp_o1, para ...'
-	@echo ' Make cpp_o2, para ...'
-	@echo ' Make cpp_o3, para ...'
-	@echo ' Make cpp_ofast, para ...'
-	@echo ' Make cpp_omp, para ...'
-	@echo ' Make asm, para ...'
-	@echo ' Make asm_omp, para ...'
-	@echo ' Make objdump, para generar código assembly de la version cpp compilada.'
+	@echo ' Make cpp, para compilación normal con g++'
+	@echo ' Make cpp_o1, para compilación con optimizaciones -O1'
+	@echo ' Make cpp_o2, para compilación con optimizaciones -O2'
+	@echo ' Make cpp_o3, para compilación con optimizaciones -O3'
+	@echo ' Make cpp_ofast, para compilación con optimizaciones -Ofast'
+	@echo ' Make cpp_omp, para utilizar soporte de OpenMP'
+	@echo ' Make asm, para compilar la versión assembler'
+	@echo ' Make objdump, para generar código assembler de la versión cpp compilada.'
 
 clean:
 	rm -f main_asm
