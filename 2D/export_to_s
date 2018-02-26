@@ -1,0 +1,1 @@
+g++ -std=c++11 -DUSE_CPP main.cpp  -S -masm=intel -o main.s
