@@ -40,6 +40,23 @@ icc: main.cpp mat2.h io.h
 	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -c
 	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc main.o
 
+icc_o1: main.cpp mat2.h io.h
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -o1 -c
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc_o1 main.o
+
+icc_o2: main.cpp mat2.h io.h
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -o2 -c
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc_o2 main.o
+
+icc_o3: main.cpp mat2.h io.h
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -o3 -c
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc_o3 main.o
+
+icc_ofast: main.cpp mat2.h io.h
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -DUSE_CPP -DUSE_ICC main.cpp -std=c++11 -o3 -c
+	/opt/intel/compilers_and_libraries/linux/bin/intel64/icpc -o main_icc_ofast main.o
+
+
 objdump: main.o
 	objdump -D -M intel -S main.o>dumpFile.txt
 
