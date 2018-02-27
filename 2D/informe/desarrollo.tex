@@ -1,4 +1,4 @@
-\section{Desarrolo}%Describe cada una de las funciones que implementaron, respondiendo en profundidad cada una de las preguntas de los Experimentos. Para la descripcion de cada funcion deberan decir como opera una iteracion del ciclo de la funcion. Es decir, como mueven los datos a los registros, como los reordenan para procesarlos, las operaciones que se aplican a los datos, etc. Para esto pueden utilizar pseudocodigo, diagramas (mostrando graficamente el contenido de los registros XMM) o cualquier otro recurso que le sea util para describir la adaptacion del algoritmo al procesamiento simultaneo SIMD. No se debera incluir el codigo assembler de las funciones (aunque se pueden incluir extractos en donde haga falta). Las preguntas en cada ejercicio son una guıa para la confeccion de los resultados obtenidos. Al responder estas preguntas, se deberan analizar y comparar las implementaciones de cada funciones en su version C y ASM, mostrando los resultados obtenidos a traves de tablas y graficos. Tambien se debera comentar acerca de los resultados obtenidos. En el caso de que sucediera que la version en C anduviese mas rapidamente que su version ASM, justificar fuertemente a que se debe esto.
+\section{Desarrolo}%Describe cada una de las funciones que implementaron, respondiendo en profundidad cada una de las preguntas de los Experimentos. Para la descripcion de cada funcion deberan decir como opera una iteracion del ciclo de la funcion. Es decir, como mueven los datos a los registros, como los reordenan para procesarlos, las operaciones que se aplican a los datos, etc. Para esto pueden utilizar pseudocodigo, diagramas (mostrando graficamente el contenido de los registros XMM) o cualquier otro recurso que le sea util para describir la adaptacion del algoritmo al procesamiento simultaneo SIMD. No se debera incluir el codigo assembler de las funciones (aunque se pueden incluir extractos en donde haga falta). Las preguntas en cada ejercicio son una guıa para la confeccion de los resultados obtenidos. Al responder estas preguntas, se deberan analizar y comparar las implementaciones de cada funciones en su version C y ASM, mostrando los resultados obtenidos a traves de tablas y graficos. Tambien se debera comentar acerca de los resultados obtenidos. En el caso de que sucediera que la version en C anduviese más rapidamente que su version ASM, justificar fuertemente a que se debe esto.
 
 
 \subsection{Discretización}
@@ -108,7 +108,7 @@ $\frac{p_{i+1,j}^{n}-2p_{i,j}^{n}+p_{i-1,j}^{n}}{\Delta x^2}+\frac{p_{i,j+1}^{n}
 Aquí en la ultima ecuación podemos ver que no se reemplazó directamente cada operador mediante las ecuaciones de discretización, sino que se agregó un termino temporal, sin que hubiera en principio información sobre el tiempo en la ecuación de la presión. Este cambio se hace con el objetivo de terminar de acoplar la ecuación de la presión con las ecuaciones de velocidad. La derivación de esta solución no se presentará en este trabajo.
 ~\\
 
-Cabe aclarar que al discretizar, se puede modelar el sistema mediante un método implícito o explicito. Un método implícito, o parcialmente implícito, incluiría una ponderación entre los valores de las variables en la iteración n, y la iteración n+1. En este trabajo utilizaremos un método explicito, ya que el sistema de ecuaciones determinado por un método explicito es lineal, y resulta en relaciones donde un elemento en la iteración n+1 depende de otros en la iteración n, pudiendo entonces realizarse los reemplazos en las matrices que representan el sistema de forma directa, y resultando así en una implementación mas sencilla. Un método implícito da como resultado un sistema no lineal, en el cual hay que hacer uso de algún método de resolución de sistemas no lineales, como punto fijo, lo cual aumenta la complejidad de la implementación.
+Cabe aclarar que al discretizar, se puede modelar el sistema mediante un método implícito o explicito. Un método implícito, o parcialmente implícito, incluiría una ponderación entre los valores de las variables en la iteración n, y la iteración n+1. En este trabajo utilizaremos un método explicito, ya que el sistema de ecuaciones determinado por un método explicito es lineal, y resulta en relaciones donde un elemento en la iteración n+1 depende de otros en la iteración n, pudiendo entonces realizarse los reemplazos en las matrices que representan el sistema de forma directa, y resultando así en una implementación más sencilla. Un método implícito da como resultado un sistema no lineal, en el cual hay que hacer uso de algún método de resolución de sistemas no lineales, como punto fijo, lo cual aumenta la complejidad de la implementación.
 
 \end{minipage}
 
@@ -264,7 +264,7 @@ Muestra de código de cpp con 01
 
 Lo que notamos de los dos extractos de código anterior, la diferencia, es el uso de la instrucción not. Aparentemente no tiene ningun tipo de efecto, con lo cual, en el código optimizado se hace eliminación de este.
 
-En la posición lad0 se carga el registro rax con un valor, no se lo pisa y luego vuelve a cargarlo en laf0. Este tipo de instrucciones donde no es necesario volver a cargar de memoria datos, se arregla con el flag fdse.(accesos al pedo de O0)
+En la posición lad0 se carga el registro rax con un valor, no se lo pisa y luego vuelve a cargarlo en laf0. Este tipo de instrucciones donde no es necesario volver a cargar de memoria datos, se arregla con el flag fdse.(accesos al pedo de O0).
 
 Además notamos que, con el uso del parámetro -O1, se hace uso de los registros para el manejo de las variables locales en vez de la pila como sucedía usando el parámetro -O0 (está por defecto).\\
 
@@ -348,46 +348,54 @@ Las optimizaciones de O2 realizan mejoras de velocidad y tamaño de código tal 
 Algunos de los flags que O2 activa:
 
 \begin{itemize}
-	\item 
+	\item fthread-jumps 
+	\item falign-functions  
+	\item falign-jumps 
+	\item falign-loops  
+	\item falign-labels 
+	\item fcaller-saves 
+	\item fcrossjumping 
+	\item fcse-follow-jumps  
+	\item fcse-skip-blocks 
+	\item fdelete-null-pointer-checks 
+	\item fdevirtualize 
+	\item fdevirtualize-speculatively 
+	\item fexpensive-optimizations 
+	\item fgcse  
+	\item fgcse-lm  
+	\item fhoist-adjacent-loads 
+	\item finline-small-functions 
+	\item findirect-inlining 
+	\item fipa-cp 
+	\item fipa-bit-cp 
+	\item fipa-vrp 
+	\item fipa-sra 
+	\item fipa-icf 
+	\item fisolate-erroneous-paths-dereference 
+	\item flra-remat 
+	\item foptimize-sibling-calls 
+	\item foptimize-strlen 
+	\item fpartial-inlining 
+	\item fpeephole2 
+	\item freorder-blocks-algorithm=stc 
+	\item freorder-blocks-and-partition 
+	\item freorder-functions 
+	\item frerun-cse-after-loop  
+	\item fsched-interblock  
+	\item fsched-spec 
+	\item fschedule-insns  
+	\item fschedule-insns2 
+	\item fstore-merging 
+	\item fstrict-aliasing 
+	\item ftree-builtin-call-dce 
+	\item ftree-switch-conversion 
+	\item ftree-tail-merge 
+	\item fcode-hoisting 
+	\item ftree-pre 
+	\item ftree-vrp 
+	\item fipa-ra
 \end{itemize}
 
--fthread-jumps 
--falign-functions  -falign-jumps 
--falign-loops  -falign-labels 
--fcaller-saves 
--fcrossjumping 
--fcse-follow-jumps  -fcse-skip-blocks 
--fdelete-null-pointer-checks 
--fdevirtualize -fdevirtualize-speculatively 
--fexpensive-optimizations 
--fgcse  -fgcse-lm  
--fhoist-adjacent-loads 
--finline-small-functions 
--findirect-inlining 
--fipa-cp 
--fipa-bit-cp 
--fipa-vrp 
--fipa-sra 
--fipa-icf 
--fisolate-erroneous-paths-dereference 
--flra-remat 
--foptimize-sibling-calls 
--foptimize-strlen 
--fpartial-inlining 
--fpeephole2 
--freorder-blocks-algorithm=stc 
--freorder-blocks-and-partition -freorder-functions 
--frerun-cse-after-loop  
--fsched-interblock  -fsched-spec 
--fschedule-insns  -fschedule-insns2 
--fstore-merging 
--fstrict-aliasing 
--ftree-builtin-call-dce 
--ftree-switch-conversion -ftree-tail-merge 
--fcode-hoisting 
--ftree-pre 
--ftree-vrp 
--fipa-ra
 Please note the warning under -fgcse about invoking -O2 on programs that use computed gotos.
 
 
@@ -483,10 +491,10 @@ Please note the warning under -fgcse about invoking -O2 on programs that use com
 Analizaremos ahora las diferencias entre el codigo resultado de compilar con optimizaciónes O1 y el que es generado por la compilación mediante optimizaciónes O2. Para eso tomaremos como objeto de estudio la función setCavityFlowSpeeds. Esta función es interesante ya que consiste de un unico ciclo, dentro del cual presenta un llamado a una función con una pequeña operatoria aritmetica. En particular lo que hace es recorrer el borde de cada matriz, y mediante un llamado a la función set, esta función concretamente multiplica el valor del indice i por el valor maximo que puede tomar la variable j y luego suma el valor de entrada de j a este resultado, abstrayendo asi el mecanismo de indexado en un arreglo plano.  
 ~\\
 ~\\
-A grandes rasgos la optimización mas notoria se constituye por un calculo previo al ciclado, de los distintos valores numericos necesarios para luego acceder a las posiciónes de memoria necesarias. Este calculo previo no se da en la version O1, sino que estos calculos son realizados dentro del ciclo. Esto es claro ya que si observamos el ciclo que se constituye entre las lineas 1097 y 10e5 (24 instrucciónes) de la versión O1, este consta de una mayor cantida de lineas que el de la versión O2, 18d8, 18f9 (9 instrucciónes). Por el contrario, el codigo entre el inicio de la función y el del ciclo, es mas largo en la versión O2. 
+A grandes rasgos la optimización más notoria se constituye por un calculo previo al ciclado, de los distintos valores numéricos necesarios para luego acceder a las posiciónes de memoria necesarias. Este cálculo previo no se da en la versión O1, sino que estos cálculos son realizados dentro del ciclo. Esto es claro ya que si observamos el ciclo que se constituye entre las lineas 1097 y 10e5 (24 instrucciónes) de la versión O1, este consta de una mayor cantidad de líneas que el de la versión O2, 18d8, 18f9 (9 instrucciónes). Por el contrario, el código entre el inicio de la función y el del ciclo, es más largo en la versión O2. 
 ~\\
 ~\\
-%-fcaller-saves parece ser el flag que saca los push de la version de O2.
+
 
 Además se puede notar la activación de los flags de alineamiento. Por ejemplo, se nota claramente la presencia de -falign-functions, que fuerza el comienzo de las funciónes en posiciones de memoria que sean multiplos de potencias de dos. Esto se logra insertando instrucciones sin efectos. Una forma de hacer esto es insertar líneas luego de un ret, que nunca se llegan a ejecutar. 
 
@@ -521,10 +529,19 @@ setPBorders:
 \end{verbatim}
 
 
-se aclara que, la potencia de dos utilizada, es algo que se especifica en el flag cuando es utilizado por el usuario, y que no queda definido cuando este flag es agregado mediante el uso de $-$O2. Aún así el hecho de que el último dígito de todas las funciónes sea cero es un fuerte indicador de la presencia del efecto de esta optimización.
+se aclara que, la potencia de dos utilizada, es algo que se especifica en el flag cuando es utilizado por el usuario, y que no queda definida cuando este flag es agregado mediante el uso de $-$O2. Aún así el hecho de que el último dígito de todas las funciónes sea cero es un fuerte indicador de la presencia del efecto de esta optimización.\\
 
 
 
+Comparamos dos versiones distintas del código de cpp con optimizaciones de O1 (ambas) pero a una de ellas le agregamos el flag finline-small-functions, propia de las optmizaciones de O2. La finalidad de este experimento, es descubrir por qué razón hay funciones que hacen llamados a lineas consecutivas de su propio código.\\
+Dichas llamadas en la versión con el flag finline-small-functions fueron reemplazadas por el código de las funciones utilizadas. Este es el caso de CavityFlowSpeeds, que hace uso de la función set. El código de muestra se puede ver aqui. (esta arriba. organizar)
+
+Al no encontrar una explicación clara sobre este comportamiento en el código, decidimos utilizar el siguiente comando $g++ -std=c++11 -DUSE_CPP main.cpp  -S -masm=intel -o main.s$ para generar la versión de assembler del código de cpp. Descubrimos que los raros llamados recursivos eran generados por objdump.
+
+
+
+todo: seguir redactando la experiencia esta
+y decimos que generamos con g++
 
 \subsection{Tiempos de compilación y tamañano de código generado}
 
