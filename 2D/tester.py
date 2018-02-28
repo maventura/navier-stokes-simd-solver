@@ -5,10 +5,10 @@ import sys
 
 param_file_name = "parameters.txt"
 min_side_size = 1
-max_side_size = 2
+max_side_size = 20
 min_time = 2
 max_time = 2
-repetitions = 1
+repetitions = 100
 
 #all_versions:
 #'asm','asm_o1','asm_o2','asm_o3','asm_ofast', 
@@ -17,7 +17,8 @@ repetitions = 1
 #'icc', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast'
 # 'cpp_omp_o1', 'cpp_omp_o2', 'cpp_omp_o3', 'cpp_omp_ofast'
 
-version_list = ['asm_o1','asm_o2','asm_o3', 'asm_ofast', 'cpp_omp_o1', 'cpp_omp_o2', 'cpp_omp_o3', 'cpp_omp_ofast', 'icc_ofast', 'icc_o1','icc_o2','icc_o3']
+version_list = ['cpp_omp_ofast', 'icc_ofast', 'icc_o1','icc_o2','icc_o3']
+#Falta desde cpp_omp_ofast. Revisar los que dieron mal.
 spacer = '   '
 
 
