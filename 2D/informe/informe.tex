@@ -1,18 +1,18 @@
 \documentclass[11pt, a4paper,english,spanish]{amsart}
-     \parindent = 10 pt
-        \parskip=1.5pt 
-        \usepackage[width=15.5cm, left=3cm, top=2.5cm, height= 24.5cm]{geometry}
-
-\usepackage[utf8]{inputenc} % para poder usar tildes en archivos UTF-8
-\usepackage[spanish]{babel} % para que comandos como \today den el resultado en castellano
-%\usepackage{a4wide} % márgenes un poco más anchos que lo usual //este paquete esta deprecado, usar geometry
-\usepackage[]{caratula}
+    \parindent = 10 pt
+    \parskip=1.5pt 
+\usepackage[width=15.5cm, left=3cm, top=2.5cm, height= 24.5cm]{geometry}
+\usepackage[utf8]{inputenc} 	% para poder usar tildes en archivos UTF-8
+\usepackage[spanish]{babel} 	% para que comandos como \today den el resultado en castellano
+\usepackage{caratula}
 \usepackage[usenames, dvipsnames]{color}
+	\definecolor{light-gray}{gray}{0.95}
 \usepackage{booktabs}
-
+\usepackage{listings}
+	\lstset{language={[x86masm]Assembler},frame=single, backgroundcolor=\color{light-gray},tabsize=2,}
 \usepackage{palatino, eulervm}
-\linespread{1.05}        % Palatino needs more leading
-\usepackage[section]{placeins} %floatings(as figures) remain in their section
+	\linespread{1.05}        	% Palatino needs more leading
+\usepackage[section]{placeins} 	%floatings(as figures) remain in their section
 
 % %% Useful packages
 % \usepackage{amsmath}
@@ -24,25 +24,22 @@
 
 \titulo{Trabajo Práctico Final}
 \subtitulo{Modelo Navier Stokes 2D}
-
 \fecha{\today}
-
 \materia{Organización del Computador II}
-
 \integrante{Ventura, Martín Alejandro}{249/11}{venturamartin90@gmail.com}
 \integrante{Muiño, María Laura}{399/11}{mmuino@dc.uba.com}
-
 \maketitle
 
-%contenido 
 \input{intro.tex}
 \newpage
 
 \input{desarrollo.tex}
 \newpage
 
-\input{conclusion.tex}
+\input{experimentacion.tex}
 \newpage
 
+\input{conclusion.tex}
+\newpage
 
 \end{document}
