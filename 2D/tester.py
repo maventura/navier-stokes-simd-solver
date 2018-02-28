@@ -9,8 +9,16 @@ max_side_size = 20
 min_time = 2
 max_time = 2
 repetitions = 100
-all_versions = ['asm', 'cpp','cpp_o1','cpp_o2','cpp_o3','cpp_ofast','cpp', 'asm_omp', 'cpp_omp', 'icc', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast']
-version_list = ['cpp_o1','cpp_o2','cpp_o3', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast']
+
+#all_versions:
+#'asm','asm_o1','asm_o2','asm_o3','asm_ofast', 
+#'cpp','cpp_o1','cpp_o2','cpp_o3','cpp_ofast',
+#'cpp', 'asm_omp', 'cpp_omp',
+#'icc', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast'
+# 'cpp_omp_o1', 'cpp_omp_o2', 'cpp_omp_o3', 'cpp_omp_ofast'
+
+version_list = ['cpp_omp_ofast', 'icc_ofast', 'icc_o1','icc_o2','icc_o3']
+#Falta desde cpp_omp_ofast. Revisar los que dieron mal.
 spacer = '   '
 
 
