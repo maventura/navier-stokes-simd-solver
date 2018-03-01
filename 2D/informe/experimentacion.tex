@@ -31,11 +31,9 @@ El compilador de GCC posee una gran cantidad de optimizaciones. Un grupo de esta
 	\item \textit{fdelayed-branch}: No tiene efecto en el código pero causa la ejecución a priori en ramas de ejecución para aumentar la performance.
 \end{itemize}
 
-~\\
-
 Analizamos los códigos generados por G++ con y sin flag de optimización -O1. Extrajimos la función \textit{set}, que implementa el seteo de un valor a la posición $(i, j)$ de una matriz y lo primero que notamos fue la diferencia en cantidad de las líneas de código.~\\
 ~\\
-\center{\large{Función set de mat2}}
+{\center\large{Función set de mat2}}
 \begin{lstlisting}[]
   18e: 55                    push   rbp
   18f: 48 89 e5              mov    rbp,rsp
@@ -66,9 +64,9 @@ La versión sin opitmizar, toma los parámetros cargados en registros, los guard
 En cambio, la versión del código de C++ mediante la optimización, utiliza los registros para el manejo de variables locales y accede solo las veces necesarias a memoria. Este es un claro ejemplo de los efectos de los flags \textit{fdse} y \textit{fdce}.
 
 
-~\\~\\
 ~\\
-\center{\large{Función set de mat2 con optimización -O1}}
+~\\
+{\center\large{Función set de mat2 con optimización -O1}}
 \begin{lstlisting}[]
   d4: 0f af 77 0c           imul   esi,DWORD PTR [rdi+0xc]
   d8: 01 f2                 add    edx,esi
@@ -87,7 +85,7 @@ A pesar de las mejoras que notamos con el uso de la optimización, encontramos m
 
 ~\\
 ~\\
-\center{\large{Función calcVelocities}}
+{\center\large{Función calcVelocities}}
 \begin{lstlisting}[]
   1abe:	55                   	push   rbp
   1abf:	48 89 e5             	mov    rbp,rsp
@@ -122,12 +120,13 @@ A pesar de las mejoras que notamos con el uso de la optimización, encontramos m
 
 La diferencia que notamos de los dos extractos de código de \textit{calcVelocities}, es el uso de la instrucción \textbf{nop}. El código de operación de \textbf{nop} corresponde a ``no operation'', no tiene ningun tipo de efecto, con lo cual, en el código optimizado se hace eliminación de este.
 En la instrucción lad0 se carga el registro rax con un valor, no se lo pisa y luego vuelve a cargarlo en laf0. Este tipo de instrucciones donde no es necesario volver a cargar de memoria datos, vuelve a ser eliminado con el uso del flag fdse.
-
+~\\
+~\\
 Volvemos a notar que en el código de C++ con flag -O1, el manejo de memoria no tiene el comportamiento de volver a cargar algo desde memoria que previamente había sido cargado y guardado en registros. Sin embargo, y apesar de las mejoras, vemos que aun repite movimientos de datos innecesarios entre registros.
 Observando más detalladamente, el código con la mejora, no utiliza al máximo los registros, ya que guarda ciertos datos a memoria.
 ~\\
 ~\\
-\center{\large{Función calcVelocities con optimización -O1}}
+{\center\large{Función calcVelocities con optimización -O1}}
 \begin{lstlisting}[]
   12f0:	41 57                	push   r15
   ...     ...                 ...    ...
@@ -266,12 +265,13 @@ Las optimizaciones de -O2 realizan mejoras de velocidad y tamaño de código tal
 	\item \textit{fipa-ra}:
 \end{itemize}
 
-Notamos varios flags que aportan a la refactorización de código, que en consecuencia, ayudan a reducir el tamaño de código e incluso, con ayuda de los precálculos en tiempo de compilación, reducen tiempo de ejecución. 
-
+Notamos varios flags que aportan a la refactorización de código, que en consecuencia, ayudan a reducir el tamaño de código e incluso, con ayuda de los precálculos en tiempo de compilación, reducen tiempo de ejecución.
+~\\
 Con lo cual, las instrucciones
 ~\\
 ~\\
-\center{\large{Función setCavityFlowSpeeds con optimización -O1}}
+
+{\center\large{Función setCavityFlowSpeeds con optimización -O1}}
 \begin{lstlisting}[]
   106c:   83 7f 24 00             cmp    DWORD PTR [rdi+0x24],0x0
   1070:   7e 7d                   jle    10ef
@@ -318,9 +318,9 @@ Con lo cual, las instrucciones
   10f1:   90                      nop
 \end{lstlisting}
 
-~\\~\\
 ~\\
-\center{\large{Función setCavityFlowSpeeds con optimización -O2}}
+~\\
+{\center\large{Función setCavityFlowSpeeds con optimización -O2}}
 \begin{lstlisting}[]
   1880:   44 8b 5f 24             mov    r11d,DWORD PTR [rdi+0x24]
   1884:   45 85 db                test   r11d,r11d
@@ -359,18 +359,17 @@ Con lo cual, las instrucciones
 Analizaremos ahora las diferencias entre el codigo resultado de compilar con optimizaciónes -O1 y el que es generado por la compilación mediante optimizaciónes O2. Para eso tomaremos como objeto de estudio la función setCavityFlowSpeeds. Esta función es interesante ya que consiste de un unico ciclo, dentro del cual presenta un llamado a una función con una pequeña operatoria aritmetica. En particular lo que hace es recorrer el borde de cada matriz, y mediante un llamado a la función set, esta función concretamente multiplica el valor del indice i por el valor maximo que puede tomar la variable j y luego suma el valor de entrada de j a este resultado, abstrayendo asi el mecanismo de indexado en un arreglo plano.  
 ~\\
 ~\\
+
 A grandes rasgos la optimización más notoria se constituye por un calculo previo al ciclado, de los distintos valores numéricos necesarios para luego acceder a las posiciónes de memoria necesarias. Este cálculo previo no se da en la versión -O1, sino que estos cálculos son realizados dentro del ciclo. Esto es claro ya que si observamos el ciclo que se constituye entre las lineas 1097 y 10e5 (24 instrucciónes) de la versión -O1, este consta de una mayor cantidad de líneas que el de la versión O2, 18d8, 18f9 (9 instrucciónes). Por el contrario, el código entre el inicio de la función y el del ciclo, es más largo en la versión O2. 
 ~\\
 ~\\
 
-
-Además se puede notar la activación de los flags de alineamiento. Por ejemplo, se nota claramente la presencia de -falign-functions, que fuerza el comienzo de las funciónes en posiciones de memoria que sean multiplos de potencias de dos. Esto se logra insertando instrucciones sin efectos. Una forma de hacer esto es insertar líneas luego de un ret, que nunca se llegan a ejecutar. 
-
+Además se puede notar la activación de los flags de alineamiento. Por ejemplo, se nota claramente la presencia de -falign-functions, que fuerza el comienzo de las funciónes en posiciones de memoria que sean multiplos de potencias de dos. Esto se logra insertando instrucciones sin efectos. Una forma de hacer esto es insertar líneas luego de un RET, que nunca se llegan a ejecutar. 
 ~\\
 ~\\
 
 Si analizamos las direcciones de memoria donde se encuentran definidas las funciones, su último dígito siempre es cero. A continuación se muestran algunos ejemplos donde se ve el final de una función, con sus respectivas instrucciónes extra y el comienzo de la nueva función alineada.
-
+~\\
 ~\\
 calcVelocities:
 \begin{lstlisting}[]
@@ -396,12 +395,14 @@ setPBorders:
   1902:   41 55                   push   r13
 \end{lstlisting}
 
-Se aclara que, la potencia de dos utilizada, es algo que se especifica en el flag cuando es utilizado por el usuario, y que no queda definida cuando este flag es agregado mediante el uso de -O2. Aún así el hecho de que el último dígito de todas las funciónes sea cero es un fuerte indicador de la presencia del efecto de esta optimización.\\
+Se aclara que, la potencia de dos utilizada, es algo que se especifica en el flag cuando es utilizado por el usuario, y que no queda definida cuando este flag es agregado mediante el uso de -O2. Aún así el hecho de que el último dígito de todas las funciónes sea cero es un fuerte indicador de la presencia del efecto de esta optimización.~\\
+~\\
 Comparamos dos versiones distintas del código de cpp con optimizaciones de -O1 (ambas) pero a una de ellas le agregamos el flag finline-small-functions, propia de las optmizaciones de O2. La finalidad de este experimento, es descubrir por qué razón hay funciones que hacen llamados a lineas consecutivas de su propio código.\\
 Dichas llamadas en la versión con el flag finline-small-functions fueron reemplazadas por el código de las funciones utilizadas. Este es el caso de CavityFlowSpeeds, que hace uso de la función set. El código de muestra se puede ver aqui. (esta arriba. organizar)
-\\
+~\\
+~\\
 Al no encontrar una explicación clara sobre este comportamiento en el código, decidimos utilizar el siguiente comando g$++$ -4std$=$C$++$11 -DUSE\_CPP main.cpp  -S -masm$=$intel -o main.s para generar la versión de Assembler del código de cpp. Descubrimos que los raros llamados recursivos eran generados por \textit{objdump}.
-\\
+~\\
 
 \colorbox{BurntOrange}{TODO: seguir redactando la experiencia esta y decimos que generamos con g++}
 
@@ -412,7 +413,7 @@ Al no encontrar una explicación clara sobre este comportamiento en el código, 
 \subsubsection{Optimizaciones O3}
 
 La optimización O3 mejora aún más los resultados, activa todas las optimizaciones de -O2 además de los siguientes flags:
-
+~\\
 \begin{itemize}
 \item \textit{finline-functions}
 \item \textit{funswitch-loops}
@@ -427,17 +428,17 @@ La optimización O3 mejora aún más los resultados, activa todas las optimizaci
 \end{itemize}
 
 La utilizacion del flag -O3 aumenta aun mas la cantidad de mejoras en busqueda del aumento d ela velocidad. La primera de ellas, finline-functions, es similar a su correspondiente flag en -O2, finline-small-functions, con la diferencia de que hace efecto sobre mayor cantidad de funciones, no limitandose solo a las funciónes mas pequeñas en cuanto a cantidad de codigo de cara a mantener baja la cantidad de lineas totales.
-\\
+~\\
+~\\
 En cuanto a funswitch-loops, no hay en el programa condiciones en ciclos que sean independientes de ellos ya que todos son función de las variables sobre las que se itera. La única instancia de esto que podria darse es en la condición que decide si utilizar Assembler o C++ plano pero esta no esta escrita en el lenguaje, sino que es una directiva del compilador.
-\\
+~\\
+~\\
 Tampoco se encuentran efectos de aplicar el flag fpredictive-commoning. De aplicar, el mismo ahorarría accesos a memoria guardando datos de una iteración de un ciclo para la siguiente. No se ven ahorros de accesos a memoria ni cambios en la forma en que se accede. Tampoco se ve ningun cambio en el codigo al incluir el flag en una compilación realizada con -O2 y realizar una diferencia entre este y el resultado de -O2 normal.
-
-
-
 
 \subsection{Comparación entre secuencial, vectorial y multicore}
 Ya analizado el tipo de mejoras que son implementadas por G++ al utilizar -O1, -O2 y -O3, se comparan mediciones de tiempo de los distintos flags presentes en el compilador, con otras formas de mejorar el rendimiento. En particular se estudia vectorización medinte SIMD y multicore mediante OpenMP.
-
+~\\
+~\\
 Para cada mejora se experimentó con distintos tamaños del sistema simulado, yendo desde 1x1$m^2$ hasta 20x20$m^2$. Además, para cada tamaño, se realizaron 100 repticiónes, y se tomo la media y varianza de las mismas, con el objetivo de eliminar el error de medición introducido por la falta de control del tiempo otorgado a las distintas tareas del sistema operativo por parte del scheduler.
 
  
