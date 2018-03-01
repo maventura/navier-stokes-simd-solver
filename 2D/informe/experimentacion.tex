@@ -215,56 +215,57 @@ Por otro lado, los tiempos de compilación aumentan, como era esperado.
 Las optimizaciones de -O2 realizan mejoras de velocidad y tamaño de código tal que las mejoras de una no comprometan a la otra. En comparación con -O1, aumenta aún más el tiempo de compilación y la mejora de performace del código generado.Algunos de los flags que -O2 activa son:
 
 \begin{itemize}
-	\item \textit{fthread-jumps}
-	\item \textit{falign-functions}
-	\item \textit{falign-jumps}
-	\item \textit{falign-loops }
-	\item \textit{falign-labels}
-	\item \textit{fcaller-saves}
-	\item \textit{fcrossjumping}
-	\item \textit{fcse-follow-jumps}
-	\item \textit{fcse-skip-blocks}
-	\item \textit{fdelete-null-pointer-checks}
-	\item \textit{fdevirtualize}
-	\item \textit{fdevirtualize-speculatively}
-	\item \textit{fexpensive-optimizations}
-	\item \textit{fgcse}
-	\item \textit{fgcse-lm}
-	\item \textit{fhoist-adjacent-loads}
-	\item \textit{finline-small-functions}
-	\item \textit{findirect-inlining}
-	\item \textit{fipa-cp}
-	\item \textit{fipa-bit-cp}
-	\item \textit{fipa-vrp}
-	\item \textit{fipa-sra}
-	\item \textit{fipa-icf}
-	\item \textit{fisolate-erroneous-paths-dereference}
-	\item \textit{flra-remat}
-	\item \textit{foptimize-sibling-calls}
-	\item \textit{foptimize-strlen}
-	\item \textit{fpartial-inlining}
-	\item \textit{fpeephole2}
-	\item \textit{freorder-blocks-algorithm=stc}
-	\item \textit{freorder-blocks-and-partition}
-	\item \textit{freorder-functions}
-	\item \textit{frerun-cse-after-loop}
-	\item \textit{fsched-interblock}
-	\item \textit{fsched-spec}
-	\item \textit{fschedule-insns}
-	\item \textit{fschedule-insns2}
-	\item \textit{fstore-merging}
-	\item \textit{fstrict-aliasing}
-	\item \textit{ftree-builtin-call-dce}
-	\item \textit{ftree-switch-conversion}
-	\item \textit{ftree-tail-merge}
-	\item \textit{fcode-hoisting}
-	\item \textit{ftree-pre}
-	\item \textit{ftree-vrp}
-	\item \textit{fipa-ra}
+	\item \textit{falign-loops }:
+	\item \textit{falign-labels}:
+	\item \textit{fcaller-saves}:
+	\item \textit{fcrossjumping}:
+	\item \textit{fcse-follow-jumps}:
+	\item \textit{fcse-skip-blocks}:
+	\item \textit{fdelete-null-pointer-checks}:
+	\item \textit{fdevirtualize}:
+	\item \textit{fdevirtualize-speculatively}:
+	\item \textit{fexpensive-optimizations}:
+
+	\item \textit{fgcse}: Busca instancias de expresiones idénticas (i.e. que evaluan al mismo valor) y analiza si vale la pena reemplazarlas por una única variable reteniendo el valor computado\footnote{Common Subexpression Elimination (CSE).} de manera global. También realiza constant folding\footnote{Constant folding: Evaluar expresiones constantes en tiempo de compilación.} y constant propagation \footnote{Constant propagation: Sustitución de variables por sus valores constantes en expresiones en tiempo de compilación.}.
+	
+  \item \textit{fgcse-lm}: Intenta reordenar instrucciones donde se produzcan sucesivas cargas/guardados que pisan valores de una misma variable. Esto permite en los loops pasar de tener una variable (registro) que se carga constantemente, a una carga fuera del loop y copias y guardados en el loop.
+	
+  \item \textit{fhoist-adjacent-loads}:
+	\item \textit{finline-small-functions}:
+	\item \textit{findirect-inlining}:
+	\item \textit{fipa-cp}:
+	\item \textit{fipa-bit-cp}:
+	\item \textit{fipa-vrp}:
+	\item \textit{fipa-sra}:
+	\item \textit{fipa-icf}:
+	\item \textit{fisolate-erroneous-paths-dereference}:
+	\item \textit{flra-remat}:
+	\item \textit{foptimize-sibling-calls}:
+	\item \textit{foptimize-strlen}:
+	\item \textit{fpartial-inlining}:
+	\item \textit{fpeephole2}:
+	\item \textit{freorder-blocks-algorithm=stc}:
+	\item \textit{freorder-blocks-and-partition}:
+	\item \textit{freorder-functions}:
+	\item \textit{frerun-cse-after-loop}:
+	\item \textit{fsched-interblock}:
+	\item \textit{fsched-spec}:
+	\item \textit{fschedule-insns}:
+	\item \textit{fschedule-insns2}:
+	\item \textit{fstore-merging}:
+	\item \textit{fstrict-aliasing}:
+	\item \textit{ftree-builtin-call-dce}:
+	\item \textit{ftree-switch-conversion}:
+	\item \textit{ftree-tail-merge}:
+	\item \textit{fcode-hoisting}:
+	\item \textit{ftree-pre}:
+	\item \textit{ftree-vrp}:
+	\item \textit{fipa-ra}:
 \end{itemize}
 
-Please note the warning under -fgcse about invoking -O2 on programs that use computed gotos.
+Notamos varios flags que aportan a la refactorización de código, que en consecuencia, ayudan a reducir el tamaño de código e incluso, con ayuda de los precálculos en tiempo de compilación, reducen tiempo de ejecución. 
 
+Con lo cual, las instrucciones
 
 
 \begin{lstlisting}[title=Función setCavityFlowSpeeds con optimización -O1]
