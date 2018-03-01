@@ -28,13 +28,13 @@ version_list_cpp = ['cpp','cpp_o1','cpp_o2','cpp_o3','cpp_ofast']
 version_list_icc = ['icc', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast']
 version_list_omp = ['cpp', 'cpp_omp', 'cpp_omp_o1', 'cpp_omp_o2', 'cpp_omp_o3', 'cpp_omp_ofast']
 
-version_list = version_list_asm
+#version_list = version_list_asm
+version_list = version_list_cpp
+#version_list = version_list_icc
+#version_list = version_list_omp
 
 
 test_folder = '/home/martin/Desktop/repos/navier-stokes-simd-solver/2D/tests/to_plot/'
-
-
-
 
 
 

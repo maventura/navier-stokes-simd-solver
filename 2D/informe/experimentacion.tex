@@ -393,20 +393,13 @@ setPBorders:
 
 
 se aclara que, la potencia de dos utilizada, es algo que se especifica en el flag cuando es utilizado por el usuario, y que no queda definida cuando este flag es agregado mediante el uso de $-$O2. Aún así el hecho de que el último dígito de todas las funciónes sea cero es un fuerte indicador de la presencia del efecto de esta optimización.\\
-
-
-
 Comparamos dos versiones distintas del código de cpp con optimizaciones de -O1 (ambas) pero a una de ellas le agregamos el flag finline-small-functions, propia de las optmizaciones de O2. La finalidad de este experimento, es descubrir por qué razón hay funciones que hacen llamados a lineas consecutivas de su propio código.\\
 Dichas llamadas en la versión con el flag finline-small-functions fueron reemplazadas por el código de las funciones utilizadas. Este es el caso de CavityFlowSpeeds, que hace uso de la función set. El código de muestra se puede ver aqui. (esta arriba. organizar)
-
-Al no encontrar una explicación clara sobre este comportamiento en el código, decidimos utilizar el siguiente comando $g++ -std=C++11 -DUSE_CPP main.cpp  -S -masm=intel -o main.s$ para generar la versión de Assembler del código de cpp. Descubrimos que los raros llamados recursivos eran generados por \textit{objdump}.
-
-
-
+\\
+Al no encontrar una explicación clara sobre este comportamiento en el código, decidimos utilizar el siguiente comando g$++$ $-$4std$=$C$++$11 $-$DUSE\_CPP main.cpp  $-$S $-$masm$=$intel $-$o main.s para generar la versión de Assembler del código de cpp. Descubrimos que los raros llamados recursivos eran generados por \textit{objdump}.
+\\
 todo: seguir redactando la experiencia esta
 y decimos que generamos con g++
-
-
 ~\\
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -427,6 +420,14 @@ La optimización O3 mejora aún más los resultados, activa todas las optimizaci
 \item \textit{ftree-partial-pre}
 \item \textit{fipa-cp-clone options}
 \end{itemize}
+
+La utilizacion del flag $-$O3 aumenta aun mas la cantidad de mejoras en busqueda del aumento d ela velocidad. La primera de ellas, finline-functions, es similar a su correspondiente flag en $-$O2, finline-small-functions, con la diferencia de que hace efecto sobre mayor cantidad de funciones, no limitandose solo a las funciónes mas pequeñas en cuanto a cantidad de codigo de cara a mantener baja la cantidad de lineas totales.
+\\
+En cuanto a funswitch-loops, no hay en el programa condiciones en ciclos que sean independientes de ellos ya que todos son función de las variables sobre las que se itera. La única instancia de esto que podria darse es en la condición que decide si utilizar Assembler o C++ plano pero esta no esta escrita en el lenguaje, sino que es una directiva del compilador.
+\\
+Tampoco se encuentran efectos de aplicar el flag fpredictive-commoning. De aplicar, el mismo ahorarría accesos a memoria guardando datos de una iteración de un ciclo para la siguiente. No se ven ahorros de accesos a memoria ni cambios en la forma en que se accede. Tampoco se ve ningun cambio en el codigo al incluir el flag en una compilación realizada con $-$O2 y realizar una diferencia entre este y el resultado de $-$O2 normal.
+
+
 
 
 \subsection{Comparación entre secuencial, vectorial y multicore}
