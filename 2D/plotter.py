@@ -22,7 +22,15 @@ min_side_size = 5
 max_side_size = 6
 min_time = 2
 max_time = 2
-version_list = ['asm', 'cpp', 'asm_omp', 'cpp_omp', 'icc']
+
+version_list_asm = ['asm','asm_o3','asm_ofast']
+version_list_cpp = ['cpp','cpp_o1','cpp_o2','cpp_o3','cpp_ofast']
+version_list_icc = ['icc', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast']
+version_list_omp = ['cpp', 'cpp_omp', 'cpp_omp_o1', 'cpp_omp_o2', 'cpp_omp_o3', 'cpp_omp_ofast']
+
+version_list = version_list_asm
+
+
 test_folder = '/home/martin/Desktop/repos/navier-stokes-simd-solver/2D/tests/to_plot/'
 
 
@@ -46,7 +54,11 @@ def read_as_array(min_time, max_time, min_side_size, max_side_size, version):
 			file_data = []
 			with open(file) as fp:
 				for line in fp:
-					file_data.append(float(line))
+					try:
+						file_data.append(float(line))
+					except Exception as e:
+						print("Error parsing file " + str(file))
+						exit()
 
 			for m in file_data:
 				data[current_test].append(m)
@@ -75,11 +87,15 @@ def read_as_array(min_time, max_time, min_side_size, max_side_size, version):
 	data_array=(numpy.array([numpy.array(xi) for xi in data])).transpose()
 	return data_array
 
-result_asm = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[0])
+
+for i in xrange(0,len(version_list)):
+	result_asm = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[i])
+	ax = sns.tsplot(data=result_asm, ci='sd',  color=sns.color_palette()[i%len(sns.color_palette())], condition = version_list[i])
+
 #result_cpp = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[1])
 #result_cpp_omp = read_as_array(min_time, max_time, min_side_size, max_side_size, version_list[3])
 
-ax = sns.tsplot(data=result_asm, ci='sd', color='red', condition = 'ASM')
+
 #ax2 = sns.tsplot(data=result_cpp, ci='sd', color='green', condition = 'C++')
 #ax3 = sns.tsplot(data=result_cpp_omp, ci='sd', color='blue', condition = 'OpenMP')
 
