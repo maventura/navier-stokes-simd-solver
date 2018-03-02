@@ -2,13 +2,13 @@
 Ya analizado el tipo de mejoras que son implementadas por G++ al utilizar -O1, -O2 y -O3, se presentan en esta sección los resultados de los experimentos realizados. Se comparan mediciones de tiempo de los distintos flags presentes en el compilador, con otras técnicas. 
 ~\\
 ~\\
-En particular se estudian los flags -O0, -O1, -O2, -O3 y -Ofast para el compilador GCC (GNU Compiler Colection), el compilador ICC (Intel C++ Compiler), para GCC+OpenMP, y por último -O0, -O3 y -Ofast para la versión vectorizada desarrollada en este trabajo, la cual consta de una parte en C++ en comun con la versión no vectorial, que fue compilada con GCC, y una función implementada en Assembler y compilada mediante NASM (Netwide Assembler x86), especificamente desarrollada para aprovechar la tecnología SIMD, y seleccionada por ser la sección mas critica en terminos de rendimiento, del programa original.
+En particular se estudian los flags -O0, -O1, -O2, -O3 y -Ofast para el compilador \textbf{GCC (GNU Compiler Colection)}, el compilador \textbf{ICC (Intel C++ Compiler)}, para \textbf{GCC+OpenMP (Open Multi-Processing)}, y por último -O0, -O3 y -Ofast para la versión vectorizada desarrollada en este trabajo, la cual consta de una parte en C++ en comun con la versión no vectorial, que fue compilada con GCC, y una función implementada en Assembler y compilada mediante \textbf{NASM (Netwide Assembler x86)}, especificamente desarrollada para aprovechar la tecnología SIMD, y seleccionada por ser la sección mas critica en terminos de rendimiento, del programa original.
 ~\\
 ~\\
-Para cada técnica se experimentó con distintos tamaños del sistema simulado, comenzando desde simulaciónes de sistemas pequeños de 1x1$m^2$ y aumentando de a un metro el lado del sistema, hasta llegar a 20x20$m^2$, el tamaño de lado es además la medida correspondiente al eje horizontal, mientras que el tiempo medido en segundos, es el correspondiente al eje vertical. Además, para cada punto, se realizaron 100 repticiónes, y se tomo la media y desvio estándar de las mismas, con el objetivo de eliminar el error de medición introducido por la falta de control del tiempo otorgado a las distintas tareas del sistema operativo por parte del scheduler. 
+Para cada técnica se experimentó con distintos tamaños del sistema simulado, comenzando desde simulaciónes de sistemas pequeños de 1x1$m^2$ y aumentando de a un metro el lado del sistema, hasta llegar a 20x20$m^2$, el tamaño de lado es además la medida correspondiente al eje horizontal, mientras que el tiempo medido en segundos, es el correspondiente al eje vertical. En el caso en que se mide el efecto del tiempo del sistema simulado, se comienza con una duración de 1s y se llega aumentando de a 1s hasta 30s de sistema simulado. Además, para cada punto, se realizaron 100 repticiónes, y se tomo la media y desvio estándar de las mismas, con el objetivo de eliminar el error de medición introducido por la falta de control del tiempo otorgado a las distintas tareas del sistema operativo por parte del scheduler. 
 ~\\
 ~\\
-Los tiempos fueron medidos mediante la utilización de la herramienta time de Linux, bajo la distribución Ubuntu 16.04 LTS, en una maquina i7-920 2.67GHz, 18GB ram, 1TB HDD 7200rpm. Además no se utilizó la maquina durante la experimentación, para no introducir ruido en las mediciónes. En total se realizaron cerca de 40.000 simulaciónes. A continuación se muestran los resultados de las mismas.
+Todos las mediciónes fueron realizadas mediante la utilización de la herramienta time de Linux, bajo la distribución Ubuntu 16.04 LTS, en una maquina \textbf{i7-920 2.67GHz, 18GB ram, 1TB HDD 7200rpm}. Además no se utilizó la maquina durante la experimentación, para no introducir ruido en las mediciónes. En total se realizaron alrededor de \textbf{60.000 simulaciónes}. A continuación se muestran los resultados de las mismas.
 ~\\
 ~\\
 
@@ -66,7 +66,33 @@ Notamos que aunque la asignación de mayor cantidad de recursos aumenta signific
 ~\\
 ~\\
 
-Por ultimo, y a modo ilustrativo, presentamos en la \textbf{Figura \ref{fig:plot_ofast}} una gráfica de las optimizaciónes que dieron mejor resultado para cada técnica o compilador utilizado. En todos los casos el mejor rendimiento se obtuvo mediante la utilización del flag -Ofast. Queda claro mediante esta figura, que las mejores prestaciónes se dan al utilizar SIMD, seguido por OpenMP, ICC, y finalmente GCC. El patron queda claro, mientras mas recursos se utilizen, y mas especifico sea el codigo de acuerdo a la plataforma subyacente, mejor rendimiento se obtiene. 
+A modo ilustrativo, presentamos en la \textbf{Figura \ref{fig:plot_ofast}} una gráfica de las optimizaciónes que dieron mejor resultado para cada técnica o compilador utilizado. En todos los casos el mejor rendimiento se obtuvo mediante la utilización del flag -Ofast. Queda claro mediante esta figura, que las mejores prestaciónes se dan al utilizar SIMD, seguido por OpenMP, ICC, y finalmente GCC. El patron queda claro, mientras mas recursos se utilizen, y mas especifico sea el codigo de acuerdo a la plataforma subyacente, mejor rendimiento se obtiene. 
 
 
-\subsection{CPU vs. memoria}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=\textwidth]{imagenes/plot_time_omp_unused.png}
+\label{fig:plot_time_omp_unused}
+\end{figure}
+
+Finalmente se realiza un análisis de la única otra variable que afecta el rendimiento que es la magnitud de la cantidad de iteraciónes temporales realizadas en cada simulación. En la \textbf{Figura \ref{fig:plot_time_omp_unused}} puede verse una comparación de los distintos casos analizados anteriormente, pero esta vez en vez de aumentar el tamaño, aumenta el tiempo del sistema dinamico simulado. Cada punto de la grafica indica un aumento del tiempo de un segundo mas de simulación. 
+
+
+\subsection{Análisis de performance bajo carga}
+
+
+Por último se analiza el efecto del uso de CPU en otras tareas. Esto consta de ejecutar repetidamente simulaciónes identicas para los distintos casos que se analizan en este trabajo, medir el tiempo que tardan en terminar. Además a lo largo del experimento se lanzan dos tareas. La primera es una tarea que hace uso intensivo de accesos a memoria, y la segunda de operaciónes de calculo flotante, utilizando para esto la ALU (Arithmetic Logic Unit). La ejecución de estas tareas genera dos picos en las mediciónes de  las simulaciónes de fluidos. Los resultados pueden apreciarse en la \textbf{Figura \ref{fig:plot_stress_test_ram_cpu}}. 
+\begin{figure}[!htbp]
+\caption{Tiempo(s) con carga de Memoria y luego CPU}
+\includegraphics[width=\textwidth]{imagenes/plot_stress_test_ram_cpu.png}
+\label{fig:plot_stress_test_ram_cpu}
+\end{figure}
+~\\
+~\\
+Podemos confirmar que la versión que utiliza OpenMP es la única que se ve afectada significativamente por la presencia de otras tareas, y también que no hay diferencias significativas entre tareas que usen memoria o tareas que realicen operaciónes de punto flotante.
+
+
+
+
+
