@@ -21,12 +21,10 @@ version_list = ['cpp_omp_ofast']
 #Falta desde cpp_omp_ofast. Revisar los que dieron mal.
 spacer = '   '
 
-
 print(spacer + '___ ____  ___ ___ ____ ___  ')
 print(spacer + ' |  |___ (__   |  |___ |__) ')
 print(spacer + ' |  |___ ___)  |  |___ |  \ ')
                             
-
 total_tests = (max_time - min_time +1)*(max_side_size - min_side_size +1)*len(version_list)
 current_test = 0
 for time in xrange(min_time, max_time+1):
@@ -63,7 +61,6 @@ for time in xrange(min_time, max_time+1):
 			print(2*spacer + "t_max: " + str(time))
 			print(2*spacer + "repetitions: " + str(repetitions))
 			print(2*spacer + "call: " + call)
-
 
 			devnull = open(os.devnull, 'w')
 			for r in xrange(0,repetitions):

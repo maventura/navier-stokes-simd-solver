@@ -66,12 +66,7 @@ version_names_list = version_names_list_ofast
 
 test_folder = '/home/martin/Desktop/repos/navier-stokes-simd-solver/2D/tests/to_plot/'
 
-
-
 def read_as_array(min_time, max_time, min_side_size, max_side_size, version):
-
-
-
 	total_tests = (max_time - min_time +1)*(max_side_size - min_side_size +1)
 	#Fetch data files according to parameters.
 	data = [[] for i in range(0, total_tests)]
