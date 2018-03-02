@@ -1,1 +1,16 @@
 \section{Conclusión}% Reflexion final sobre los alcances del trabajo practico, la programacion en el modelo SIMD a bajo nivel, problematicas encontradas, y todo lo que consideren pertinente.
+
+
+
+
+
+Los resultados obtenidos sugieren que bien utilizado, mientras mas especifico es el método, mejor resultado produce, como puede verse en el aumento de rendimiento al pasar de GCC a ICC, y luego nuevamente de ICC a una versión escrita teniendo en cuenta la plataforma especifica. Ademas se encontró evidencia que comprueba el poder de optimización de las distintas mejoras implementadas por los compiladores GCC e ICC, dando lugar a velocidades mucho mayores que las versiones originales. 
+~\\
+~\\
+Se estudió tambien el procesamiento multi-núcleo, y se encontró que mejora el rendimiento por sobre lo que es posible mejorarlo utilizando optimizaciónes de compilador. Sin embargo, al no disponer de muchas unidades de procesamiento, la vectorización fue una herramienta mas satisfactoria a la hora de disminuir el tiempo de ejecución. Esto se debió mayormente a que en el caso de este estudio, y por el equipo utilizado para realizar la experimentación, ambos SIMD y OpenMP, eran capaces de computar 4 elementos en simultaneo, con la salvedad de que el mecanismo mediante el cual lo hace SIMD es mas sencillo.
+~\\
+~\\
+ Otra cosa que se pudo apreciar, es la alta varianza en los tiempos de ejecición de OpenMP. Creemos que esto se debe a que si bien no se utilizaron los equipos durante la experimentación, el scheduler debe atender todas las tareas, y al tener los 4 núcleos saturados, la versión de OpenMP es especialmente vulnerable a los efectos del sistema operativo.
+~\\
+~\\
+Como trabajo a futuro se plantea por un lado combinar SIMD con OpenMP, o alguna otra tecnología que permita paralelización, como MPI (Message Passing Interface). Esperamos que esto de aumentos mucho mayores de rendimiento, y en particular en el caso de MPI, permita la construcción de una versión escalable. Por otro lado, seria interesante realizar el mismo estudio a otro tipo de problemas, con le objetivo de analizar en un rango mas grande de aplicaciónes el efecto de estas técnicas.
