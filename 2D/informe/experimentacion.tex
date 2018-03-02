@@ -1,43 +1,5 @@
 \section{Experimentacion}
 
-\subsection{Análisis cualitativo}
-
-\begin{figure}[!htbp]
-\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
-\includegraphics[width=3cm]{imagenes/small_norm.png}
-\label{fig:small_norm}
-\end{figure}
-
-\begin{figure}[!htbp]
-\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
-\includegraphics[width=3cm]{imagenes/small_p.png}
-\label{fig:small_p}
-\end{figure}
-
-\begin{figure}[!htbp]
-\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
-\includegraphics[width=3cm]{imagenes/small_u.png}
-\label{fig:small_u}
-\end{figure}
-
-\begin{figure}[!htbp]
-\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
-\includegraphics[width=3cm]{imagenes/small_v.png}
-\label{fig:small_v}
-\end{figure}
-
-\begin{figure}[!htbp]
-\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
-\includegraphics[width=3cm]{imagenes/v.png}
-\label{fig:v}
-\end{figure}
-
-\begin{figure}[!htbp]
-\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
-\includegraphics[width=3cm]{imagenes/u.png}
-\label{fig:u}
-\end{figure}
-
 \subsection{Herramientas de des-ensamblado}
 
 Dedicamos este párrafo a describir las herramientas que usamos para experimentar en las próximas secciones. La herramienta que utilizamos para traducir el código de C++ a Assembler es \textit{objdump}, en base a esto podemos hacer comparaciones entre el código de C++ y Assembler. Para medir tiempos de compilación y ejecución utilizamos el comando \textit{time} y conservamos la medición de tiempo real, o sea, la correspondiente al tiempo que mide de un reloj de pared.
@@ -46,9 +8,9 @@ Dedicamos este párrafo a describir las herramientas que usamos para experimenta
 
 Usando la herramienta \textit{objdump} sobre los archivos objeto (.o) del código de C++ (sin flags de optimización), obtuvimos y analizamos el código ensamblado por el compilador. Notamos las siguientes caracterísicas del código generado que dan lugar a mejoras en el rendimiento:
 \begin{itemize}
-	\item Dentro de la función calcVelocities, la función donde se ralizan los cálculos que luego se vectorizarán, hay llamados a líneas consecutivas.
+	\item Dentro de la función \textit{calcVelocities}, la función donde se ralizan los cálculos que luego se vectorizarán, hay llamados a líneas consecutivas.
 	\item Hay consultas a memorias innecesarias, por ejemplo, se pide un mismo valor a memoria varias veces, a pesar de haber sido guardado en un registro y nunca haber sido reemplazado con otro valor.
-	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones.
+	\item Se manejan las variables locales almacenándolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones.
 \end{itemize}
 Decidimos en consecuencia, analizar el mismo código de C++ aplicando algunas optimizaciones de compilador de GCC.
 ~\\
@@ -61,15 +23,17 @@ El compilador de GCC posee una gran cantidad de optimizaciones. Un grupo de esta
 \begin{itemize}
 	\item \textit{fdce}: Realiza eliminación de código muerto en RTL \footnote{Register Transfer Language. Es una representación intermedia (RI), similar a Assembler. Se utiliza para describir el transferencia de datos de una arquitectura a nivel registro}, i.e. elimina instrucciones que no tienen efecto en la ejecución.
 	\item \textit{fdse}: Realiza eliminación de guardado muerto en RTL, e.g. valores que son escritos a memoria de manera innecesaria.
-	\item \textit{fsplit-wide-types}: Cuando se usa un tipo de datos que ocupa múltiples registros, como por ejemplo ``long long'' en un sistema de 32-bit, separa el dato y lo guarda de manera independiente. Esto, normalmente, genera mejor código para estos tipos de datos, pero hace más difícil el debuggeo.
 	\item \textit{fmerge-constants}: Intenta unir constantes identicas (cadenas o flotantes) a través de unidades de compilación. Esta opción es la por defecto para la compilacion optimizada si el ensamblador y linker la soportan.
 	\item \textit{fdelayed-branch}: No tiene efecto en el código pero causa la ejecución a priori en ramas de ejecución para aumentar la performance.
 \end{itemize}
 
 ~\\
-Analizamos los códigos generados por G++ con y sin flag de optimización -O1. Extrajimos la función \textit{set}, que implementa el seteo de un valor a la posición $(i, j)$ de una matriz y lo primero que notamos fue la diferencia en cantidad de las líneas de código.
+Analizamos los códigos generados por GCC con y sin flag de optimización -O1. Extrajimos la función \textit{set}, que implementa el seteo de un valor a la posición $(i, j)$ de una matriz y lo primero que notamos fue la diferencia en cantidad de las líneas de código.
 
-{\center{\large{Función set de mat2}}} 
+\newpage
+
+\begin{figure}[h]
+\begin{center}\large{Función set de mat2}\end{center}
 \begin{lstlisting}
   18e: 55                    push   rbp
   18f: 48 89 e5              mov    rbp,rsp
@@ -95,14 +59,13 @@ Analizamos los códigos generados por G++ con y sin flag de optimización -O1. E
   1ce: c3                    ret    
   1cf: 90                    nop
 \end{lstlisting}
-
+\end{figure}
 La versión sin opitmizar, toma los parámetros cargados en registros, los guarda en la pila y luego vuelve a cargarlos a registros distintos. Incluso realiza accesos a memoria más de una vez en busca de un mismo dato.
 En cambio, la versión del código de C++ mediante la optimización, utiliza los registros para el manejo de variables locales y accede solo las veces necesarias a memoria. Este es un claro ejemplo de los efectos de los flags \textit{fdse} y \textit{fdce}.
 
-
 ~\\
-
-{\center{\large{Función set de mat2 con optimización -O1}}} 
+\begin{figure}[h]
+\begin{center}\large{Función set de mat2 con optimización -O1}\end{center}
 \begin{lstlisting}
   d4: 0f af 77 0c           imul   esi,DWORD PTR [rdi+0xc]
   d8: 01 f2                 add    edx,esi
@@ -111,17 +74,15 @@ En cambio, la versión del código de C++ mediante la optimización, utiliza los
   e0: f3 0f 11 04 90        movss  DWORD PTR [rax+rdx*4],xmm0
   e5: c3                    ret  
 \end{lstlisting}
-
-
-
+\end{figure}
 
 ~\\
-
 A pesar de las mejoras que notamos con el uso de la optimización, encontramos métodos donde no se eliminaban del todo los accesos innecesarios a memoria o los fragmentos de código sin utilidad. Tomamos otro extracto de código de la función \textit{calcVelocities} (donde se realizan los cálculos más complejos) y la analizamos. 
 
 ~\\
 
-{\center{\large{Función calcVelocities}}} 
+\begin{figure}[h]
+\begin{center}\large{Función calcVelocities}\end{center}
 \begin{lstlisting}
   1abe:	55                   	push   rbp
   1abf:	48 89 e5             	mov    rbp,rsp
@@ -153,15 +114,15 @@ A pesar de las mejoras que notamos con el uso de la optimización, encontramos m
   240e:	c3                   	ret    
   240f:	90                   	nop
 \end{lstlisting}
-
+\end{figure}
 La diferencia que notamos de los dos extractos de código de \textit{calcVelocities}, es el uso de la instrucción \textbf{nop}. El código de operación de \textbf{nop} corresponde a ``no operation'', no tiene ningun tipo de efecto, con lo cual, en el código optimizado se hace eliminación de este.
 En la instrucción lad0 se carga el registro rax con un valor, no se lo pisa y luego vuelve a cargarlo en laf0. Este tipo de instrucciones donde no es necesario volver a cargar de memoria datos, vuelve a ser eliminado con el uso del flag fdse.
 
 Volvemos a notar que en el código de C++ con flag -O1, el manejo de memoria no tiene el comportamiento de volver a cargar algo desde memoria que previamente había sido cargado y guardado en registros. Sin embargo, y apesar de las mejoras, vemos que aun repite movimientos de datos innecesarios entre registros.
 Observando más detalladamente, el código con la mejora, no utiliza al máximo los registros, ya que guarda ciertos datos a memoria.
 
-
-{\center{\large{Función calcVelocities con optimización -O1}}} 
+\begin{figure}[h]
+\begin{center}\large{Función calcVelocities con optimización -O1}\end{center}
 \begin{lstlisting}
   12f0:	41 57                	push   r15
   ...     ...                 ...    ...
@@ -202,17 +163,13 @@ Observando más detalladamente, el código con la mejora, no utiliza al máximo 
   1897:	41 5f                	pop    r15
   1899:	c3                   	ret 
 \end{lstlisting}
-
-
+\end{figure}
 ~\\
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \subsubsection{Optimizaciones O2}
 
 Las optimizaciones de -O2 realizan mejoras de velocidad y tamaño de código tal que las mejoras de una no comprometan a la otra. En comparación con -O1, aumenta aún más el tiempo de compilación y la mejora de performace del código generado.Algunos de los flags que -O2 activa son:
-
+\begin{figure}[H]
 \begin{itemize}
 	\item \textit{fcse-follow-jumps}: Se eliminan códigos que se acceden mediante saltos cuya condición nunca llega a cumplirse.
 
@@ -230,16 +187,14 @@ Las optimizaciones de -O2 realizan mejoras de velocidad y tamaño de código tal
 
 	\item \textit{ftree-vrp}: Realiza Value Range Propagation en árboles. Es similar a la propagación de constantes, pero  lo hace con rangos de valores. Esto permite remover chequeos innecesarios de rangos. 
 \end{itemize}
-
+\end{figure}
 Notamos varios flags que aportan a la refactorización de código, que en consecuencia, ayudan a reducir su tamaño e incluso, con ayuda de los precálculos en tiempo de compilación, reducen el tiempo de ejecución. Algunos llegan hasta el punto de modificar el orden de ejecución del código para impedir, por ejemplo, esperas por datos que no estan todavia disponibles.
 
 ~\\
-
 Analizaremos ahora las diferencias entre el código resultado de compilar con optimizaciones -O1 y el que es generado por la compilación mediante optimizaciónes -O2. Para eso tomaremos como objeto de estudio la función \textit{setCavityFlowSpeeds}. Esta función es interesante ya que consiste de un único ciclo, dentro del cual presenta un llamado a una función con una pequeña operatoria aritmética. En particular lo que hace es recorrer el borde de cada matriz, y mediante un llamado a la función set, esta función concretamente multiplica el valor del índice \textit{i} por el valor máximo que puede tomar la variable \textit{j} y luego suma el valor de entrada de \textit{j} a este resultado, abstrayendo así el mecanismo de indexado en un arreglo plano. 
 
-~\\
-
-{\center{\large{Función setCavityFlowSpeeds con optimización -O1}}}
+\begin{figure}[h]
+\begin{center}\large{Función setCavityFlowSpeeds con optimización -O1}\end{center}
 \begin{lstlisting}
   106c:   83 7f 24 00             cmp    DWORD PTR [rdi+0x24],0x0
   1070:   7e 7d                   jle    10ef
@@ -285,11 +240,11 @@ Analizaremos ahora las diferencias entre el código resultado de compilar con op
   10ef:   f3 c3                   repz ret 
   10f1:   90                      nop
 \end{lstlisting}
-
+\end{figure}
 
 ~\\
-
-{\center{\large{Función setCavityFlowSpeeds con optimización -O2}}}
+\begin{figure}[h]
+\begin{center}\large{Función setCavityFlowSpeeds con optimización -O2}\end{center}
 \begin{lstlisting}
   1880:   44 8b 5f 24             mov    r11d,DWORD PTR [rdi+0x24]
   1884:   45 85 db                test   r11d,r11d
@@ -324,28 +279,25 @@ Analizaremos ahora las diferencias entre el código resultado de compilar con op
   18fd:   90                      nop
   18fe:   66 90                   xchg   ax,ax
 \end{lstlisting}
-
+\end{figure}
 
 ~\\
 A grandes rasgos la optimización más notoria se constituye por un calculo previo al ciclado, de los distintos valores numéricos necesarios para luego acceder a las posiciónes de memoria necesarias. Este cálculo previo no se da en la versión -O1, sino que estos cálculos son realizados dentro del ciclo. Esto es claro ya que si observamos el ciclo que se constituye entre las lineas 1097 y 10e5 (24 instrucciónes) de la versión -O1, este consta de una mayor cantidad de líneas que el de la versión -O2, 18d8, 18f9 (9 instrucciónes). Por el contrario, el código entre el inicio de la función y el del ciclo, es más largo en la versión -O2. 
 
 ~\\
-
 En el código mejorado con -O2 se reemplaza el uso de registros que deben ser resguardados, por registros de uso libre que no habían sido usados previamente. Esto disminuye el uso de la pila y el tiempo de accesos a memoria.\\
 Los tres calls en la versión con mejora de -O1 (que por conocer la implementación de C++), corresponden al llamado de la función set para tres matrices. En la versión mejorada de -O2 se las reemplaza por el código de la función, dado que la cantidad de lineas no se vió aumentada (\textit{finline-small-functions}), de hecho disminuyó.
 
 ~\\
-
 Además se puede notar la activación de los flags de alineamiento. Por ejemplo, se nota claramente la presencia de \textit{falign-functions}, que fuerza el comienzo de las funciones en posiciones de memoria que sean múltiplos de potencias de dos. Esto se logra insertando instrucciones sin efectos. Una forma de hacer esto es insertar líneas luego de un ret, que nunca se llegan a ejecutar. 
 
 
 ~\\
-
 Si analizamos las direcciones de memoria donde se encuentran definidas las funciones, su último dígito siempre es cero. A continuación se muestran algunos ejemplos donde se ve el final de una función, con sus respectivas instrucciónes extra y el comienzo de la nueva función alineada.
 
 ~\\
-
-{\center{\large{calcVelocities}}}
+\begin{figure}[h]
+\begin{center}\large{calcVelocities}\end{center}
 \begin{lstlisting}
   1a99:   41 5d                   pop    r13
   1a9b:   41 5e                   pop    r14
@@ -357,9 +309,10 @@ Si analizamos las direcciones de memoria donde se encuentran definidas las funci
   1aa6:   41 57                   push   r15
   1aa8:   41 56                   push   r14
 \end{lstlisting}
-~\\
+\end{figure}~\\
 
-{\center{\large{setPBorders}}}
+\begin{figure}[h]
+\begin{center}\large{setPBorders}\end{center}
 \begin{lstlisting}
   18fb:   f3 c3                   repz ret 
   18fd:   90                      nop
@@ -369,14 +322,11 @@ Si analizamos las direcciones de memoria donde se encuentran definidas las funci
   1900:   41 56                   push   r14
   1902:   41 55                   push   r13
 \end{lstlisting}
-
-
+\end{figure}
 Se aclara que, la potencia de dos utilizada, es algo que se especifíca en el flag cuando es utilizado por el usuario, y que no queda definida cuando este flag es agregado mediante el uso de $-$O2. Aún así el hecho de que el último dígito de todas las funciones sea cero, es un fuerte indicador de la presencia del efecto de esta optimización.\\
 
 
 ~\\
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 \subsubsection{Optimizaciones O3}
 

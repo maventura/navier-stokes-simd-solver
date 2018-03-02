@@ -1,13 +1,13 @@
-\section{Introducción}%Describe lo realizado en el trabajo practico.
+\section{Introducción}
 Los flujos son gobernados por ecuaciones diferenciales parciales, que representan las leyes de conservación de masa, momento y energía. La dinámica de fluidos computacional se encarga de resolver esas ecuaciones diferenciales utilizando técnicas de análisis numérico. Las computadoras son utilizadas para realizar los cálculos requeridos para simular la interacción entre líquidos, gases y superficies definidas por las condiciones de borde. Disponer de más poder computacional es útil para disminuir el tiempo requerido para realizar las simulaciones, o aumentar la calidad de los resultados.
 
 ~\\
 Para poder aumentar el poder computacional disponible, se utilizan a menudo, técnicas de cómputo en paralelo, o de cómputo vectorial. En este trabajo nos centraremos en la tecnología de cómputo vectorial SIMD (Single Instruction Multiple Data) de Intel.
 
 ~\\
-Concretamente se desarrollará código en assembler, que utilizando las instrucciones de vectorización de los procesadores Intel, logre un aumento de rendimiento. Luego se comparará ese aumento de rendimiento con técnicas automáticas de vectorización o paralelización, tales como OpenMP, una API para el procesamiento multinúcleo con memoria compartida, y las optimizaciones disponibles en los compiladores ICC (Intel C Compiler) y g++, que a su vez utilizan instrucciones SIMD.
+Concretamente se desarrollará código en assembler, que utilizando las instrucciones de vectorización de los procesadores Intel, logre un aumento de rendimiento. Luego se comparará ese aumento de rendimiento con técnicas automáticas de vectorización o paralelización, tales como OpenMP, una API para el procesamiento multinúcleo con memoria compartida, y las optimizaciones disponibles en los compiladores ICC (Intel C Compiler) y GCC (GNU Compiler Collection), que a su vez utilizan instrucciones SIMD.
 
 ~\\
-Hay diversos problemas de flujo conocidos que son utilizados frecuentemente para testear aplicaciones de este estilo. En este trabajo utilizaremos cavity flow.  \colorbox{BurntOrange}{si llegamos... y channel flow. }
+Hay diversos problemas de flujo conocidos que son utilizados frecuentemente para testear aplicaciones de este estilo. En este trabajo utilizaremos cavity flow.
 
-El problema conocido como Lid-Driven Cavity Flow ha sido largamente usado como caso de validación para nuevos códigos y métodos. La geometría del problema es simple y bidimensional, las condiciones de borde son también sencillas. El caso estandar consta de un fluido contenido en un dominio cuadrado con condiciones de borde de Dirichlet en todas las paredes, con tres lados estacionarios y un lado en movimiento (con velocidad tangente a la pared), que induce velocidad en el fluido.
+El problema conocido como Lid-Driven Cavity Flow ha sido largamente usado como caso de validación para nuevos códigos y métodos. La geometría del problema es simple y bidimensional, las condiciones de borde son también sencillas. El caso estándar consta de un fluido contenido en un dominio cuadrado con condiciones de borde de Dirichlet en todas las paredes, con tres lados estacionarios y un lado en movimiento (con velocidad tangente a la pared), que induce velocidad en el fluido.
