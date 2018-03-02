@@ -164,7 +164,6 @@ void simulator::process() {
         for (int i = 1; i < nX - 1; ++i) {
             for (int j = 1; j < nY - 1; ++j) {
 
-                
                 #ifdef USE_ASM
                     if(j > nY-5){
                         calcTerms(i,j);

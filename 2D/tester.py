@@ -4,10 +4,10 @@ import os
 import sys
 
 param_file_name = "parameters.txt"
-min_side_size = 1
-max_side_size = 20
-min_time = 2
-max_time = 2
+min_side_size = 2
+max_side_size = 2
+min_time = 10
+max_time = 30
 repetitions = 100
 
 #all_versions:
@@ -17,7 +17,7 @@ repetitions = 100
 #'icc', 'icc_o1', 'icc_o2', 'icc_o3', 'icc_ofast'
 # 'cpp_omp_o1', 'cpp_omp_o2', 'cpp_omp_o3', 'cpp_omp_ofast'
 
-version_list = ['cpp_omp_ofast', 'icc_ofast', 'icc_o1','icc_o2','icc_o3']
+version_list = ['cpp_omp_ofast']
 #Falta desde cpp_omp_ofast. Revisar los que dieron mal.
 spacer = '   '
 
@@ -29,9 +29,9 @@ print(spacer + ' |  |___ ___)  |  |___ |  \ ')
 
 total_tests = (max_time - min_time +1)*(max_side_size - min_side_size +1)*len(version_list)
 current_test = 0
-for version in version_list:
-	for time in xrange(min_time, max_time+1):
-		for side_size in xrange(min_side_size, max_side_size+1):
+for time in xrange(min_time, max_time+1):
+	for side_size in xrange(min_side_size, max_side_size+1):
+		for version in version_list:
 			param_file = open(param_file_name,"w") 
 
 			param_file.write("xMax " + str(side_size) + os.linesep)

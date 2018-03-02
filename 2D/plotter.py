@@ -18,10 +18,10 @@ print(spacer + '|    |___ |__|  |   |  |___ |  \ ')
 print(os.linesep*2)
 
 #Define parameters.
-min_side_size = 1
-max_side_size = 20
-min_time = 2
-max_time = 2
+min_side_size = 2
+max_side_size = 2
+min_time = 1
+max_time = 30
 
 #Executable names:
 version_list_asm = ['asm','asm_o3','asm_ofast']
@@ -58,11 +58,11 @@ version_names_list_all = list(OrderedDict.fromkeys(version_names_list_all))
 #version_list = version_list_omp
 #version_names_list = version_names_list_omp
 
-#version_list = version_list_ofast
-#version_names_list = version_names_list_ofast
+version_list = version_list_ofast
+version_names_list = version_names_list_ofast
 
-version_list = version_list_all
-version_names_list = version_names_list_all
+#version_list = version_list_all
+#version_names_list = version_names_list_all
 
 test_folder = '/home/martin/Desktop/repos/navier-stokes-simd-solver/2D/tests/to_plot/'
 
