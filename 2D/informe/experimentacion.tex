@@ -346,28 +346,17 @@ Se aclara que, la potencia de dos utilizada, es algo que se especifíca en el fl
 
 \subsubsection{Optimizaciones O3}
 
-La optimización O3 mejora aún más los resultados, activa todas las optimizaciones de -O2 además de los siguientes flags:
+La utilización del flag -O3 aumenta aun más la cantidad de mejoras en búsqueda del aumento de la velocidad. A continuación analizamos algunos de los flags que activa.
 ~\\
-\begin{itemize}
-\item \textit{finline-functions}
-\item \textit{funswitch-loops}
-\item \textit{fpredictive-commoning}
-\item \textit{fgcse-after-reload}
-\item \textit{ftree-loop-vectorize}
-\item \textit{ftree-loop-distribute-patterns}
-\item \textit{ftree-slp-vectorize}
-\item \textit{fvect-cost-model}
-\item \textit{ftree-partial-pre}
-\item \textit{fipa-cp-clone options}
-\end{itemize}
 
-La utilizacion del flag -O3 aumenta aun mas la cantidad de mejoras en busqueda del aumento d ela velocidad. La primera de ellas, finline-functions, es similar a su correspondiente flag en -O2, finline-small-functions, con la diferencia de que hace efecto sobre mayor cantidad de funciones, no limitandose solo a las funciónes mas pequeñas en cuanto a cantidad de codigo de cara a mantener baja la cantidad de lineas totales.
-~\\
-~\\
-En cuanto a funswitch-loops, no hay en el programa condiciones en ciclos que sean independientes de ellos ya que todos son función de las variables sobre las que se itera. La única instancia de esto que podria darse es en la condición que decide si utilizar Assembler o C++ plano pero esta no esta escrita en el lenguaje, sino que es una directiva del compilador.
-~\\
-~\\
-Tampoco se encuentran efectos de aplicar el flag fpredictive-commoning. De aplicar, el mismo ahorarría accesos a memoria guardando datos de una iteración de un ciclo para la siguiente. No se ven ahorros de accesos a memoria ni cambios en la forma en que se accede. Tampoco se ve ningun cambio en el codigo al incluir el flag en una compilación realizada con -O2 y realizar una diferencia entre este y el resultado de -O2 normal.
+El flag \textit{finline-functions} es similar a su correspondiente flag en -O2, \textit{finline-small-functions}, con la diferencia de que hace efecto sobre mayor cantidad de funciones. No se restringe solo a las funciones más pequeñas en cuanto a cantidad de código para mantener baja la cantidad de lineas totales.\\
 
+En cuanto a \textit{funswitch-loops}, no hay en el programa condiciones en ciclos que sean independientes de ellos ya que todos son función de las variables sobre las que se itera. La única instancia de esto que podria darse es en la condición que decide si utilizar Assembler o C++ plano pero esta no esta escrita en el lenguaje, sino que es una directiva del compilador.\\
+
+Tampoco se encuentran efectos de aplicar el flag \textit{fpredictive-commoning}. De aplicar, el mismo ahorarría accesos a memoria guardando datos de una iteración de un ciclo para la siguiente. No se ven ahorros de accesos a memoria ni cambios en la forma en que se accede. Tampoco se ve ningun cambio en el código al incluir el flag en una compilación realizada con -O2 y realizar una diferencia entre este y el resultado de -O2 normal.\\
+
+
+\textit{ftree-partial-pre}
+Por último, el flag \textit{fipa-cp-clone options} clona las funciones para realizar una sustitución de variables por sus valores constantes(i.e. \textit{constant propagation}) de forma interprocedural a un nivel aun mayor. Es altamente probable que se obtengan multiples copias de funciones, con lo cual puede incrementar el tamaño del código de manera significativa. \\
 
 \input{comparacion.tex}
