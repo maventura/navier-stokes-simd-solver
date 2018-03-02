@@ -1,9 +1,46 @@
 \section{Experimentacion}
 
+\subsection{Análisis cualitativo}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=3cm]{imagenes/small_norm.png}
+\label{fig:small_norm}
+\end{figure}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=3cm]{imagenes/small_p.png}
+\label{fig:small_p}
+\end{figure}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=3cm]{imagenes/small_u.png}
+\label{fig:small_u}
+\end{figure}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=3cm]{imagenes/small_v.png}
+\label{fig:small_v}
+\end{figure}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=3cm]{imagenes/v.png}
+\label{fig:v}
+\end{figure}
+
+\begin{figure}[!htbp]
+\caption{Tiempo real(s) vs Tiempo simulado(m) utilizando el flag -Ofast}
+\includegraphics[width=3cm]{imagenes/u.png}
+\label{fig:u}
+\end{figure}
+
+\subsection{Herramientas de des-ensamblado}
+
 Dedicamos este párrafo a describir las herramientas que usamos para experimentar en las próximas secciones. La herramienta que utilizamos para traducir el código de C++ a Assembler es \textit{objdump}, en base a esto podemos hacer comparaciones entre el código de C++ y Assembler. Para medir tiempos de compilación y ejecución utilizamos el comando \textit{time} y conservamos la medición de tiempo real, o sea, la correspondiente al tiempo que mide de un reloj de pared.
-
-\colorbox{BurntOrange}{DUDA: nos hacemos los boludos con lo de la memoria?}
-
 
 \subsection{Análisis del código generado}
 
@@ -14,11 +51,9 @@ Usando la herramienta \textit{objdump} sobre los archivos objeto (.o) del códig
 	\item Se manejan las variables locales almacenandolas en la pila, mientras que sólo se usan los registros de manera auxiliar para realizar operaciones.
 \end{itemize}
 Decidimos en consecuencia, analizar el mismo código de C++ aplicando algunas optimizaciones de compilador de GCC.
-
 ~\\
 
 \subsection{Optimizaciones del compilador}
-
 
 \subsubsection{Optimizaciones -O1}
 El compilador de GCC posee una gran cantidad de optimizaciones. Un grupo de estas optimizaciones es habilitado por el parámetro -O1. Con el uso de esta optimización, el compilador se centra en reducir el tamaño del código y el tiempo de ejecución, a expensas de tiempo de compilación. Esto es comparando con la versión que no usa flags (-O0). Entre algunos de ellos se encuentran los siguientes flags:
@@ -32,7 +67,6 @@ El compilador de GCC posee una gran cantidad de optimizaciones. Un grupo de esta
 \end{itemize}
 
 ~\\
-
 Analizamos los códigos generados por G++ con y sin flag de optimización -O1. Extrajimos la función \textit{set}, que implementa el seteo de un valor a la posición $(i, j)$ de una matriz y lo primero que notamos fue la diferencia en cantidad de las líneas de código.
 
 {\center{\large{Función set de mat2}}} 
